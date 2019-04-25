@@ -1,7 +1,7 @@
 {
-	"name": "Test",
+	"name": "FPFool",
 	"version": "0.0.1",
-	"description": "Some text..",
+	"description": "FPFool is an extension to fool fingerprinting websites.",
 	"manifest_version": 2,
 	"background": {
 		"scripts": [
@@ -13,21 +13,23 @@
 	"browser_action": {
 		"default_icon": {
 			"16": "res/icon16.png",
-			"32": "res/icon16.png",
-			"48": "res/icon16.png",
-			"128": "res/icon16.png"
+			"32": "res/icon32.png",
+			"48": "res/icon48.png",
+			"128": "res/icon128.png"
 		}
 	},
 	"icons": {
 		"16": "res/icon16.png",
-		"32": "res/icon16.png",
-		"48": "res/icon16.png",
-		"128": "res/icon16.png"
+		"32": "res/icon32.png",
+		"48": "res/icon48.png",
+		"128": "res/icon128.png"
 	},
 	"permissions": [
-		"history",
 		"declarativeContent",
-		"tabs",
-		"storage"
+		"history",
+		"https://*/",
+		"http://*/",
+		"storage",
+		"tabs"
 	]
 }

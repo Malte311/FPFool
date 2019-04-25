@@ -2,7 +2,7 @@
 
 /*
  * Milliseconds to subtract from the current time in order to get the start time for the browser
- * history. The default value is the last 3 days.
+ * history. The default value is set to the last 3 days.
  */
 var interval = 1000 * 60 * 60 * 24 * 3;
 

@@ -5,8 +5,9 @@
 	"manifest_version": 2,
 	"background": {
 		"scripts": [
+			"./lib/jquery.min.js",
 			"./javascripts/background.js",
-			"./javascripts/fakeConnections.js"
+			"./javascripts/setup.js"
 		],
 		"persistent": false
 	},
@@ -27,8 +28,8 @@
 	"permissions": [
 		"declarativeContent",
 		"history",
-		"https://*/",
-		"http://*/",
+		"http://*/*",
+		"https://*/*",
 		"storage",
 		"tabs"
 	]

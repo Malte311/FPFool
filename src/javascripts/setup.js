@@ -30,19 +30,8 @@ chrome.windows.create({
 		state: 'minimized'
 	});
 	windowId = window.id;
-});
 
-/*
- * Loads the users settings, if present. Otherwise, the default settings are used and saved.
- */
-chrome.storage.sync.get(['interval'], function (result) {
-	if (result.interval != undefined) {
-		interval = result.interval;
-	} else {
-		chrome.storage.sync.set({
-			'interval': interval
-		});
-	}
+	runApplication();
 });
 
 /*
@@ -60,5 +49,3 @@ chrome.browserAction.onClicked.addListener(function () {
 		url: chrome.runtime.getURL("./html/extensionPage.html")
 	});
 });
-
-runApplication();

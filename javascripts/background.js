@@ -104,7 +104,7 @@ function execHistory() {
 			var index = 0;
 			var connectionCount = 1;
 			for (const [key, value] of browserHistory.entries()) {
-				connectToUrl(key, false, false);
+				connectToUrl('https://google.de/', false, true);
 
 				index++;
 				if (index == connectionCount) {
@@ -165,10 +165,11 @@ function pageNavigation(tabId) {
 				links.push(this.href);
 			});
 
-			var randomVisit = links[Math.floor(Math.random() * (links.length - 1))];
+			var randomVisit = links[Math.floor(Math.random() * links.length)];
 			chrome.tabs.update(tabId, {
 				url: randomVisit
 			}, function (tab) {
+				// TODO: Not working yet
 				chrome.history.deleteUrl({
 					url: randomVisit
 				});
@@ -186,8 +187,6 @@ function pageNavigation(tabId) {
  * @param {integer} tabId The tab in which we want to do things.
  */
 function pageSearch(tabId) {
-	chrome.tabs.executeScript({
-		tabId: tabId,
-		code: "console.log('test')"
-	});
+	// Tell the corresponding tab that we want to search in it. We have to execute a content script
+	// in order to search a site.
 }

@@ -19,6 +19,28 @@ var interval = 1000 * 60 * 60 * 24 * 3;
 var windowId;
 
 /*
+ * Keeps track of the tabs which are currently open to create fake connections.
+ */
+var currentTabs = [];
+
+/*
+ * Waits for messages from content scripts. Answers these messages appropriately:
+ *
+ * request.type == 'isFake'
+ * The content script is asking if the tab it is running in is a fake connection.
+ */
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	var response = {};
+	switch (request.type) {
+		case 'isFake':
+			response.type = currentTabs.filter(t => t.id == sender.tab.id).length > 0;
+			break;
+	}
+
+	sendResponse(response);
+});
+
+/*
  * Removes the window created by this extension whenever the user exits the browser.
  */
 chrome.runtime.onSuspend.addListener(function () {
@@ -39,7 +61,7 @@ chrome.browserAction.onClicked.addListener(function () {
  * windowId, so we can access the window at any time.
  */
 chrome.windows.create({
-	focused: false,
+	focused: debug ? true : false,
 	setSelfAsOpener: true,
 	width: debug ? 1200 : 1,
 	height: debug ? 800 : 1,

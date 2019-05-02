@@ -1,11 +1,6 @@
 'use strict';
 
 /*
- * Keeps track of the tabs which are currently open to create fake connections.
- */
-var currentTabs = [];
-
-/*
  * Holds the browser history of a given time interval. This information can be used to visit
  * popular sites at random.
  */

@@ -37,11 +37,11 @@ $(document).ready(function () {
 	// Waits for messages from content scripts. The content scripts will inform this script
 	// whenever they perform an action, so we can update the status information.
 	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-		if (request != undefined) {
+		if (requestType.hasOwnProperty(request.type)) {
 			var action;
 			switch (request.type) {
 				case requestType.open:
-					action = `New connection to <a href=\"${request.url}\">${request.url}</a>.`;
+					action = `Opened a new tab to <a href=\"${request.url}\">${request.url}</a>.`;
 					break;
 				case requestType.navigate:
 					action = `Navigated to <a href=\"${request.toUrl}\">${request.toUrl}</a>.`;
@@ -54,7 +54,7 @@ $(document).ready(function () {
 					break;
 				case requestType.search:
 					action = `
-						Searched for ${request.searchTerm} on 
+						Searched for \"${request.searchTerm}\" on 
 						<a href=\"${request.url}\">${request.url}</a>. <br>
 						Redirection to <a href=\"${request.toUrl}\">${request.toUrl}</a>.
 					`;
@@ -105,7 +105,7 @@ function appendTable(url, action, type) {
 			color = '<tr class=\"table-warning\">'; // Yellow
 			break;
 		default:
-			color = '<tr>';
+			color = '<tr class=\"table-active\">'; // Grey
 			break;
 	}
 
@@ -113,7 +113,7 @@ function appendTable(url, action, type) {
 		`
 		${color}
 			<td>${formatDate(new Date())}</td>
-			<td>${url}</td>
+			<td><a href=\"${url}\">${url}</a></td>
 			<td>${action}</td>
 		</tr>
 		`

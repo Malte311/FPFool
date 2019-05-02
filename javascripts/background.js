@@ -123,9 +123,13 @@ function connectToUrl(url) {
 		url: url,
 		active: false
 	}, function (tab) {
-		currentTabs.push(tab);
-		chrome.storage.sync.set({
-			activeTabs: currentTabs
+		tab.isNew = true; // For logging the event when a new tab is created
+		chrome.storage.sync.get(['activeTabs'], function (result) {
+			currentTabs = result.activeTabs;
+			currentTabs.push(tab);
+			chrome.storage.sync.set({
+				activeTabs: currentTabs
+			});
 		});
 	});
 }

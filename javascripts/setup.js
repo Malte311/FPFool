@@ -26,16 +26,17 @@ var currentTabs = [];
 /*
  * Waits for messages from content scripts. Answers these messages appropriately:
  *
- * request.type == 'isFake'
- * The content script is asking if the tab it is running in is a fake connection (this is the case
- * whenever the tab is included in the currentTabs array).
+ * request.type == 'getTabId'
+ * The content script is asking for the id of the tab it is running in.
  */
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	var response = {};
 	switch (request.type) {
-		case 'isFake':
-			response.type = currentTabs.filter(t => t.id == sender.tab.id).length > 0;
+		case 'getTabId':
+			response.tabId = sender.tab.id;
 			break;
+		default:
+			return; // Don't answer unknown messages
 	}
 
 	sendResponse(response);
@@ -43,9 +44,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 /*
  * Removes the window created by this extension whenever the user exits the browser.
+ * In addition to that, we remove items from the storage which we don't need any longer.
  */
 chrome.runtime.onSuspend.addListener(function () {
 	chrome.windows.remove(windowId);
+	chrome.storage.sync.remove(['activeWinId', 'activeTabs']);
 });
 
 /*
@@ -66,6 +69,13 @@ if (debug) {
 		chrome.windows.remove(result.activeWinId);
 	});
 }
+
+/*
+ * Initializes the storage.
+ */
+chrome.storage.sync.set({
+	activeTabs: []
+});
 
 /*
  * Creates the window for this extension to work in. It also updates the value of the variable

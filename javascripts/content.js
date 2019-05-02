@@ -9,18 +9,29 @@ const dict = ["JavaScript", "HTML", "CSS"];
  * Executes this content script when the webpage has loaded.
  */
 $(document).ready(function () {
-	// Asking the background script if the tab in which this content script is running is a fake
-	// connection or not.
 	chrome.runtime.sendMessage({
-		type: 'isFake'
+		type: 'getTabId'
 	}, function (response) {
-		// Only run this script for tabs created by this extension.
-		if (response.type) {
-			// TODO
-		}
-	});
+		chrome.storage.sync.get(['activeTabs'], function (result) {
+			var activeTabs = result.activeTabs;
+			// Only run this script for tabs created by this extension.
+			if (activeTabs.filter(tab => tab.id == response.tabId).length > 0) {
+				var thisTab = activeTabs.filter(tab => tab.id == response.tabId)[0];
 
-	updateStatus('https://google.de/', 'open');
+				// Just for displaying status information.
+				if (thisTab.isNew) {
+					updateStatus(location.href, 'open', '', '');
+
+					var thisTabIndex = activeTabs.indexOf(thisTab);
+					thisTab.isNew = false;
+					activeTabs[thisTabIndex] = thisTab;
+					chrome.storage.sync.set({
+						activeTabs: activeTabs
+					});
+				}
+			}
+		});
+	});
 });
 
 /**
@@ -38,6 +49,8 @@ function navigatePage() {
 
 	var randomVisit = links[Math.floor(Math.random() * links.length)];
 	$(randomVisit)[0].click();
+
+	updateStatus(location.href, 'navigate', '', randomVisit.href);
 }
 
 /**
@@ -53,10 +66,14 @@ function searchPage() {
 	});
 
 	var randomInput = inputs[0];
-	$(randomInput).val(dict[Math.floor(Math.random() * dict.length)]);
+	var searchTerm = dict[Math.floor(Math.random() * dict.length)];
+	$(randomInput).val(searchTerm);
+	var action = $(randomInput).closest('form').attr('action');
 	setTimeout(function () {
 		$(randomInput).closest('form').submit();
 	}, 1666);
+
+	updateStatus(location.href, 'search', searchTerm, action);
 }
 
 /**
@@ -64,15 +81,15 @@ function searchPage() {
  * there will be added a new row containing the following information:
  * 
  * @param {string} url The url on which the action was performed.
- * @param {string} type The type of the action
- * @param {string} searchTerm 
- * @param {string} toUrl 
+ * @param {string} type The type of the action.
+ * @param {string} searchTerm The term we searched in case the type was 'search'.
+ * @param {string} toUrl The url to which we got directed (if we got directed at all).
  */
 function updateStatus(url, type, searchTerm, toUrl) {
 	chrome.runtime.sendMessage({
 		url: url,
 		type: type,
-		searchTeam: searchTerm,
+		searchTerm: searchTerm,
 		toUrl: toUrl
 	});
 }

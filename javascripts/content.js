@@ -19,8 +19,16 @@ $(document).ready(function () {
 			// TODO
 		}
 	});
+
+	updateStatus('https://google.de/', 'open');
 });
 
+/**
+ * Navigates on the visited webpage. This means we navigate through it by simulating
+ * klicks on links.
+ * 
+ * At the moment, these links are chosen randomly.
+ */
 function navigatePage() {
 	var links = [];
 
@@ -32,6 +40,12 @@ function navigatePage() {
 	$(randomVisit)[0].click();
 }
 
+/**
+ * Tries to find input fields on the current webpage and simulates a user typing in things in
+ * these input fields.
+ * 
+ * The user input is currently chosen from a dictionary.
+ */
 function searchPage() {
 	var inputs = [];
 	$(':input[type=text]').each(function () {
@@ -43,4 +57,22 @@ function searchPage() {
 	setTimeout(function () {
 		$(randomInput).closest('form').submit();
 	}, 1666);
+}
+
+/**
+ * Updates the status table on the working page. For every action performed by this extension,
+ * there will be added a new row containing the following information:
+ * 
+ * @param {string} url The url on which the action was performed.
+ * @param {string} type The type of the action
+ * @param {string} searchTerm 
+ * @param {string} toUrl 
+ */
+function updateStatus(url, type, searchTerm, toUrl) {
+	chrome.runtime.sendMessage({
+		url: url,
+		type: type,
+		searchTeam: searchTerm,
+		toUrl: toUrl
+	});
 }

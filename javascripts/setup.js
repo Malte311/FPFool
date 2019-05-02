@@ -27,7 +27,8 @@ var currentTabs = [];
  * Waits for messages from content scripts. Answers these messages appropriately:
  *
  * request.type == 'isFake'
- * The content script is asking if the tab it is running in is a fake connection.
+ * The content script is asking if the tab it is running in is a fake connection (this is the case
+ * whenever the tab is included in the currentTabs array).
  */
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	var response = {};

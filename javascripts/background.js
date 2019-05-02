@@ -2,7 +2,7 @@
 
 /*
  * Holds the browser history of a given time interval. This information can be used to visit
- * popular sites at random.
+ * popular sites from the user.
  */
 var browserHistory = new Map();
 
@@ -112,16 +112,11 @@ function execHistory() {
 
 /**
  * Creates a fake connection to a given url.
- * 
- * A http request is sent to the url such that the url thinks that the user visited it.
- * Afterwards, the url is added to the browser history since it was visited just now.
+ * We open the given url in a new tab in our hidden browser window.
  * 
  * @param {string} url The url we want to connect to.
- * @param {boolean} navigate Specifies if we want to klick on links on the given webpage.
- * @param {boolean} search Specifies if we want to search (submit input) on the given webpage.
  */
-function connectToUrl(url, navigate, search) {
-	// Remember to remove fake connections from browsing history (it could confuse the user)
+function connectToUrl(url) {
 	chrome.tabs.create({
 		windowId: windowId,
 		index: currentTabs.length,
@@ -129,59 +124,8 @@ function connectToUrl(url, navigate, search) {
 		active: false
 	}, function (tab) {
 		currentTabs.push(tab);
-
-		if (navigate) {
-			pageNavigation(tab.id);
-		}
-		if (search) {
-			pageSearch(tab.id);
-		}
+		chrome.storage.sync.set({
+			activeTabs: currentTabs
+		});
 	});
-}
-
-/**
- * Navigates on a currently visited webpage. This means we navigate through it by simulating
- * klicks on links.
- * 
- * At the moment, these links are chosen randomly.
- * 
- * @param {integer} tabId The tab in which we want to do things.
- */
-function pageNavigation(tabId) {
-	var url = currentTabs.filter(tab => tab.id == tabId)[0].url;
-
-	var http = new XMLHttpRequest();
-	http.open('GET', url, true); // true = async
-	http.send();
-	http.onreadystatechange = function (err) {
-		if (this.readyState == 4 && this.status == 200) {
-			var links = [];
-			$('a', http.responseText).each(function () {
-				links.push(this.href);
-			});
-
-			var randomVisit = links[Math.floor(Math.random() * links.length)];
-			chrome.tabs.update(tabId, {
-				url: randomVisit
-			}, function (tab) {
-				// TODO: Not working yet
-				chrome.history.deleteUrl({
-					url: randomVisit
-				});
-			});
-		}
-	}
-}
-
-/**
- * Tries to find input fields on the current webpage and simulates a user typing in things in
- * these input fields.
- * 
- * The user input is currently chosen from a dictionary.
- * 
- * @param {integer} tabId The tab in which we want to do things.
- */
-function pageSearch(tabId) {
-	// Tell the corresponding tab that we want to search in it. We have to execute a content script
-	// in order to search a site.
 }

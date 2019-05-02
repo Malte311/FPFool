@@ -3,14 +3,39 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>FPFool &ndash; Currently working...</title>
+	<title>FPFool &ndash; Currently working</title>
 	<link rel="shortcut icon" href="../res/icon128.png">
+
+	<script language="javascript" src="../lib/jquery.min.js"></script>
+	<script language="javascript" src="../javascripts/workingPage.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="../style/bootstrap.min.css">
 </head>
 
 <body>
-	Warning: Do not close this window! Otherwise FPFool can not do its job!
-	Some status information...
-	<div id="divID"></div>
+	<div class="container" style="margin-top: 15px;">
+		<div class="alert alert-primary">
+			<h4 class="alert-heading">Warning!</h4>
+			<strong>Do not close this browser window!</strong>
+			Otherwise FPFool can not do its job!
+		</div>
+		<div class="alert alert-info">
+			FPFool is currently working
+			<div class="spinner-grow spinner-grow-sm text-info" role="status"></div>
+		</div>
+		<table class="table table-bordered table-striped">
+			<thead class="thead-dark">
+				<tr>
+					<th scope="col">Time</th>
+					<th scope="col">URL</th>
+					<th scope="col">Action</th>
+				</tr>
+			</thead>
+			<tbody id="statusTableBody">
+				<!-- Gets appended via JavaScript -->
+			</tbody>
+		</table>
+	</div>
 </body>
 
 </html>

@@ -57,6 +57,16 @@ chrome.browserAction.onClicked.addListener(function () {
 });
 
 /*
+ * In debug mode, the extension is being reloaded quite often. In order to prevent opening
+ * more and more windows, we close windows which have been created before reloading.
+ */
+if (debug) {
+	chrome.storage.sync.get(['activeWinId'], function (result) {
+		chrome.windows.remove(result.activeWinId);
+	});
+}
+
+/*
  * Creates the window for this extension to work in. It also updates the value of the variable
  * windowId, so we can access the window at any time.
  */
@@ -73,6 +83,11 @@ chrome.windows.create({
 		state: debug ? 'normal' : 'minimized'
 	});
 	windowId = window.id;
+
+	// Save the active id, so we can close the window on reload.
+	chrome.storage.sync.set({
+		activeWinId: windowId
+	});
 
 	runApplication();
 });

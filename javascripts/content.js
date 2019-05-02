@@ -28,11 +28,28 @@ $(document).ready(function () {
 					chrome.storage.sync.set({
 						activeTabs: activeTabs
 					});
+
+					if (Math.random() < 0.5) {
+						navigatePage();
+					} else {
+						searchPage();
+					}
 				}
 			}
 		});
 	});
 });
+
+/**
+ * Closes the current tab.
+ */
+function disconnect() {
+	chrome.runtime.sendMessage({
+		type: 'disconnect'
+	}, function (response) {
+		updateStatus(location.href, 'remove', '', '');
+	});
+}
 
 /**
  * Navigates on the visited webpage. This means we navigate through it by simulating
@@ -48,9 +65,15 @@ function navigatePage() {
 	});
 
 	var randomVisit = links[Math.floor(Math.random() * links.length)];
-	$(randomVisit)[0].click();
+	setTimeout(function () {
+		$(randomVisit)[0].click();
+	}, 1666);
 
 	updateStatus(location.href, 'navigate', '', randomVisit.href);
+
+	setTimeout(function () {
+		disconnect();
+	}, Math.floor(Math.random() * 15000));
 }
 
 /**
@@ -74,6 +97,10 @@ function searchPage() {
 	}, 1666);
 
 	updateStatus(location.href, 'search', searchTerm, action);
+
+	setTimeout(function () {
+		disconnect();
+	}, Math.floor(Math.random() * 15000));
 }
 
 /**

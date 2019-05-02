@@ -26,12 +26,19 @@ var currentTabs = [];
 /*
  * Waits for messages from content scripts. Answers these messages appropriately:
  *
+ * request.type == 'disconnect'
+ * The content script wants the corresponding tab to be removed.
+ * 
  * request.type == 'getTabId'
  * The content script is asking for the id of the tab it is running in.
  */
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	var response = {};
 	switch (request.type) {
+		case 'disconnect':
+			chrome.tabs.remove(sender.tab.id);
+			// TODO remove tab from storage and variable; remove visited sites from history
+			return;
 		case 'getTabId':
 			response.tabId = sender.tab.id;
 			break;

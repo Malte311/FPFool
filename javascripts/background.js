@@ -9,8 +9,8 @@ var browserHistory = new Map();
 /*
  * Specifies which algorithms for fooling fingerprinters are available.
  *
- * DEFAULT: TODO.
- * HISTORY: Uses the browser history to visit websites from there randomly.
+ * algorithms.DEFAULT: TODO.
+ * algorithms.HISTORY: Uses the browser history to visit websites from there randomly.
  */
 const algorithms = {
 	DEFAULT: 'default',
@@ -35,7 +35,7 @@ function runApplication() {
 		case algorithms.DEFAULT:
 			execDefault();
 			break;
-		case algorithms.history:
+		case algorithms.HISTORY:
 			execHistory();
 			break;
 	}
@@ -97,9 +97,11 @@ function execHistory() {
 
 			// Idea: Timer for calling connectToUrl; update the browserHistory map datastructure
 			var index = 0;
-			var connectionCount = 1;
+			var connectionCount = 3;
 			for (const [key, value] of browserHistory.entries()) {
-				connectToUrl('https://google.de/', false, true);
+				setTimeout(function () {
+					connectToUrl(key, false, true);
+				}, 1000);
 
 				index++;
 				if (index == connectionCount) {

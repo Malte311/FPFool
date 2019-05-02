@@ -7,24 +7,17 @@ const dots = ['.', '..', '...'];
 
 /*
  * Contains all the possible request types. A request type indicates what action was performed.
- *
- * requestType.open
- * Indicates that a new connection towards an url was established.
  * 
- * requestType.navigate
- * Indicates that there was a klick on a link on a webpage.
- * 
- * requestType.remove
- * Indicates that a url was removed from the browser history.
- * 
- * requestType.search
- * Indicates that there was a search for specific keyword(s) on a webpage.
+ * requestType.OPEN: Indicates that a new connection towards an url was established.
+ * requestType.NAVIGATE: Indicates that there was a klick on a link on a webpage.
+ * requestType.REMOVE: Indicates that a tab has been closed.
+ * requestType.SEARCH: Indicates that there was a search for specific keyword(s) on a webpage.
  */
 const requestType = {
-	open: 'open',
-	navigate: 'navigate',
-	remove: 'remove',
-	search: 'search'
+	OPEN: 'open',
+	NAVIGATE: 'navigate',
+	REMOVE: 'remove',
+	SEARCH: 'search'
 };
 
 /*
@@ -40,19 +33,16 @@ $(document).ready(function () {
 		if (requestType.hasOwnProperty(request.type)) {
 			var action;
 			switch (request.type) {
-				case requestType.open:
+				case requestType.OPEN:
 					action = `Opened a new tab to <a href=\"${request.url}\">${request.url}</a>.`;
 					break;
-				case requestType.navigate:
+				case requestType.NAVIGATE:
 					action = `Navigated to <a href=\"${request.toUrl}\">${request.toUrl}</a>.`;
 					break;
-				case requestType.remove:
-					action = `
-						Removed <a href=\"${request.url}\">${request.url}</a> 
-						from browser history.
-					`;
+				case requestType.REMOVE:
+					action = `Closed the tab with <a href=\"${request.url}\">${request.url}</a>.`;
 					break;
-				case requestType.search:
+				case requestType.SEARCH:
 					action = `
 						Searched for \"${request.searchTerm}\" on 
 						<a href=\"${request.url}\">${request.url}</a>. <br>
@@ -70,19 +60,6 @@ $(document).ready(function () {
 });
 
 /**
- * Changes the title dynamically, indicating that the page is doing work.
- */
-function setDynamicTitle() {
-	var currentTitle = document.title;
-	var index = 0;
-
-	setInterval(function () {
-		document.title = currentTitle + dots[index];
-		index = (index + 1) % dots.length;
-	}, 500);
-}
-
-/**
  * Appends a new row to the status table. This row contains the following entries:
  * 
  * @param {string} url The url on which an event has happened.
@@ -92,16 +69,16 @@ function setDynamicTitle() {
 function appendTable(url, action, type) {
 	var color;
 	switch (type) {
-		case requestType.open:
+		case requestType.OPEN:
 			color = '<tr class=\"table-success\">'; // Green
 			break;
-		case requestType.navigate:
+		case requestType.NAVIGATE:
 			color = '<tr class=\"table-info\">'; // Light blue
 			break;
-		case requestType.remove:
+		case requestType.REMOVE:
 			color = '<tr class=\"table-danger\">'; // Red
 			break;
-		case requestType.search:
+		case requestType.SEARCH:
 			color = '<tr class=\"table-warning\">'; // Yellow
 			break;
 		default:
@@ -131,4 +108,17 @@ function formatDate(date) {
 	var seconds = date.getSeconds() < 10 ? `0${date.getSeconds()}` : date.getSeconds();
 
 	return `${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Changes the title dynamically, indicating that the page is doing work.
+ */
+function setDynamicTitle() {
+	var currentTitle = document.title;
+	var index = 0;
+
+	setInterval(function () {
+		document.title = currentTitle + dots[index];
+		index = (index + 1) % dots.length;
+	}, 500);
 }

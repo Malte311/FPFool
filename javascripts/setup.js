@@ -1,16 +1,9 @@
 'use strict';
 
 /*
- * Specifies if application should be run in debug mode.
+ * Specifies if the application should be run in debug mode.
  */
 const debug = true;
-
-/*
- * Milliseconds to subtract from the current time in order to get the start time for the browser
- * history. The default value is set to the last 3 days and the user can change the value at any
- * time.
- */
-var interval = 1000 * 60 * 60 * 24 * 3;
 
 /*
  * Saves the id of a minimized extra window in which the extension creates fake connections. This
@@ -27,7 +20,8 @@ var currentTabs = [];
  * Waits for messages from content scripts. Answers these messages appropriately:
  *
  * request.type == 'disconnect'
- * The content script wants the corresponding tab to be removed.
+ * The content script wants the corresponding tab to be removed. The tab gets removed and the
+ * content script gets a notification about it.
  * 
  * request.type == 'isExec'
  * The content script wants to know if it should get executed. This is the case if the content
@@ -39,9 +33,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	switch (request.type) {
 		case 'disconnect':
 			chrome.tabs.remove(sender.tab.id);
-			// TODO remove tab from storage and variable; remove visited sites from history
-			// (maybe do not remove from history for history algorithm => save the algorithm 
-			// for each tab?)
+			for (var i = currentTabs.length - 1; i >= 0; i--) {
+				if (currentTabs[i].id == sender.tab.id) {
+					currentTabs.splice(i);
+					break;
+				}
+			}
 			break;
 		case 'isExec':
 			var senderTab = currentTabs.filter(tab => tab.id == sender.tab.id);
@@ -101,7 +98,7 @@ chrome.windows.create({
 	});
 	windowId = window.id;
 
-	// Save the active id, so we can close the window on reload.
+	// Save the active id, so we can close the window on reload (for debug mode).
 	chrome.storage.sync.set({
 		activeWinId: windowId
 	});

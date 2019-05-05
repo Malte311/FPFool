@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Contains dots for displaying dynamic status information.
+ * Contains dots for displaying dynamic status information (the dots are appended to some text).
  */
 const dots = ['.', '..', '...'];
 
@@ -11,7 +11,7 @@ const dots = ['.', '..', '...'];
  * requestType.OPEN: Indicates that a new connection towards an url was established.
  * requestType.NAVIGATE: Indicates that there was a klick on a link on a webpage.
  * requestType.REMOVE: Indicates that a tab has been closed.
- * requestType.SEARCH: Indicates that there was a search for specific keyword(s) on a webpage.
+ * requestType.SEARCH: Indicates that there was a search for (a) specific keyword(s) on a webpage.
  */
 const requestType = {
 	OPEN: 'OPEN',
@@ -98,7 +98,7 @@ function appendTable(url, action, type) {
 }
 
 /**
- * Formats a given date for printing.
+ * Formats a given date for printing (we are interested in the time only).
  * 
  * @param {Date} date The date object we want to print. 
  */

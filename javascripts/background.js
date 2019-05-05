@@ -7,9 +7,16 @@
 var browserHistory = new Map();
 
 /*
+ * Milliseconds to subtract from the current time in order to get the start time for the browser
+ * history. The default value is set to the last 3 days and the user can change the value at any
+ * time.
+ */
+var interval = 1000 * 60 * 60 * 24 * 3;
+
+/*
  * Specifies which algorithms for fooling fingerprinters are available.
  *
- * algorithms.DEFAULT: TODO.
+ * algorithms.DEFAULT: algorithms.HISTORY is the default algorithm at the moment.
  * algorithms.HISTORY: Uses the browser history to visit websites from there randomly.
  */
 const algorithms = {
@@ -24,8 +31,7 @@ var activeAlgorithm = algorithms.DEFAULT;
 
 /**
  * Starts the application: Creates fake connections in the hidden window and removes the tabs
- * when finished. Afterwards, the falsely added sites to the users browsing history are being
- * removed from the browser history again.
+ * when finished. The selected algorithm defines what these fake connections do exactly.
  */
 function runApplication() {
 	selectAlgorithm();
@@ -44,7 +50,7 @@ function runApplication() {
  * Selects an algorithm to execute based on some criteria (not defined yet).
  */
 function selectAlgorithm() {
-	// Idea: Choose algorithm based on fingerprint (different algorithm for different devices)
+	// TODO: Implementation & Update comment
 }
 
 /**
@@ -53,6 +59,7 @@ function selectAlgorithm() {
  * This algorithm does nothing, apparently. Therefore, it calls another algorithm for now.
  */
 function execDefault() {
+	// TODO: Implementation & Update comment & Update comment for algorithms constant
 	execHistory();
 }
 
@@ -62,7 +69,6 @@ function execDefault() {
  * This algorithm creates connections based on the users browser history so far.
  */
 function execHistory() {
-	// The variable 'interval' was defined in the setup.js script.
 	chrome.history.search({
 			'text': '',
 			'startTime': (new Date).getTime() - interval
@@ -79,12 +85,11 @@ function execHistory() {
 				return a[1] - b[1];
 			}));
 
-			// Idea: Timer for calling connectToUrl; update the browserHistory map datastructure
 			var index = 0;
 			var connectionCount = 2;
 			for (const [key, value] of browserHistory.entries()) {
 				setTimeout(function () {
-					connectToUrl('https://google.de');
+					connectToUrl('https://google.de', algorithms.HISTORY);
 				}, 1000);
 
 				index++;
@@ -101,15 +106,17 @@ function execHistory() {
  * We open the given url in a new tab in our hidden browser window.
  * 
  * @param {string} url The url we want to connect to.
+ * @param {string} algo The algorithm used in this tab.
  */
-function connectToUrl(url) {
+function connectToUrl(url, algo) {
 	chrome.tabs.create({
 		windowId: windowId,
 		index: currentTabs.length,
 		url: url,
 		active: false
 	}, function (tab) {
-		tab.isNew = true; // For logging the event when a new tab is created
+		tab.isNew = true; // We need this to execute content scripts only once
+		tab.algorithm = algo;
 		currentTabs.push(tab);
 	});
 }

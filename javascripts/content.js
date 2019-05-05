@@ -6,7 +6,8 @@
 const dict = ["JavaScript", "HTML", "CSS"];
 
 /*
- * Executes this content script when the webpage has loaded.
+ * Executes this content script when the webpage has loaded. This script performs fake actions
+ * on faked connections according to a given algorithm.
  */
 $(document).ready(function () {
 	chrome.runtime.sendMessage({
@@ -16,6 +17,8 @@ $(document).ready(function () {
 		if (response.isExec) {
 			updateStatus(location.href, 'OPEN', '', '');
 
+			// TODO: Instead of random, we use another message 'getAlgorithm' and perform actions
+			// based on the algorithm; maybe even store the algorithm in a variable (before isExec)
 			if (Math.random() < 0.5) {
 				navigatePage();
 			} else {
@@ -40,7 +43,7 @@ function disconnect() {
  * Navigates on the visited webpage. This means we navigate through it by simulating
  * klicks on links.
  * 
- * At the moment, these links are chosen randomly.
+ * The links are chosen based on the given algorithm.
  */
 function navigatePage() {
 	var links = [];
@@ -57,7 +60,7 @@ function navigatePage() {
 	updateStatus(location.href, 'NAVIGATE', '', randomVisit.href);
 
 	setTimeout(function () {
-		//disconnect();
+		disconnect();
 	}, Math.floor(Math.random() * 1000));
 }
 
@@ -84,7 +87,7 @@ function searchPage() {
 	updateStatus(location.href, 'SEARCH', searchTerm, action);
 
 	setTimeout(function () {
-		//disconnect();
+		disconnect();
 	}, Math.floor(Math.random() * 1000));
 }
 

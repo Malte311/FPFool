@@ -15,7 +15,7 @@ $(document).ready(function () {
 	}, function (response) {
 		// Only run this script for tabs created by this extension.
 		if (response.isExec) {
-			updateStatus(location.href, 'OPEN', '', '');
+			updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
 
 			// TODO: Instead of random, we use another message 'getAlgorithm' and perform actions
 			// based on the algorithm; maybe even store the algorithm in a variable (before isExec)
@@ -35,7 +35,7 @@ function disconnect() {
 	chrome.runtime.sendMessage({
 		type: 'disconnect'
 	}, function (response) {
-		updateStatus(location.href, 'REMOVE', '', '');
+		updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
 	});
 }
 
@@ -57,7 +57,7 @@ function navigatePage() {
 		$(randomVisit)[0].click();
 	}, 1666);
 
-	updateStatus(location.href, 'NAVIGATE', '', randomVisit.href);
+	updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
 
 	setTimeout(function () {
 		disconnect();
@@ -84,7 +84,7 @@ function searchPage() {
 		$(randomInput).closest('form').submit();
 	}, 1666);
 
-	updateStatus(location.href, 'SEARCH', searchTerm, action);
+	updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
 
 	setTimeout(function () {
 		disconnect();

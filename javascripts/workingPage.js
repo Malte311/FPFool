@@ -34,27 +34,23 @@ $(document).ready(function () {
 			var action;
 			switch (request.type) {
 				case requestType.OPEN:
-					action = `Opened a new tab to <a href=\"${request.url}\">${request.url}</a>.`;
+					action = `Opened a new tab.`;
 					break;
 				case requestType.NAVIGATE:
-					action = `Navigated to <a href=\"${request.toUrl}\">${request.toUrl}</a>.`;
+					action = `Navigated to new url.`;
 					break;
 				case requestType.REMOVE:
-					action = `Closed the tab with <a href=\"${request.url}\">${request.url}</a>.`;
+					action = `Closed this tab.`;
 					break;
 				case requestType.SEARCH:
-					action = `
-						Searched for \"${request.searchTerm}\" on 
-						<a href=\"${request.url}\">${request.url}</a>. <br>
-						Redirection to <a href=\"${request.toUrl}\">${request.toUrl}</a>.
-					`;
+					action = `Searched for \"${request.searchTerm}\".`;
 					break;
 				default:
 					action = 'Unknown action.';
 					break;
 			}
 
-			appendTable(request.url, action, request.type);
+			appendTable(request.url, request.toUrl, action, request.type);
 		}
 	});
 });
@@ -62,11 +58,12 @@ $(document).ready(function () {
 /**
  * Appends a new row to the status table. This row contains the following entries:
  * 
- * @param {string} url The url on which an event has happened.
+ * @param {string} urlFrom The url on which an event has happened.
+ * @param {string} urlTo The url to which we got directed (if we got directed at all).
  * @param {string} action The description of the event.
  * @param {string} type The type of the event.
  */
-function appendTable(url, action, type) {
+function appendTable(urlFrom, urlTo, action, type) {
 	var color;
 	switch (type) {
 		case requestType.OPEN:
@@ -90,7 +87,8 @@ function appendTable(url, action, type) {
 		`
 		${color}
 			<td>${formatDate(new Date())}</td>
-			<td><a href=\"${url}\">${url}</a></td>
+			<td><a href=\"${urlFrom}\">${urlFrom}</a></td>
+			<td><a href=\"${urlTo}\">${urlTo}</a></td>
 			<td>${action}</td>
 		</tr>
 		`

@@ -86,7 +86,7 @@ function execHistory() {
 			}));
 
 			var index = 0;
-			var connectionCount = 2;
+			var connectionCount = 5;
 			for (const [key, value] of browserHistory.entries()) {
 				setTimeout(function () {
 					connectToUrl('https://google.de', algorithms.HISTORY);

@@ -14,11 +14,21 @@
 
 <body>
 	<div class="container-fluid" style="margin-top: 15px;">
+		<div class="alert alert-danger">
+			<h4 class="alert-heading">Warning!</h4>
+			<strong>Do not close this browser window!</strong>
+			Otherwise FPFool can not do its job!
+		</div>
+		<div class="alert alert-info" id="statusInfo">
+			FPFool is currently working
+			<div class="spinner-grow spinner-grow-sm text-info" role="status"></div>
+		</div>
 		<table class="table table-bordered table-striped">
 			<thead class="thead-dark">
 				<tr>
 					<th scope="col">Time</th>
-					<th scope="col">URL</th>
+					<th scope="col">URL (from)</th>
+					<th scope="col">URL (to)</th>
 					<th scope="col">Action</th>
 				</tr>
 			</thead>
@@ -26,15 +36,6 @@
 				<!-- Gets appended via JavaScript -->
 			</tbody>
 		</table>
-		<div class="alert alert-info" id="statusInfo">
-			FPFool is currently working
-			<div class="spinner-grow spinner-grow-sm text-info" role="status"></div>
-		</div>
-		<div class="alert alert-danger">
-			<h4 class="alert-heading">Warning!</h4>
-			<strong>Do not close this browser window!</strong>
-			Otherwise FPFool can not do its job!
-		</div>
 	</div>
 </body>
 

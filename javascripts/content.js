@@ -10,34 +10,18 @@ const dict = ["JavaScript", "HTML", "CSS"];
  */
 $(document).ready(function () {
 	chrome.runtime.sendMessage({
-		type: 'getTabId'
+		type: 'isExec'
 	}, function (response) {
-		chrome.storage.sync.get(['activeTabs'], function (result) {
-			var activeTabs = result.activeTabs;
-			// Only run this script for tabs created by this extension.
-			if (activeTabs.filter(tab => tab.id == response.tabId).length > 0) {
-				var thisTab = activeTabs.filter(tab => tab.id == response.tabId)[0];
+		// Only run this script for tabs created by this extension.
+		if (response.isExec) {
+			updateStatus(location.href, 'OPEN', '', '');
 
-				// Since this script will be reloaded on page reload, we make sure it does not
-				// get executed multiple times at this point.
-				if (thisTab.isNew) {
-					updateStatus(location.href, 'OPEN', '', '');
-
-					var thisTabIndex = activeTabs.indexOf(thisTab);
-					thisTab.isNew = false;
-					activeTabs[thisTabIndex] = thisTab;
-					chrome.storage.sync.set({
-						activeTabs: activeTabs
-					});
-
-					if (Math.random() < 0.5) {
-						navigatePage();
-					} else {
-						searchPage();
-					}
-				}
+			if (Math.random() < 0.5) {
+				navigatePage();
+			} else {
+				searchPage();
 			}
-		});
+		}
 	});
 });
 
@@ -73,7 +57,7 @@ function navigatePage() {
 	updateStatus(location.href, 'NAVIGATE', '', randomVisit.href);
 
 	setTimeout(function () {
-		disconnect();
+		//disconnect();
 	}, Math.floor(Math.random() * 1000));
 }
 
@@ -100,7 +84,7 @@ function searchPage() {
 	updateStatus(location.href, 'SEARCH', searchTerm, action);
 
 	setTimeout(function () {
-		disconnect();
+		//disconnect();
 	}, Math.floor(Math.random() * 1000));
 }
 

@@ -28,9 +28,8 @@ var activeAlgorithm = algorithms.DEFAULT;
  * removed from the browser history again.
  */
 function runApplication() {
-	loadSettings();
-
 	selectAlgorithm();
+
 	switch (activeAlgorithm) {
 		case algorithms.DEFAULT:
 			execDefault();
@@ -39,21 +38,6 @@ function runApplication() {
 			execHistory();
 			break;
 	}
-}
-
-/**
- * Loads the users settings, if present. Otherwise, the default settings are being used and saved.
- */
-function loadSettings() {
-	chrome.storage.sync.get(['interval'], function (result) {
-		if (result.interval != undefined) {
-			interval = result.interval;
-		} else {
-			chrome.storage.sync.set({
-				'interval': interval
-			});
-		}
-	});
 }
 
 /**
@@ -126,12 +110,6 @@ function connectToUrl(url) {
 		active: false
 	}, function (tab) {
 		tab.isNew = true; // For logging the event when a new tab is created
-		chrome.storage.sync.get(['activeTabs'], function (result) {
-			currentTabs = result.activeTabs;
-			currentTabs.push(tab);
-			chrome.storage.sync.set({
-				activeTabs: currentTabs
-			});
-		});
+		currentTabs.push(tab);
 	});
 }

@@ -29,8 +29,10 @@ var currentTabs = [];
  * request.type == 'disconnect'
  * The content script wants the corresponding tab to be removed.
  * 
- * request.type == 'getTabId'
- * The content script is asking for the id of the tab it is running in.
+ * request.type == 'isExec'
+ * The content script wants to know if it should get executed. This is the case if the content
+ * script is running in a tab created by this extension and the content script was not executed
+ * before.
  */
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	var response = {};
@@ -38,9 +40,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		case 'disconnect':
 			chrome.tabs.remove(sender.tab.id);
 			// TODO remove tab from storage and variable; remove visited sites from history
+			// (maybe do not remove from history for history algorithm => save the algorithm 
+			// for each tab?)
 			break;
-		case 'getTabId':
-			response.tabId = sender.tab.id;
+		case 'isExec':
+			var senderTab = currentTabs.filter(tab => tab.id == sender.tab.id);
+			response.isExec = senderTab.length > 0 && senderTab[0].isNew;
+			senderTab[0].isNew = false;
 			break;
 		default:
 			return; // Don't answer unknown messages
@@ -55,7 +61,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
  */
 chrome.runtime.onSuspend.addListener(function () {
 	chrome.windows.remove(windowId);
-	chrome.storage.sync.remove(['activeWinId', 'activeTabs']);
+	chrome.storage.sync.remove(['activeWinId', 'activeTabs']); // After suspend, nothing is active
 });
 
 /*
@@ -76,13 +82,6 @@ if (debug) {
 		chrome.windows.remove(result.activeWinId);
 	});
 }
-
-/*
- * Initializes the storage.
- */
-chrome.storage.sync.set({
-	activeTabs: []
-});
 
 /*
  * Creates the window for this extension to work in. It also updates the value of the variable

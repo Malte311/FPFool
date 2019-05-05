@@ -13,8 +13,8 @@ var browserHistory = new Map();
  * algorithms.HISTORY: Uses the browser history to visit websites from there randomly.
  */
 const algorithms = {
-	DEFAULT: 'default',
-	HISTORY: 'history'
+	DEFAULT: 'DEFAULT',
+	HISTORY: 'HISTORY'
 };
 
 /*
@@ -97,10 +97,10 @@ function execHistory() {
 
 			// Idea: Timer for calling connectToUrl; update the browserHistory map datastructure
 			var index = 0;
-			var connectionCount = 3;
+			var connectionCount = 2;
 			for (const [key, value] of browserHistory.entries()) {
 				setTimeout(function () {
-					connectToUrl(key, false, true);
+					connectToUrl('https://google.de');
 				}, 1000);
 
 				index++;

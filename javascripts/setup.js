@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		case 'disconnect':
 			chrome.tabs.remove(sender.tab.id);
 			// TODO remove tab from storage and variable; remove visited sites from history
-			return;
+			break;
 		case 'getTabId':
 			response.tabId = sender.tab.id;
 			break;

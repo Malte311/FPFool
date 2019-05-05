@@ -14,10 +14,10 @@ const dots = ['.', '..', '...'];
  * requestType.SEARCH: Indicates that there was a search for specific keyword(s) on a webpage.
  */
 const requestType = {
-	OPEN: 'open',
-	NAVIGATE: 'navigate',
-	REMOVE: 'remove',
-	SEARCH: 'search'
+	OPEN: 'OPEN',
+	NAVIGATE: 'NAVIGATE',
+	REMOVE: 'REMOVE',
+	SEARCH: 'SEARCH'
 };
 
 /*

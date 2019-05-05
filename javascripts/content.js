@@ -18,9 +18,10 @@ $(document).ready(function () {
 			if (activeTabs.filter(tab => tab.id == response.tabId).length > 0) {
 				var thisTab = activeTabs.filter(tab => tab.id == response.tabId)[0];
 
-				// Just for displaying status information.
+				// Since this script will be reloaded on page reload, we make sure it does not
+				// get executed multiple times at this point.
 				if (thisTab.isNew) {
-					updateStatus(location.href, 'open', '', '');
+					updateStatus(location.href, 'OPEN', '', '');
 
 					var thisTabIndex = activeTabs.indexOf(thisTab);
 					thisTab.isNew = false;
@@ -47,7 +48,7 @@ function disconnect() {
 	chrome.runtime.sendMessage({
 		type: 'disconnect'
 	}, function (response) {
-		updateStatus(location.href, 'remove', '', '');
+		updateStatus(location.href, 'REMOVE', '', '');
 	});
 }
 
@@ -69,11 +70,11 @@ function navigatePage() {
 		$(randomVisit)[0].click();
 	}, 1666);
 
-	updateStatus(location.href, 'navigate', '', randomVisit.href);
+	updateStatus(location.href, 'NAVIGATE', '', randomVisit.href);
 
 	setTimeout(function () {
 		disconnect();
-	}, Math.floor(Math.random() * 15000));
+	}, Math.floor(Math.random() * 1000));
 }
 
 /**
@@ -96,11 +97,11 @@ function searchPage() {
 		$(randomInput).closest('form').submit();
 	}, 1666);
 
-	updateStatus(location.href, 'search', searchTerm, action);
+	updateStatus(location.href, 'SEARCH', searchTerm, action);
 
 	setTimeout(function () {
 		disconnect();
-	}, Math.floor(Math.random() * 15000));
+	}, Math.floor(Math.random() * 1000));
 }
 
 /**

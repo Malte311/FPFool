@@ -19,3 +19,17 @@ node github.js result.txt
 
 # Remove temporary file again
 rm result.txt
+
+# Git version control
+git add .
+git status
+while true; do
+    read -p "Really commit? (y/n)" yn
+    case $yn in
+        [Yy]* ) git commit -m"$1"
+				git push gh master
+				break;;
+        [Nn]* ) break;;
+        	* ) echo "Really commit? (y/n)";;
+    esac
+done

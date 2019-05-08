@@ -2,13 +2,68 @@
 <html>
 
 <head>
+	<meta charset="utf-8">
+	<title>FPFool</title>
+	<link rel="shortcut icon" href="../res/icon128.png">
+
 	<script language="javascript" src="../lib/jquery.min.js"></script>
-	<script language="javascript" src="../javascripts/page.js"></script>
+	<script language="javascript" src="../lib/bootstrap.bundle.min.js"></script>
+	<script language="javascript" src="../javascripts/extensionPage.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="../style/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="../style/style.css">
 </head>
 
 <body>
-	Some statistics...
-	<div id="divID"></div>
+	<nav class="navbar navbar-light" style="background-color: #e3f2ff; height: 60px;">
+		<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+			<li class="nav-item">
+				<a class="nav-link active" id="pills-settings-tab" data-toggle="pill" href="#pills-home" role="tab"
+					aria-controls="pills-home" aria-selected="true">Settings</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="pills-statistics-tab" data-toggle="pill" href="#pills-profile" role="tab"
+					aria-controls="pills-profile" aria-selected="false">Statistics</a>
+			</li>
+		</ul>
+	</nav>
+	<div class="tab-content" id="pills-tabContent" style="margin-top: 25px;">
+		<div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+			<div class="container-fluid">
+
+			</div>
+		</div>
+		<div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+			<div class="container-fluid" style="text-align: center;">
+				<div class="card bg-light border-primary mb-3 text-center"
+					style="width: 18rem; display: inline-block; margin-right: 30px;">
+					<div class="card-body text-primary">
+						<h5 class="card-title count display-4" id="visitedSitesCount"></h5>
+						<h3 class="card-text">
+							visited sites
+						</h3>
+					</div>
+				</div>
+				<div class="card bg-light border-primary mb-3 text-center"
+					style="width: 18rem; display: inline-block; margin-right: 30px;">
+					<div class="card-body text-primary">
+						<h5 class="card-title count display-4" id="clickedLinksCount"></h5>
+						<h3 class="card-text">
+							clicked links
+						</h3>
+					</div>
+				</div>
+				<div class="card bg-light border-primary mb-3 text-center" style="width: 18rem; display: inline-block;">
+					<div class="card-body text-primary">
+						<h5 class="card-title count display-4" id="keywordSearchCount"></h5>
+						<h3 class="card-text">
+							keyword searches
+						</h3>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 
 </html>

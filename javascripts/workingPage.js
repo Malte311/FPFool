@@ -50,7 +50,7 @@ $(document).ready(function () {
 					break;
 			}
 
-			appendTable(request.url, request.toUrl, action, request.type);
+			appendTable(sender.tab.id, request.url, request.toUrl, action, request.type);
 		}
 	});
 });
@@ -58,12 +58,13 @@ $(document).ready(function () {
 /**
  * Appends a new row to the status table. This row contains the following entries:
  * 
+ * @param {number} tabId The id of the tab in which the event occured.
  * @param {string} urlFrom The url on which an event has happened.
  * @param {string} urlTo The url to which we got directed (if we got directed at all).
  * @param {string} action The description of the event.
  * @param {string} type The type of the event.
  */
-function appendTable(urlFrom, urlTo, action, type) {
+function appendTable(tabId, urlFrom, urlTo, action, type) {
 	var color;
 	switch (type) {
 		case requestType.OPEN:
@@ -87,6 +88,7 @@ function appendTable(urlFrom, urlTo, action, type) {
 		`
 		${color}
 			<td>${formatDate(new Date())}</td>
+			<td>${tabId}</td>
 			<td><a href=\"${urlFrom}\">${urlFrom}</a></td>
 			<td><a href=\"${urlTo}\">${urlTo}</a></td>
 			<td>${action}</td>

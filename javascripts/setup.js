@@ -87,8 +87,8 @@ if (debug) {
 chrome.windows.create({
 	focused: debug ? true : false,
 	setSelfAsOpener: true,
-	width: debug ? 1200 : 1,
-	height: debug ? 800 : 1,
+	width: debug ? 1600 : 1,
+	height: debug ? 1000 : 1,
 	url: chrome.runtime.getURL("./html/workingPage.html")
 }, function (window) {
 	// Setting the state to 'minimized' in the create options seems not to work, so we update

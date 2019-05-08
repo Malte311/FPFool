@@ -10,6 +10,7 @@
 	<script language="javascript" src="../javascripts/workingPage.js"></script>
 
 	<link rel="stylesheet" type="text/css" href="../style/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="../style/style.css">
 </head>
 
 <body>
@@ -23,14 +24,14 @@
 			FPFool is currently working
 			<div class="spinner-grow spinner-grow-sm text-info" role="status"></div>
 		</div>
-		<table class="table table-bordered table-striped">
+		<table class="table table-bordered table-striped" id="logTable">
 			<thead class="thead-dark">
 				<tr>
-					<th scope="col">Time</th>
-					<th scope="col">Tab ID</th>
-					<th scope="col">URL (from)</th>
-					<th scope="col">URL (to)</th>
-					<th scope="col">Action</th>
+					<th scope="col" num="0">Time</th>
+					<th scope="col" num="1">Tab ID</th>
+					<th scope="col" num="2">URL (from)</th>
+					<th scope="col" num="3">URL (to)</th>
+					<th scope="col" num="4">Action</th>
 				</tr>
 			</thead>
 			<tbody id="statusTableBody">

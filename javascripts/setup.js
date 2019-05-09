@@ -71,9 +71,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		case 'resetStatistics':
 			clickedLinksCount = keywordSearchCount = visitedSitesCount = 0;
 			chrome.storage.sync.set({
-				visitedSitesCount: clickedLinksCount,
-				clickedLinksCount: keywordSearchCount,
-				keywordSearchCount: visitedSitesCount
+				visitedSitesCount: visitedSitesCount,
+				clickedLinksCount: clickedLinksCount,
+				keywordSearchCount: keywordSearchCount
 			});
 			break;
 		default:

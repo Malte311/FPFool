@@ -19,6 +19,13 @@ $(document).ready(function () {
 	});
 
 	addClickEventToBtn('resetBtn');
+
+	// Update statistics in real time
+	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+		if (request.type != undefined && request.type.startsWith('inc')) {
+			loadStatistics();
+		}
+	});
 });
 
 /**
@@ -28,9 +35,13 @@ $(document).ready(function () {
  * @param {string} btnId The id of the button to which we want to add an onclick event.
  */
 function addClickEventToBtn(btnId) {
+	// Tells the content script to reset all variables and to save the new state in the storage.
 	$(`#${btnId}`).click(function () {
 		chrome.runtime.sendMessage({
 			type: 'resetStatistics'
+		}, function (response) {
+			// Reload statistics afterwards
+			loadStatistics();
 		});
 	});
 }

@@ -9,7 +9,7 @@
 			"./javascripts/background.js",
 			"./javascripts/setup.js"
 		],
-		"persistent": false
+		"persistent": true
 	},
 	"content_scripts": [{
 		"matches": ["http://*/*", "https://*/*"],

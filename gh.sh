@@ -21,6 +21,10 @@ node github.js result.txt
 rm result.txt
 
 # Git version control
+REMOTE=$(git remote | grep gh)
+if [ ${#REMOTE} == "0" ]; then
+	git remote add gh git@github.com:Malte311/FPFool.git
+fi
 git add .
 git status
 while true; do

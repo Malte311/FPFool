@@ -90,35 +90,33 @@ function execDefault() {
  */
 function execHistory() {
 	chrome.history.search({
-			'text': '',
-			'startTime': (new Date).getTime() - interval
-		},
-		function (historyItems) {
-			// Save which urls were visited and how often they were visited (using a key-value
-			// datastructure for this purpose).
-			for (var i = 0; i < historyItems.length; i++) {
-				browserHistory.set(historyItems[i].url, historyItems[i].visitCount);
-			}
+		'text': '',
+		'startTime': (new Date).getTime() - interval
+	}, function (historyItems) {
+		// Save which urls were visited and how often they were visited (using a key-value
+		// datastructure for this purpose).
+		for (var i = 0; i < historyItems.length; i++) {
+			browserHistory.set(historyItems[i].url, historyItems[i].visitCount);
+		}
 
-			// Sort the urls by number of visits.
-			browserHistory = new Map([...browserHistory.entries()].sort(function (a, b) {
-				return a[1] - b[1];
-			}));
+		// Sort the urls by number of visits.
+		browserHistory = new Map([...browserHistory.entries()].sort(function (a, b) {
+			return a[1] - b[1];
+		}));
 
-			var index = 0;
-			var connectionCount = 5;
-			for (const [key, value] of browserHistory.entries()) {
-				setTimeout(function () {
-					connectToUrl('https://google.de', algorithms.HISTORY);
-				}, 1000);
+		var index = 0;
+		var connectionCount = 5;
+		for (const [key, value] of browserHistory.entries()) {
+			setTimeout(function () {
+				connectToUrl('https://google.de', algorithms.HISTORY);
+			}, 1000);
 
-				index++;
-				if (index == connectionCount) {
-					break;
-				}
+			index++;
+			if (index == connectionCount) {
+				break;
 			}
 		}
-	);
+	});
 }
 
 /**

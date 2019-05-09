@@ -18,7 +18,7 @@ var readmeFile = 'readme.md';
 /*
  * Saves the heading of the section we want to update.
  */
-var readmeHeading = '# Statistics';
+var readmeHeading = '## Lines of code';
 
 /**
  * Inserts a character at a given position in a string.

@@ -23,7 +23,7 @@ $(document).ready(function () {
 	// Update statistics in real time
 	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		if (request.type != undefined && request.type.startsWith('inc')) {
-			loadStatistics();
+			loadStatistics(false);
 		}
 	});
 });
@@ -41,7 +41,7 @@ function addClickEventToBtn(btnId) {
 			type: 'resetStatistics'
 		}, function (response) {
 			// Reload statistics afterwards
-			loadStatistics();
+			loadStatistics(false);
 		});
 	});
 }
@@ -59,7 +59,7 @@ function addClickEventToTab(tabId) {
 				loadSettings();
 				break;
 			case availableTabs.STATISTICS:
-				loadStatistics();
+				loadStatistics(true);
 				break;
 			default:
 				return; // Unknown id
@@ -76,8 +76,10 @@ function loadSettings() {
 
 /**
  * Loads the content of the statistics tab.
+ * 
+ * @param {bool} animate Specifies if the statistics should be animated or not.
  */
-function loadStatistics() {
+function loadStatistics(animate) {
 	var visitedSitesCount, clickedLinksCount, keywordSearchCount;
 	chrome.runtime.sendMessage({
 		type: 'getStatistics'
@@ -103,7 +105,9 @@ function loadStatistics() {
 				keywordSearchCount - (res.keywordSearchCount != undefined ? res.keywordSearchCount : 0)
 			);
 
-			numberAnimation(); // Animate the statistical numbers
+			if (animate) {
+				numberAnimation(); // Animate the statistical numbers
+			}
 		});
 	});
 }

@@ -41,13 +41,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	var response = {};
 	switch (request.type) {
 		case 'disconnect':
-			chrome.tabs.remove(sender.tab.id);
-			for (var i = currentTabs.length - 1; i >= 0; i--) {
-				if (currentTabs[i].id == sender.tab.id) {
-					currentTabs.splice(i);
-					break;
+			chrome.tabs.remove(sender.tab.id, function () {
+				for (var i = currentTabs.length - 1; i >= 0; i--) {
+					if (currentTabs[i].id == sender.tab.id) {
+						currentTabs.splice(i);
+						break;
+					}
 				}
-			}
+			});
 			break;
 		case 'getStatistics':
 			response.clickedLinksCount = clickedLinksCount;
@@ -66,7 +67,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		case 'isExec':
 			var senderTab = currentTabs.filter(tab => tab.id == sender.tab.id);
 			response.isExec = senderTab.length > 0 && senderTab[0].isNew;
-			senderTab[0].isNew = false;
+			if (senderTab.length > 0) {
+				senderTab[0].isNew = false;
+			}
 			break;
 		case 'resetStatistics':
 			clickedLinksCount = keywordSearchCount = visitedSitesCount = 0;
@@ -85,11 +88,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 /*
  * Removes the window created by this extension whenever the user exits the browser.
- * In addition to that, we remove items from the storage which we don't need any longer.
  */
 chrome.runtime.onSuspend.addListener(function () {
 	chrome.windows.remove(windowId);
-	chrome.storage.sync.remove(['activeWinId']); // After suspend, nothing is active
 });
 
 /*
@@ -100,16 +101,6 @@ chrome.browserAction.onClicked.addListener(function () {
 		url: chrome.runtime.getURL("./html/extensionPage.html")
 	});
 });
-
-/*
- * In debug mode, the extension is being reloaded quite often. In order to prevent opening
- * more and more windows, we close windows which have been created before reloading.
- */
-if (debug) {
-	chrome.storage.sync.get(['activeWinId'], function (result) {
-		chrome.windows.remove(result.activeWinId);
-	});
-}
 
 /*
  * Creates the window for this extension to work in. It also updates the value of the variable
@@ -128,11 +119,6 @@ chrome.windows.create({
 		state: debug ? 'normal' : 'minimized'
 	});
 	windowId = window.id;
-
-	// Save the active id, so we can close the window on reload (for debug mode).
-	chrome.storage.sync.set({
-		activeWinId: windowId
-	});
 
 	// Write statistics to storage when the window is closed.
 	chrome.windows.onRemoved.addListener(function (winId) {

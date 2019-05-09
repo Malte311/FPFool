@@ -55,16 +55,16 @@ function navigatePage() {
 
 	var randomVisit = links[Math.floor(Math.random() * links.length)];
 	setTimeout(function () {
+		updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
+		updateStatistics('clickedLinksCount');
+		updateStatistics('visitedSitesCount');
+
 		$(randomVisit)[0].click();
+
+		setTimeout(function () {
+			disconnect();
+		}, Math.floor(Math.random() * 1000));
 	}, 1666);
-
-	updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
-	updateStatistics('clickedLinksCount');
-	updateStatistics('visitedSitesCount');
-
-	setTimeout(function () {
-		disconnect();
-	}, Math.floor(Math.random() * 1000));
 }
 
 /**
@@ -84,16 +84,16 @@ function searchPage() {
 	$(randomInput).val(searchTerm);
 	var action = $(randomInput).closest('form').attr('action');
 	setTimeout(function () {
+		updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
+		updateStatistics('keywordSearchCount');
+		updateStatistics('visitedSitesCount');
+
 		$(randomInput).closest('form').submit();
+
+		setTimeout(function () {
+			disconnect();
+		}, Math.floor(Math.random() * 1000));
 	}, 1666);
-
-	updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
-	updateStatistics('keywordSearchCount');
-	updateStatistics('visitedSitesCount');
-
-	setTimeout(function () {
-		disconnect();
-	}, Math.floor(Math.random() * 1000));
 }
 
 /**
@@ -104,7 +104,7 @@ function searchPage() {
 function updateStatistics(property) {
 	chrome.runtime.sendMessage({
 		type: 'inc' + property.charAt(0).toUpperCase() + property.substring(1)
-	});
+	}, function (response) {});
 }
 
 /**
@@ -122,5 +122,5 @@ function updateStatus(url, type, searchTerm, toUrl) {
 		type: type,
 		searchTerm: searchTerm,
 		toUrl: toUrl
-	});
+	}, function (response) {});
 }

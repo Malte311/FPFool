@@ -17,7 +17,23 @@ $(document).ready(function () {
 	$.each(availableTabs, function (key, value) {
 		addClickEventToTab(value);
 	});
+
+	addClickEventToBtn('resetBtn');
 });
+
+/**
+ * Adds the onclick event to the reset button. When the button is clicked, all statistics will
+ * get deleted.
+ * 
+ * @param {string} btnId The id of the button to which we want to add an onclick event.
+ */
+function addClickEventToBtn(btnId) {
+	$(`#${btnId}`).click(function () {
+		chrome.runtime.sendMessage({
+			type: 'resetStatistics'
+		});
+	});
+}
 
 /**
  * Adds the onclick event to a given tab. We can not execute inline script code, so we are not 

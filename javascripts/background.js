@@ -60,7 +60,6 @@ function initialize() {
 	chrome.storage.sync.get([
 		'visitedSitesCount', 'clickedLinksCount', 'keywordSearchCount'
 	], function (res) {
-		console.log(res);
 		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
 		clickedLinksCount = res.clickedLinksCount != undefined ? res.clickedLinksCount : 0;
 		keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;

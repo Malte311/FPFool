@@ -24,7 +24,7 @@ var currentTabs = [];
  * content script gets a notification about it.
  * 
  * request.type == 'getStatistics'
- * Returns the 
+ * Returns all variables holding statistical information (e.g. total amount of visited sites).
  * 
  * request.type == 'inc...'
  * Increments the value of the specified variable.
@@ -33,6 +33,9 @@ var currentTabs = [];
  * The content script wants to know if it should get executed. This is the case if the content
  * script is running in a tab created by this extension and the content script was not executed
  * before.
+ * 
+ * request.type == 'resetStatistics'
+ * Resets all variables holding statistical information.
  */
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	var response = {};
@@ -65,6 +68,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			response.isExec = senderTab.length > 0 && senderTab[0].isNew;
 			senderTab[0].isNew = false;
 			break;
+		case 'resetStatistics':
+			clickedLinksCount = keywordSearchCount = visitedSitesCount = 0;
+			chrome.storage.sync.set({
+				visitedSitesCount: clickedLinksCount,
+				clickedLinksCount: keywordSearchCount,
+				keywordSearchCount: visitedSitesCount
+			});
+			break;
 		default:
 			return; // Don't answer unknown messages
 	}
@@ -78,7 +89,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
  */
 chrome.runtime.onSuspend.addListener(function () {
 	chrome.windows.remove(windowId);
-	chrome.storage.sync.remove(['activeWinId', 'activeTabs']); // After suspend, nothing is active
+	chrome.storage.sync.remove(['activeWinId']); // After suspend, nothing is active
 });
 
 /*

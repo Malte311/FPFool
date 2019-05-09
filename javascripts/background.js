@@ -29,12 +29,19 @@ const algorithms = {
  */
 var activeAlgorithm = algorithms.DEFAULT;
 
+/*
+ * Variables for statistical information (like the total number of visited sites, clicked links
+ * and so on).
+ */
+var visitedSitesCount, clickedLinksCount, keywordSearchCount;
+
 /**
  * Starts the application: Creates fake connections in the hidden window and removes the tabs
  * when finished. The selected algorithm defines what these fake connections do exactly.
  */
 function runApplication() {
-	selectAlgorithm();
+	initialize();
+	selectAlgorithm(); // Saves selected algorithm in variable 'activeAlgorithm'
 
 	switch (activeAlgorithm) {
 		case algorithms.DEFAULT:
@@ -44,6 +51,20 @@ function runApplication() {
 			execHistory();
 			break;
 	}
+};
+
+/**
+ * Loads the statistics and settings from the storage at the start of the application.
+ */
+function initialize() {
+	chrome.storage.sync.get([
+		'visitedSitesCount', 'clickedLinksCount', 'keywordSearchCount'
+	], function (res) {
+		console.log(res);
+		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
+		clickedLinksCount = res.clickedLinksCount != undefined ? res.clickedLinksCount : 0;
+		keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;
+	});
 }
 
 /**

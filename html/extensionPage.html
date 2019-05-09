@@ -35,6 +35,36 @@
 		</div>
 		<div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
 			<div class="container-fluid" style="text-align: center;">
+				<h1 class="text-primary">Current session</h1>
+				<div class="card bg-light border-primary mb-3 text-center"
+					style="width: 18rem; display: inline-block; margin-right: 30px;">
+					<div class="card-body text-primary">
+						<h5 class="card-title count display-4" id="visitedSitesCountTmp"></h5>
+						<h3 class="card-text">
+							visited sites
+						</h3>
+					</div>
+				</div>
+				<div class="card bg-light border-primary mb-3 text-center"
+					style="width: 18rem; display: inline-block; margin-right: 30px;">
+					<div class="card-body text-primary">
+						<h5 class="card-title count display-4" id="clickedLinksCountTmp"></h5>
+						<h3 class="card-text">
+							clicked links
+						</h3>
+					</div>
+				</div>
+				<div class="card bg-light border-primary mb-3 text-center" style="width: 18rem; display: inline-block;">
+					<div class="card-body text-primary">
+						<h5 class="card-title count display-4" id="keywordSearchCountTmp"></h5>
+						<h3 class="card-text">
+							keyword searches
+						</h3>
+					</div>
+				</div>
+			</div>
+			<div class="container-fluid" style="text-align: center;">
+				<h1 class="text-primary">All time</h1>
 				<div class="card bg-light border-primary mb-3 text-center"
 					style="width: 18rem; display: inline-block; margin-right: 30px;">
 					<div class="card-body text-primary">
@@ -61,6 +91,9 @@
 						</h3>
 					</div>
 				</div>
+			</div>
+			<div class="container-fluid" style="text-align: center; margin-top: 20px;">
+				<button type="button" class="btn btn-danger">Reset statistics</button>
 			</div>
 		</div>
 	</div>

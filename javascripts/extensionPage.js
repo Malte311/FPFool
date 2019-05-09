@@ -52,18 +52,32 @@ function loadSettings() {
  */
 function loadStatistics() {
 	var visitedSitesCount, clickedLinksCount, keywordSearchCount;
-	chrome.storage.sync.get([
-		'visitedSitesCount', 'clickedLinksCount', 'keywordSearchCount'
-	], function (res) {
-		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
-		clickedLinksCount = res.clickedLinksCount != undefined ? res.clickedLinksCount : 0;
-		keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;
+	chrome.runtime.sendMessage({
+		type: 'getStatistics'
+	}, function (resp) {
+		visitedSitesCount = resp.visitedSitesCount != undefined ? resp.visitedSitesCount : 0;
+		clickedLinksCount = resp.clickedLinksCount != undefined ? resp.clickedLinksCount : 0;
+		keywordSearchCount = resp.keywordSearchCount != undefined ? resp.keywordSearchCount : 0;
 
-		$('#visitedSitesCount').html(visitedSitesCount);
-		$('#clickedLinksCount').html(clickedLinksCount);
-		$('#keywordSearchCount').html(keywordSearchCount);
+		chrome.storage.sync.get([
+			'visitedSitesCount', 'clickedLinksCount', 'keywordSearchCount'
+		], function (res) {
+			$('#visitedSitesCount').html(visitedSitesCount);
+			$('#clickedLinksCount').html(clickedLinksCount);
+			$('#keywordSearchCount').html(keywordSearchCount);
 
-		numberAnimation(); // Animate the statistical numbers
+			$('#visitedSitesCountTmp').html(
+				visitedSitesCount - (res.visitedSitesCount != undefined ? res.visitedSitesCount : 0)
+			);
+			$('#clickedLinksCountTmp').html(
+				clickedLinksCount - (res.clickedLinksCount != undefined ? res.clickedLinksCount : 0)
+			);
+			$('#keywordSearchCountTmp').html(
+				keywordSearchCount - (res.keywordSearchCount != undefined ? res.keywordSearchCount : 0)
+			);
+
+			numberAnimation(); // Animate the statistical numbers
+		});
 	});
 }
 

@@ -23,6 +23,12 @@ var currentTabs = [];
  * The content script wants the corresponding tab to be removed. The tab gets removed and the
  * content script gets a notification about it.
  * 
+ * request.type == 'getStatistics'
+ * Returns the 
+ * 
+ * request.type == 'inc...'
+ * Increments the value of the specified variable.
+ * 
  * request.type == 'isExec'
  * The content script wants to know if it should get executed. This is the case if the content
  * script is running in a tab created by this extension and the content script was not executed
@@ -39,6 +45,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 					break;
 				}
 			}
+			break;
+		case 'getStatistics':
+			response.clickedLinksCount = clickedLinksCount;
+			response.keywordSearchCount = keywordSearchCount;
+			response.visitedSitesCount = visitedSitesCount;
+			break;
+		case 'incClickedLinksCount':
+			clickedLinksCount++;
+			break;
+		case 'incKeywordSearchCount':
+			keywordSearchCount++;
+			break;
+		case 'incVisitedSitesCount':
+			visitedSitesCount++;
 			break;
 		case 'isExec':
 			var senderTab = currentTabs.filter(tab => tab.id == sender.tab.id);
@@ -101,6 +121,17 @@ chrome.windows.create({
 	// Save the active id, so we can close the window on reload (for debug mode).
 	chrome.storage.sync.set({
 		activeWinId: windowId
+	});
+
+	// Write statistics to storage when the window is closed.
+	chrome.windows.onRemoved.addListener(function (winId) {
+		if (windowId == winId) {
+			chrome.storage.sync.set({
+				clickedLinksCount: clickedLinksCount,
+				keywordSearchCount: keywordSearchCount,
+				visitedSitesCount: visitedSitesCount
+			});
+		}
 	});
 
 	runApplication();

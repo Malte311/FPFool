@@ -16,6 +16,7 @@ $(document).ready(function () {
 		// Only run this script for tabs created by this extension.
 		if (response.isExec) {
 			updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
+			updateStatistics('visitedSitesCount');
 
 			// TODO: Instead of random, we use another message 'getAlgorithm' and perform actions
 			// based on the algorithm; maybe even store the algorithm in a variable (before isExec)
@@ -58,6 +59,8 @@ function navigatePage() {
 	}, 1666);
 
 	updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
+	updateStatistics('clickedLinksCount');
+	updateStatistics('visitedSitesCount');
 
 	setTimeout(function () {
 		disconnect();
@@ -85,10 +88,23 @@ function searchPage() {
 	}, 1666);
 
 	updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
+	updateStatistics('keywordSearchCount');
+	updateStatistics('visitedSitesCount');
 
 	setTimeout(function () {
 		disconnect();
 	}, Math.floor(Math.random() * 1000));
+}
+
+/**
+ * Updates the statistics (number of visited sites, number of clicked links and so on).
+ * 
+ * @param {string} property The property which should be updated.
+ */
+function updateStatistics(property) {
+	chrome.runtime.sendMessage({
+		type: 'inc' + property.charAt(0).toUpperCase() + property.substring(1)
+	});
 }
 
 /**

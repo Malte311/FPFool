@@ -24,12 +24,12 @@ rm result.txt
 git add .
 git status
 while true; do
-    read -p "Really commit? (y/n)" yn
-    case $yn in
-        [Yy]* ) git commit -m"$1"
+	read -p "Really commit? (y/n)" yn
+	case $yn in
+		[Yy]* ) git commit -m"$1"
 				git push gh master
 				break;;
-        [Nn]* ) break;;
-        	* ) echo "Really commit? (y/n)";;
-    esac
+		[Nn]* ) break;;
+			* ) echo "Really commit? (y/n)";;
+	esac
 done

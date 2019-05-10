@@ -5,6 +5,15 @@
  */
 const dict = ["JavaScript", "HTML", "CSS"];
 
+/**
+ * Specifies which algorithms for fooling fingerprinters are available.
+ */
+const algorithms = {
+	DEFAULT: 'DEFAULT',
+	NAVIGATE: 'NAVIGATE',
+	SEARCH: 'SEARCH'
+};
+
 /*
  * Executes this content script when the webpage has loaded. This script performs fake actions
  * on faked connections according to a given algorithm.
@@ -18,12 +27,16 @@ $(document).ready(function () {
 			updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
 			updateStatistics('visitedSitesCount');
 
-			// TODO: Instead of random, we use another message 'getAlgorithm' and perform actions
-			// based on the algorithm; maybe even store the algorithm in a variable (before isExec)
-			if (Math.random() < 0.5) {
-				navigatePage();
-			} else {
-				searchPage();
+			switch (response.algo) {
+				case algorithms.DEFAULT:
+					setTimeout(disconnect, Math.floor(Math.random() * 5000));
+					break;
+				case algorithms.NAVIGATE:
+					navigatePage();
+					break;
+				case algorithms.SEARCH:
+					searchPage();
+					break;
 			}
 		}
 	});
@@ -59,12 +72,9 @@ function navigatePage() {
 		updateStatistics('clickedLinksCount');
 		updateStatistics('visitedSitesCount');
 
+		setTimeout(disconnect, Math.floor(Math.random() * 15000 + 1500));
 		$(randomVisit)[0].click();
-
-		setTimeout(function () {
-			disconnect();
-		}, Math.floor(Math.random() * 1000));
-	}, 1666);
+	}, Math.floor(Math.random() * 8000));
 }
 
 /**
@@ -88,12 +98,9 @@ function searchPage() {
 		updateStatistics('keywordSearchCount');
 		updateStatistics('visitedSitesCount');
 
+		setTimeout(disconnect, Math.floor(Math.random() * 15000 + 1500));
 		$(randomInput).closest('form').submit();
-
-		setTimeout(function () {
-			disconnect();
-		}, Math.floor(Math.random() * 1000));
-	}, 1666);
+	}, Math.floor(Math.random() * 8000));
 }
 
 /**

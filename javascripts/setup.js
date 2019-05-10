@@ -68,6 +68,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			var senderTab = currentTabs.filter(tab => tab.id == sender.tab.id);
 			response.isExec = senderTab.length > 0 && senderTab[0].isNew;
 			if (senderTab.length > 0) {
+				response.algo = senderTab[0].algorithm; // Tells the tab which algorithm to execute
 				senderTab[0].isNew = false;
 			}
 			break;

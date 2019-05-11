@@ -61,11 +61,20 @@ function runApplication() {
 			'startTime': (new Date).getTime() - interval,
 			'maxResults': maxHistoryCount
 		}, function (historyItems) {
-			// Save which urls were visited and how often they were visited (using a key-value
-			// datastructure for this purpose).
-			for (var i = 0; i < historyItems.length; i++) {
-				browserHistory.set(historyItems[i].url, historyItems[i].visitCount);
+			// Get the number of visits during the specified time interval.
+			for (const historyItem of historyItems) {
+				chrome.history.getVisits({
+					url: historyItem.url
+				}, function (results) {
+					// Save which urls were visited and how often they were visited (using a key-value
+					// datastructure for this purpose).
+					browserHistory.set(historyItem.url, results.filter(item =>
+						item.visitTime >= (new Date).getTime() - interval
+					).length);
+				});
 			}
+
+			// TODO: Does not work cause of asnyc calls
 
 			// Sort the urls by number of visits.
 			browserHistory = new Map([...browserHistory.entries()].sort(function (a, b) {
@@ -85,7 +94,7 @@ function runApplication() {
 			}
 		});
 	});
-};
+}
 
 /**
  * Creates a fake connection to a given url.

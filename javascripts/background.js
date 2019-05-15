@@ -26,7 +26,8 @@ function runApplication() {
 		Object.values(data.availableSettings)), function (res) {
 		// Settings
 		maxConnectCount = res.maxConnectCount != undefined ? res.maxConnectCount : maxConnectCount;
-		var interval = res.interval != undefined ? res.interval : 1000 * 60 * 60 * 24;
+		var interval = res.interval != undefined ? res.interval : 1; // Default 1 day
+		interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs milliseconds
 
 		// Statistics
 		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;

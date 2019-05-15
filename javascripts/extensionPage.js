@@ -120,6 +120,19 @@ function loadSettings() {
 			});
 		});
 
+		$.each(data.availableSettings, function (key, value) {
+			$(`#${value}Slider`).attr('value', res[value] != undefined ? res[value] : 1);
+			$(`#${value}Slider`).change(function () {
+				chrome.storage.sync.set({
+					[value]: $(`#${value}Slider`).val()
+				}, function (res) {
+					createInfoAlert('infoDisplayDiv',
+						'Your changes have been saved! The changes will take effect on restart.'
+					);
+				});
+			});
+		});
+
 		$("[rel='tooltip'], .tooltip").tooltip(); // Adds tooltips
 	});
 }

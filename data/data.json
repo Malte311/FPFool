@@ -6,9 +6,9 @@
 		"SEARCH": "SEARCH"
 	},
 	"availableAlgorithms": {
-		"DEFAULT": "DEFAULT",
-		"NAVIGATE": "NAVIGATE",
-		"SEARCH": "SEARCH"
+		"DEFAULT": "Default algorithm",
+		"NAVIGATE": "Navigation algorithm",
+		"SEARCH": "Search algorithm"
 	},
 	"availableMessageTypes": {
 		"disconnect": "disconnect",

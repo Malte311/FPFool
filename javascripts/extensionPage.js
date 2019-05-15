@@ -64,9 +64,7 @@ function addClickEventToTab(tabId) {
  * @param {string} text The text which should be displayed inside of the alert.
  */
 function createInfoAlert(divId, text) {
-	var divContent = $(`#${divId}`).html();
-
-	$(`#${divId}`).append(`
+	$(`#${divId}`).html(`
 		<br>
 		<div class="alert alert-info" role="alert">
 			${text}			
@@ -74,8 +72,8 @@ function createInfoAlert(divId, text) {
 	`);
 
 	setTimeout(function () {
-		$(`#${divId}`).html(divContent); // Remove alert after a short time
-	}, 2000);
+		$(`#${divId}`).html(''); // Remove alert after a short time
+	}, 5000);
 }
 
 /**
@@ -94,12 +92,32 @@ function createTooltip(text, tooltip) {
  */
 function loadSettings() {
 	chrome.storage.sync.get(Object.values(data.availableSettings), function (res) {
+		$('#activeAlgorithm').text(res.activeAlgorithm != undefined ?
+			res.activeAlgorithm :
+			data.availableAlgorithms.DEFAULT
+		);
+		showAlgorithmExplanation(); // Displays what the algorithm does.
 
-		// TODO: Clear before append, otherwise multiple clicks will append multiple times
+		$('#algorithmDropdown').html(''); // Clear before appending new things
 		$.each(data.availableAlgorithms, function (key, value) {
 			$('#algorithmDropdown').append(`
-				<a class=\"dropdown-item\" href=\"#\">${key}</a>
+				<a class=\"dropdown-item\" id=\"${key}\" href=\"#\">${value}</a>
 			`);
+		});
+
+		$('#algorithmDropdown').children().each(function () {
+			$(this).click(function () {
+				var key = $(this).attr('id');
+				$('#activeAlgorithm').text(data.availableAlgorithms[key]);
+				chrome.storage.sync.set({
+					[data.availableSettings.activeAlgorithm]: data.availableAlgorithms[key]
+				}, function (res) {
+					showAlgorithmExplanation();
+					createInfoAlert('infoDisplayDiv',
+						'Algorithm changed successfully! The changes will take effect on restart.'
+					);
+				});
+			});
 		});
 
 		$("[rel='tooltip'], .tooltip").tooltip(); // Adds tooltips
@@ -161,5 +179,34 @@ function numberAnimation() {
 				$(this).text(Math.ceil(now));
 			}
 		});
+	});
+}
+
+/**
+ * Diplays a brief information about the currently selected algorithm, so the user knows what
+ * the algorithm does.
+ */
+function showAlgorithmExplanation() {
+	chrome.storage.sync.get(data.availableSettings.activeAlgorithm, function (res) {
+		switch (res.activeAlgorithm) {
+			case data.availableAlgorithms.NAVIGATE:
+				$('#algorithmSelectPara').html(`
+					The navigation algorithm visits webpages and navigates on them, e.g.
+					by clicking on links.
+				`);
+				break;
+			case data.availableAlgorithms.SEARCH:
+				$('#algorithmSelectPara').html(`
+					The search algorithm visits webpages and searches for keywords on them.
+				`);
+				break;
+			case data.availableAlgorithms.DEFAULT: // Same as default case
+			default:
+				$('#algorithmSelectPara').html(`
+					The default algorithm simply visits webpages, but does not perform any 
+					actions on them.
+				`);
+				break;
+		}
 	});
 }

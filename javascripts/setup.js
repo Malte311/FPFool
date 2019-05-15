@@ -127,7 +127,10 @@ chrome.windows.create({
 			chrome.storage.sync.set({
 				clickedLinksCount: clickedLinksCount,
 				keywordSearchCount: keywordSearchCount,
-				visitedSitesCount: visitedSitesCount
+				visitedSitesCount: visitedSitesCount,
+				interval: interval,
+				maxHistoryCount: maxHistoryCount,
+				maxConnectCount: maxConnectCount
 			});
 		}
 	});

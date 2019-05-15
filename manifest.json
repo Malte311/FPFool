@@ -3,11 +3,14 @@
 	"version": "0.0.1",
 	"description": "FPFool is an extension to fool fingerprinting websites.",
 	"manifest_version": 2,
+	"web_accessible_resources": [
+		"data/data.json"
+	],
 	"background": {
 		"scripts": [
 			"./lib/jquery.min.js",
-			"./javascripts/background.js",
-			"./javascripts/setup.js"
+			"./javascripts/setup.js",
+			"./javascripts/background.js"
 		],
 		"persistent": true
 	},

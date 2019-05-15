@@ -1,58 +1,53 @@
 'use strict';
 
 /*
- * Contains dots for displaying dynamic status information (the dots are appended to some text).
+ * Holds the path to the data.json file.
  */
-const dots = ['.', '..', '...'];
+const dataPath = '../data/data.json';
 
 /*
- * Contains all the possible request types. A request type indicates what action was performed.
- * 
- * requestType.OPEN: Indicates that a new connection towards an url was established.
- * requestType.NAVIGATE: Indicates that there was a klick on a link on a webpage.
- * requestType.REMOVE: Indicates that a tab has been closed.
- * requestType.SEARCH: Indicates that there was a search for (a) specific keyword(s) on a webpage.
+ * Saves the content of the data.json file.
  */
-const requestType = {
-	OPEN: 'OPEN',
-	NAVIGATE: 'NAVIGATE',
-	REMOVE: 'REMOVE',
-	SEARCH: 'SEARCH'
-};
+var data;
 
 /*
  * Executes the script when the page has loaded. This script logs the acitivities performed
  * by the extension.
  */
 $(document).ready(function () {
-	setDynamicTitle();
-	addClickEventToTable('logTable'); // Necessary to make the table sortable
+	fetch(dataPath).then(response => response.json()).then(function (json) {
+		// Save json content in variable to make it accessible elsewhere
+		data = json;
 
-	// Waits for messages from content scripts. The content scripts will inform this script
-	// whenever they perform an action, so we can update the status information.
-	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-		if (requestType.hasOwnProperty(request.type)) {
-			var action;
-			switch (request.type) {
-				case requestType.OPEN:
-					action = `Opened a new tab.`;
-					break;
-				case requestType.NAVIGATE:
-					action = `Navigated to new url.`;
-					break;
-				case requestType.REMOVE:
-					action = `Closed this tab.`;
-					break;
-				case requestType.SEARCH:
-					action = `Searched for \"${request.searchTerm}\".`;
-					break;
-				default:
-					action = 'Unknown action.';
-					break;
+		setDynamicTitle();
+		addClickEventToTable('logTable'); // Necessary to make the table sortable
+
+		// Waits for messages from content scripts. The content scripts will inform this script
+		// whenever they perform an action, so we can update the status information.
+		chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+			if (data.availableActionTypes.hasOwnProperty(request.type)) {
+				var action;
+				switch (request.type) {
+					case data.availableActionTypes.OPEN:
+						action = `Opened a new tab.`;
+						break;
+					case data.availableActionTypes.NAVIGATE:
+						action = `Navigated to new url.`;
+						break;
+					case data.availableActionTypes.REMOVE:
+						action = `Closed this tab.`;
+						break;
+					case data.availableActionTypes.SEARCH:
+						action = `Searched for \"${request.searchTerm}\".`;
+						break;
+					default:
+						action = 'Unknown action.';
+						break;
+				}
+
+				appendTable(sender.tab.id, request.url, request.toUrl, action, request.type);
 			}
-
-			appendTable(sender.tab.id, request.url, request.toUrl, action, request.type);
-		}
+		});
 	});
 });
 
@@ -83,16 +78,16 @@ function addClickEventToTable(tableId) {
 function appendTable(tabId, urlFrom, urlTo, action, type) {
 	var color;
 	switch (type) {
-		case requestType.OPEN:
+		case data.availableActionTypes.OPEN:
 			color = '<tr class=\"table-success\">'; // Green
 			break;
-		case requestType.NAVIGATE:
+		case data.availableActionTypes.NAVIGATE:
 			color = '<tr class=\"table-info\">'; // Light blue
 			break;
-		case requestType.REMOVE:
+		case data.availableActionTypes.REMOVE:
 			color = '<tr class=\"table-danger\">'; // Red
 			break;
-		case requestType.SEARCH:
+		case data.availableActionTypes.SEARCH:
 			color = '<tr class=\"table-warning\">'; // Yellow
 			break;
 		default:
@@ -130,6 +125,7 @@ function formatDate(date) {
  * Changes the title dynamically, indicating that the page is doing work.
  */
 function setDynamicTitle() {
+	const dots = ['.', '..', '...'];
 	var currentTitle = document.title;
 	var index = 0;
 

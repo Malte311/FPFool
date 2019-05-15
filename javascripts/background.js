@@ -7,43 +7,13 @@
 var browserHistory = new Map();
 
 /*
- * Milliseconds to subtract from the current time in order to get the start time for the browser
- * history. The default value is set to the last 24 hours and the user can change the value at any
- * time.
- */
-var interval = 1000 * 60 * 60 * 24;
-
-/*
- * The maximum amount of browser history entries. Default value is set to 15.
- */
-var maxHistoryCount = 15;
-
-/*
  * Defines the maximum amount of connections being made.
  */
 var maxConnectCount = 10;
 
 /*
- * Specifies which algorithms for fooling fingerprinters are available.
- *
- * algorithms.DEFAULT: Opens a new tab, but does not click on links or search for keywords.
- * algorithms.NAVIGATE: Opens a new tab and clicks on links in that tab.
- * algorithms.SEARCH: Opens a new tab and searches for keywords in that tab.
- */
-const algorithms = {
-	DEFAULT: 'DEFAULT',
-	NAVIGATE: 'NAVIGATE',
-	SEARCH: 'SEARCH'
-};
-
-/*
- * Holds the currently selected algorithm.
- */
-var activeAlgorithm = algorithms.DEFAULT;
-
-/*
  * Variables for statistical information (like the total number of visited sites, clicked links
- * and so on).
+ * and so on). These are updated in real time, so its important they are global.
  */
 var visitedSitesCount, clickedLinksCount, keywordSearchCount;
 
@@ -52,14 +22,11 @@ var visitedSitesCount, clickedLinksCount, keywordSearchCount;
  * when finished. The selected algorithm defines what exactly these fake connections do.
  */
 function runApplication() {
-	chrome.storage.sync.get([
-		'visitedSitesCount', 'clickedLinksCount', 'keywordSearchCount', 'interval',
-		'maxHistoryCount', 'maxConnectCount'
-	], function (res) {
+	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
+		Object.values(data.availableSettings)), function (res) {
 		// Settings
-		interval = res.interval != undefined ? res.interval : interval;
-		maxHistoryCount = res.maxHistoryCount != undefined ? res.maxHistoryCount : maxHistoryCount;
 		maxConnectCount = res.maxConnectCount != undefined ? res.maxConnectCount : maxConnectCount;
+		var interval = res.interval != undefined ? res.interval : 1000 * 60 * 60 * 24;
 
 		// Statistics
 		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
@@ -67,11 +34,12 @@ function runApplication() {
 		keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;
 
 		// Gets the browser history to establish connections to sites which have already been
-		// visited
+		// visited (we want all urls, default interval is 24 hours, default maximum amount of
+		// entries is 15).
 		chrome.history.search({
 			'text': '', // All entries in a given time interval
 			'startTime': (new Date).getTime() - interval,
-			'maxResults': maxHistoryCount
+			'maxResults': res.maxHistoryCount != undefined ? res.maxHistoryCount : 15
 		}, function (historyItems) {
 			// Get the number of visits during the specified time interval.
 			var count = 0;
@@ -89,7 +57,10 @@ function runApplication() {
 					// Necessary to check in here because of asynchronous calls.
 					count++;
 					if (count == historyItems.length) {
-						visitUrls();
+						visitUrls(res.activeAlgorithm != undefined ?
+							res.activeAlgorithm :
+							data.availableAlgorithms.DEFAULT
+						);
 					}
 				});
 			}
@@ -99,8 +70,10 @@ function runApplication() {
 
 /**
  * Visits the urls which are contained in the browserHistory variable.
+ * 
+ *  @param {string} algo The algorithm used for the connections.
  */
-function visitUrls() {
+function visitUrls(algo) {
 	// Sort the urls by number of visits, so we visit sites with less visits first.
 	var browserHistoryAsArray = [...browserHistory.entries()];
 	browserHistory = new Map(browserHistoryAsArray.sort(function (a, b) {
@@ -122,7 +95,7 @@ function visitUrls() {
 				browserHistory.set(key, browserHistory.get(key) + 1);
 
 				setTimeout(function () {
-					connectToUrl(key, activeAlgorithm);
+					connectToUrl(key, algo);
 				}, Math.floor(Math.random() * 15000 + 500));
 
 				if (++connectionCount == maxConnectCount) {

@@ -1,50 +1,40 @@
 'use strict';
 
 /*
- * Holds all available tabs on the page, so we can iterate over them (e.g. to add onclick events).
+ * Holds the path to the data.json file.
  */
-const availableTabs = {
-	SETTINGS: 'pills-settings-tab',
-	STATISTICS: 'pills-statistics-tab'
-};
+const dataPath = '../data/data.json';
+
+/*
+ * Saves the content of the data.json file.
+ */
+var data;
 
 /*
  * Executes the script when the page has loaded. This script allows the user to customize the
  * extension as well as to take a look at some statistics.
  */
 $(document).ready(function () {
-	// Add onclick events to each tab
-	$.each(availableTabs, function (key, value) {
-		addClickEventToTab(value);
-	});
+	fetch(dataPath).then(response => response.json()).then(function (json) {
+		// Save json content in variable to make it accessible elsewhere
+		data = json;
 
-	addClickEventToBtn('resetBtn');
+		// Add onclick events to each tab
+		$.each(data.availableTabs, function (key, value) {
+			addClickEventToTab(value);
+		});
 
-	// Update statistics in real time
-	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-		if (request.type != undefined && request.type.startsWith('inc')) {
-			loadStatistics(false);
-		}
+		// Update statistics in real time
+		chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+			if (request.type != undefined && request.type.startsWith('inc')) {
+				loadStatistics(false);
+			}
+		});
+
+		// On startup, the settings tab is active
+		loadSettings();
 	});
 });
-
-/**
- * Adds the onclick event to the reset button. When the button is clicked, all statistics will
- * get deleted.
- * 
- * @param {string} btnId The id of the button to which we want to add an onclick event.
- */
-function addClickEventToBtn(btnId) {
-	// Tells the content script to reset all variables and to save the new state in the storage.
-	$(`#${btnId}`).click(function () {
-		chrome.runtime.sendMessage({
-			type: 'resetStatistics'
-		}, function (response) {
-			// Reload statistics afterwards
-			loadStatistics(false);
-		});
-	});
-}
 
 /**
  * Adds the onclick event to a given tab. We can not execute inline script code, so we are not 
@@ -55,10 +45,10 @@ function addClickEventToBtn(btnId) {
 function addClickEventToTab(tabId) {
 	$(`#${tabId}`).click(function () {
 		switch (tabId) {
-			case availableTabs.SETTINGS:
+			case data.availableTabs.SETTINGS:
 				loadSettings();
 				break;
-			case availableTabs.STATISTICS:
+			case data.availableTabs.STATISTICS:
 				loadStatistics(true);
 				break;
 			default:
@@ -68,10 +58,52 @@ function addClickEventToTab(tabId) {
 }
 
 /**
+ * Creates an info alert inside a given div. The alert disappears after some time.
+ * 
+ * @param {string} divId The id of the div to which we append the alert.
+ * @param {string} text The text which should be displayed inside of the alert.
+ */
+function createInfoAlert(divId, text) {
+	var divContent = $(`#${divId}`).html();
+
+	$(`#${divId}`).append(`
+		<br>
+		<div class="alert alert-info" role="alert">
+			${text}			
+		</div>
+	`);
+
+	setTimeout(function () {
+		$(`#${divId}`).html(divContent); // Remove alert after a short time
+	}, 2000);
+}
+
+/**
+ * Creates a tooltip for a given text.
+ * 
+ * @param {string} text The text to which we want to add a tooltip.
+ * @param {string} tooltip The tooltip on hovering over the text.
+ * @return {string} The html string containing the text with its tooltip.
+ */
+function createTooltip(text, tooltip) {
+	return `<span rel=\"tooltip\" title=\"${tooltip}\">${text}</span>`;
+}
+
+/**
  * Loads the content of the settings tab.
  */
 function loadSettings() {
+	chrome.storage.sync.get(Object.values(data.availableSettings), function (res) {
 
+		// TODO: Clear before append, otherwise multiple clicks will append multiple times
+		$.each(data.availableAlgorithms, function (key, value) {
+			$('#algorithmDropdown').append(`
+				<a class=\"dropdown-item\" href=\"#\">${key}</a>
+			`);
+		});
+
+		$("[rel='tooltip'], .tooltip").tooltip(); // Adds tooltips
+	});
 }
 
 /**
@@ -80,30 +112,33 @@ function loadSettings() {
  * @param {bool} animate Specifies if the statistics should be animated or not.
  */
 function loadStatistics(animate) {
-	var visitedSitesCount, clickedLinksCount, keywordSearchCount;
+	// Tells the content script to reset all variables and to save the new state in the storage.
+	$('#resetBtn').click(function () {
+		chrome.runtime.sendMessage({
+			type: 'resetStatistics'
+		}, function (response) {
+			loadStatistics(false); // Reload statistics afterwards
+		});
+	});
+
 	chrome.runtime.sendMessage({
 		type: 'getStatistics'
 	}, function (resp) {
-		visitedSitesCount = resp.visitedSitesCount != undefined ? resp.visitedSitesCount : 0;
-		clickedLinksCount = resp.clickedLinksCount != undefined ? resp.clickedLinksCount : 0;
-		keywordSearchCount = resp.keywordSearchCount != undefined ? resp.keywordSearchCount : 0;
+		chrome.storage.sync.get(Object.values(data.availableStatistics), function (res) {
+			// All time
+			$.each(data.availableStatistics, function (key, value) {
+				$(`#${value}`).html(resp[key] != undefined ? resp[value] : 0);
+			});
 
-		chrome.storage.sync.get([
-			'visitedSitesCount', 'clickedLinksCount', 'keywordSearchCount'
-		], function (res) {
-			$('#visitedSitesCount').html(visitedSitesCount);
-			$('#clickedLinksCount').html(clickedLinksCount);
-			$('#keywordSearchCount').html(keywordSearchCount);
-
-			$('#visitedSitesCountTmp').html(
-				visitedSitesCount - (res.visitedSitesCount != undefined ? res.visitedSitesCount : 0)
-			);
-			$('#clickedLinksCountTmp').html(
-				clickedLinksCount - (res.clickedLinksCount != undefined ? res.clickedLinksCount : 0)
-			);
-			$('#keywordSearchCountTmp').html(
-				keywordSearchCount - (res.keywordSearchCount != undefined ? res.keywordSearchCount : 0)
-			);
+			// Current session (idea: Subtract the number in the storage from the number in the
+			// variable because the variable is kept up to date and we only write back to storage
+			// when quitting the application)
+			$.each(data.availableStatisticsTmp, function (key, value) {
+				$(`#${value}`).html(
+					(resp[key] != undefined ? resp[value] : 0) -
+					(res[key] != undefined ? res[value] : 0)
+				);
+			});
 
 			if (animate) {
 				numberAnimation(); // Animate the statistical numbers

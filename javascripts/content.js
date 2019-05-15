@@ -1,44 +1,45 @@
 'use strict';
 
 /*
- * Dictionary of words to search for.
+ * Holds the path to the data.json file.
  */
-const dict = ["JavaScript", "HTML", "CSS"];
+const dataPath = chrome.runtime.getURL('data/data.json');
 
-/**
- * Specifies which algorithms for fooling fingerprinters are available.
+/*
+ * Saves the content of the data.json file.
  */
-const algorithms = {
-	DEFAULT: 'DEFAULT',
-	NAVIGATE: 'NAVIGATE',
-	SEARCH: 'SEARCH'
-};
+var data;
 
 /*
  * Executes this content script when the webpage has loaded. This script performs fake actions
  * on faked connections according to a given algorithm.
  */
 $(document).ready(function () {
-	chrome.runtime.sendMessage({
-		type: 'isExec'
-	}, function (response) {
-		// Only run this script for tabs created by this extension.
-		if (response.isExec) {
-			updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
-			updateStatistics('visitedSitesCount');
+	fetch(dataPath).then(response => response.json()).then(function (json) {
+		// Save json content in variable to make it accessible elsewhere
+		data = json;
 
-			switch (response.algo) {
-				case algorithms.DEFAULT:
-					setTimeout(disconnect, Math.floor(Math.random() * 5000));
-					break;
-				case algorithms.NAVIGATE:
-					navigatePage();
-					break;
-				case algorithms.SEARCH:
-					searchPage();
-					break;
+		chrome.runtime.sendMessage({
+			type: 'isExec'
+		}, function (response) {
+			// Only run this script for tabs created by this extension.
+			if (response.isExec) {
+				updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
+				updateStatistics('visitedSitesCount');
+
+				switch (response.algo) {
+					case data.availableAlgorithms.DEFAULT:
+						setTimeout(disconnect, Math.floor(Math.random() * 5000));
+						break;
+					case data.availableAlgorithms.NAVIGATE:
+						navigatePage();
+						break;
+					case data.availableAlgorithms.SEARCH:
+						searchPage();
+						break;
+				}
 			}
-		}
+		});
 	});
 });
 
@@ -84,6 +85,8 @@ function navigatePage() {
  * The user input is currently chosen from a dictionary.
  */
 function searchPage() {
+	const dict = ["JavaScript", "HTML", "CSS"];
+
 	var inputs = [];
 	$(':input[type=text]').each(function () {
 		inputs.push(this);

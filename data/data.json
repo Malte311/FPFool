@@ -1,0 +1,42 @@
+{
+	"availableActionTypes": {
+		"OPEN": "OPEN",
+		"NAVIGATE": "NAVIGATE",
+		"REMOVE": "REMOVE",
+		"SEARCH": "SEARCH"
+	},
+	"availableAlgorithms": {
+		"DEFAULT": "DEFAULT",
+		"NAVIGATE": "NAVIGATE",
+		"SEARCH": "SEARCH"
+	},
+	"availableMessageTypes": {
+		"disconnect": "disconnect",
+		"getStatistics": "getStatistics",
+		"incClickedLinksCount": "incClickedLinksCount",
+		"incKeywordSearchCount": "incKeywordSearchCount",
+		"incVisitedSitesCount": "incVisitedSitesCount",
+		"isExec": "isExec",
+		"resetStatistics": "resetStatistics"
+	},
+	"availableTabs": {
+		"SETTINGS": "pills-settings-tab",
+		"STATISTICS": "pills-statistics-tab"
+	},
+	"availableSettings": {
+		"activeAlgorithm": "activeAlgorithm",
+		"interval": "interval",
+		"maxConnectCount": "maxConnectCount",
+		"maxHistoryCount": "maxHistoryCount"
+	},
+	"availableStatistics": {
+		"visitedSitesCount": "visitedSitesCount",
+		"clickedLinksCount": "clickedLinksCount",
+		"keywordSearchCount": "keywordSearchCount"
+	},
+	"availableStatisticsTmp": {
+		"visitedSitesCountTmp": "visitedSitesCountTmp",
+		"clickedLinksCountTmp": "clickedLinksCountTmp",
+		"keywordSearchCountTmp": "keywordSearchCountTmp"
+	}
+}

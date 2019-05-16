@@ -159,19 +159,16 @@ function loadStatistics(animate) {
 
 	chrome.runtime.sendMessage({
 		type: 'getStatistics'
-	}, function (resp) {
+	}, function (response) {
 		chrome.storage.sync.get(Object.values(data.availableStatistics), function (res) {
-			// All time
 			$.each(data.availableStatistics, function (key, value) {
-				$(`#${value}`).html(resp[key] != undefined ? resp[value] : 0);
-			});
-
-			// Current session (idea: Subtract the number in the storage from the number in the
-			// variable because the variable is kept up to date and we only write back to storage
-			// when quitting the application)
-			$.each(data.availableStatisticsTmp, function (key, value) {
-				$(`#${value}`).html(
-					(resp[key] != undefined ? parseInt(resp[value]) : 0) -
+				// All time
+				$(`#${value}`).html(response[key] != undefined ? response[value] : 0);
+				// Current session (idea: Subtract the number in the storage from the number in the
+				// variable because the variable is kept up to date and we only write back to storage
+				// when quitting the application)
+				$(`#${value}Tmp`).html(
+					(response[key] != undefined ? parseInt(response[value]) : 0) -
 					(res[key] != undefined ? parseInt(res[value]) : 0)
 				);
 			});

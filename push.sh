@@ -21,19 +21,39 @@ node github.js result.txt
 rm result.txt
 
 # Git version control
-REMOTE=$(git remote | grep gh)
-if [ ${#REMOTE} == "0" ]; then
+GH=$(git remote | grep gh) # Github
+BB=$(git remote | grep bb) # Bitbucket
+GL=$(git remote | grep gl) # Gitlab
+
+if [ ${#GH} == "0" ]; then
 	git remote add gh git@github.com:Malte311/FPFool.git
+	echo "Added gh remote."
 fi
+
+if [ ${#BB} == "0" ]; then
+	git remote add bb git@bitbucket.org:malte311/fpfool.git
+	echo "Added bb remote."
+fi
+
+if [ ${#GL} == "0" ]; then
+	git remote add gl git@gitlab.com:Malte311/fpfool.git
+	echo "Added gl remote."
+fi
+
 git add .
 git status
+
+read -p "Type in commit message." cm
+
 while true; do
-	read -p "Really commit? (y/n)" yn
+	read -p "Really commit (y/n)? Your commit message is: $cm" yn
 	case $yn in
-		[Yy]* ) git commit -m"$1"
+		[Yy]* ) git commit -m"$cm"
 				git push gh master
+				git push bb master
+				git push gl master
 				break;;
 		[Nn]* ) break;;
-			* ) echo "Really commit? (y/n)";;
+			* ) echo "Really commit (y/n)?";;
 	esac
 done

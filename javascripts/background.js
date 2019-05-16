@@ -26,7 +26,7 @@ function runApplication() {
 		Object.values(data.availableSettings)), function (res) {
 		// Settings
 		maxConnectCount = res.maxConnectCount != undefined ? res.maxConnectCount : maxConnectCount;
-		var interval = res.interval != undefined ? res.interval : 1; // Default 1 day
+		var interval = res.interval != undefined ? parseInt(res.interval) : 1; // Default 1 day
 		interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs milliseconds
 
 		// Statistics
@@ -40,7 +40,7 @@ function runApplication() {
 		chrome.history.search({
 			'text': '', // All entries in a given time interval
 			'startTime': (new Date).getTime() - interval,
-			'maxResults': res.maxHistoryCount != undefined ? res.maxHistoryCount : 15
+			'maxResults': res.maxHistoryCount != undefined ? parseInt(res.maxHistoryCount) : 15
 		}, function (historyItems) {
 			// Get the number of visits during the specified time interval.
 			var count = 0;
@@ -58,10 +58,10 @@ function runApplication() {
 					// Necessary to check in here because of asynchronous calls.
 					count++;
 					if (count == historyItems.length) {
-						// visitUrls(res.activeAlgorithm != undefined ?
-						// 	res.activeAlgorithm :
-						// 	data.availableAlgorithms.DEFAULT
-						// );
+						visitUrls(res.activeAlgorithm != undefined ?
+							res.activeAlgorithm :
+							data.availableAlgorithms.DEFAULT
+						);
 					}
 				});
 			}
@@ -97,7 +97,7 @@ function visitUrls(algo) {
 
 				setTimeout(function () {
 					connectToUrl(key, algo);
-				}, Math.floor(Math.random() * 15000 + 500));
+				}, Math.floor(Math.random() * 20000 + 750));
 
 				if (++connectionCount == maxConnectCount) {
 					return;
@@ -123,6 +123,6 @@ function connectToUrl(url, algo) {
 	}, function (tab) {
 		tab.isNew = true; // We need this to execute content scripts only once
 		tab.algorithm = algo;
-		currentTabs.push(tab);
+		currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;
 	});
 }

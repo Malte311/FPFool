@@ -171,8 +171,8 @@ function loadStatistics(animate) {
 			// when quitting the application)
 			$.each(data.availableStatisticsTmp, function (key, value) {
 				$(`#${value}`).html(
-					(resp[key] != undefined ? resp[value] : 0) -
-					(res[key] != undefined ? res[value] : 0)
+					(resp[key] != undefined ? parseInt(resp[value]) : 0) -
+					(res[key] != undefined ? parseInt(res[value]) : 0)
 				);
 			});
 

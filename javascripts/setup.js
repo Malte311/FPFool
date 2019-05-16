@@ -31,6 +31,17 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	// Save json content in variable to make it accessible elsewhere
 	data = json;
 
+	// Create an array of fixed size such that push and splice are not neccessary anymore (they 
+	// both cause problems because there are multiple calls in parallel when adding or removing 
+	// tabs). Afterwards, we fill array with invalid ids, such that we are not accessing the id 
+	// of an undefined element.
+	chrome.storage.sync.get([data.availableSettings.maxConnectCount], function (response) {
+		currentTabs = new Array(parseInt(response[data.availableSettings.maxConnectCount]));
+		currentTabs.fill({
+			id: -1
+		});
+	});
+
 	/*
 	 * Waits for messages from content scripts. Answers these messages appropriately:
 	 *
@@ -57,12 +68,9 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 		switch (request.type) {
 			case data.availableMessageTypes.disconnect:
 				chrome.tabs.remove(sender.tab.id, function () {
-					for (var i = currentTabs.length - 1; i >= 0; i--) {
-						if (currentTabs[i].id == sender.tab.id) {
-							currentTabs.splice(i);
-							break;
-						}
-					}
+					currentTabs[currentTabs.findIndex(elem => elem.id == sender.tab.id)] = {
+						id: -1
+					};
 				});
 				break;
 			case data.availableMessageTypes.getStatistics:
@@ -80,11 +88,11 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				visitedSitesCount++;
 				break;
 			case data.availableMessageTypes.isExec:
-				var senderTab = currentTabs.filter(tab => tab.id == sender.tab.id);
-				response.isExec = senderTab.length > 0 && senderTab[0].isNew;
-				if (senderTab.length > 0) {
-					response.algo = senderTab[0].algorithm; // Tells the tab which algorithm to execute
-					senderTab[0].isNew = false;
+				var senderTab = currentTabs.find(tab => tab.id == sender.tab.id);
+				response.isExec = senderTab != undefined && senderTab.isNew;
+				if (senderTab != undefined) {
+					response.algo = senderTab.algorithm; // Tells the tab which algorithm to execute
+					senderTab.isNew = false;
 				}
 				break;
 			case data.availableMessageTypes.resetStatistics:

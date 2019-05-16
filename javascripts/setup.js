@@ -3,7 +3,7 @@
 /*
  * Specifies if the application should be run in debug mode.
  */
-const debug = true;
+const debug = false;
 
 /*
  * Holds the path to the data.json file.
@@ -111,13 +111,6 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	});
 
 	/*
-	 * Removes the window created by this extension whenever the user exits the browser.
-	 */
-	chrome.runtime.onSuspend.addListener(function () {
-		chrome.windows.remove(windowId);
-	});
-
-	/*
 	 * Opens the extension options page whenever the user clicks on the extension icon.
 	 */
 	chrome.browserAction.onClicked.addListener(function () {
@@ -130,31 +123,38 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * Creates the window for this extension to work in. It also updates the value of the variable
 	 * windowId, so we can access the window at any time.
 	 */
-	chrome.windows.create({
-		focused: debug ? true : false,
-		setSelfAsOpener: true,
-		width: debug ? 1600 : 1,
-		height: debug ? 1000 : 1,
-		url: chrome.runtime.getURL("./html/workingPage.html")
-	}, function (window) {
-		// Setting the state to 'minimized' in the create options seems not to work, so we update
-		// it instantly after the window has been created.
-		chrome.windows.update(window.id, {
-			state: debug ? 'normal' : 'minimized'
-		});
-		windowId = window.id;
+	chrome.windows.getCurrent(function (currWindow) {
+		chrome.windows.create({
+			focused: debug ? true : false,
+			setSelfAsOpener: true,
+			width: currWindow.width,
+			height: currWindow.height,
+			url: chrome.runtime.getURL("./html/workingPage.html")
+		}, function (window) {
+			// Setting the state to 'minimized' in the create options seems not to work, so we update
+			// it instantly after the window has been created.
+			chrome.windows.update(window.id, {
+				state: debug ? 'normal' : 'minimized'
+			});
+			windowId = window.id;
 
-		// Write statistics to storage when the window is closed.
-		chrome.windows.onRemoved.addListener(function (winId) {
-			if (windowId == winId) {
-				chrome.storage.sync.set({
-					clickedLinksCount: clickedLinksCount,
-					keywordSearchCount: keywordSearchCount,
-					visitedSitesCount: visitedSitesCount
+			// Write statistics to storage when the window is closed.
+			chrome.windows.onRemoved.addListener(function (winId) {
+				chrome.windows.getAll(function (windows) {
+					// Close the extension if it is the only window left
+					if (windows.length == 1 && windowId == windows[0].id) {
+						chrome.storage.sync.set({
+							clickedLinksCount: clickedLinksCount,
+							keywordSearchCount: keywordSearchCount,
+							visitedSitesCount: visitedSitesCount
+						}, function (res) {
+							chrome.windows.remove(windowId);
+						});
+					}
 				});
-			}
-		});
+			});
 
-		runApplication();
+			runApplication();
+		});
 	});
 });

@@ -123,7 +123,6 @@ function loadSettings() {
 		$.each(data.availableSettings, function (key, value) {
 			$(`#${value}Slider`).val(res[value] != undefined ? res[value] : 1);
 			$(`#${value}Slider`).attr('value', res[value] != undefined ? res[value] : 1);
-
 			$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
 			$(`#${value}Slider`).change(function () {
 				chrome.storage.sync.set({

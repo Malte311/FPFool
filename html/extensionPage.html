@@ -54,8 +54,12 @@
 					style="width: 28rem; display: inline-block; margin-right: 30px;">
 					<div class="card-body text-primary">
 						<h3 class="card-text"><em>Interval</em></h3>
-						<br>
-						1 day <input type="range" min="1" max="14" step="1" class="slider" id="intervalSlider"> 14 days
+						<div class="alert alert-primary" role="alert">
+							1 day
+							<input type="range" min="1" max="14" step="1" class="slider" id="intervalSlider">
+							14 days
+							<div id="intervalSliderVal"></div>
+						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
 						FPFool uses your browser history to visit websites you already visited. In doing so, FPFool
@@ -66,8 +70,12 @@
 					style="width: 28rem; display: inline-block; margin-right: 30px;">
 					<div class="card-body text-primary">
 						<h3 class="card-text"><em>Max. history entries</em></h3>
-						<br>
-						5 <input type="range" min="5" max="20" step="1" class="slider" id="maxHistoryCountSlider"> 20
+						<div class="alert alert-primary" role="alert">
+							5
+							<input type="range" min="5" max="20" step="1" class="slider" id="maxHistoryCountSlider">
+							20
+							<div id="maxHistoryCountSliderVal"></div>
+						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
 						Sometimes, there may exist a lot of browser history entries even in a short period of time.
@@ -78,8 +86,12 @@
 				<div class="card bg-light border-primary mb-3 text-center" style="width: 28rem; display: inline-block;">
 					<div class="card-body text-primary">
 						<h3 class="card-text"><em>Max. connections</em></h3>
-						<br>
-						5 <input type="range" min="5" max="60" step="1" class="slider" id="maxConnectCountSlider"> 60
+						<div class="alert alert-primary" role="alert">
+							5
+							<input type="range" min="5" max="60" step="1" class="slider" id="maxConnectCountSlider">
+							60
+							<div id="maxConnectCountSliderVal"></div>
+						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
 						In order to prevent FPFool from establishing too many connections, this setting allows you to

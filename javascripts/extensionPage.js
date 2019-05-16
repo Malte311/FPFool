@@ -122,6 +122,8 @@ function loadSettings() {
 
 		$.each(data.availableSettings, function (key, value) {
 			$(`#${value}Slider`).attr('value', res[value] != undefined ? res[value] : 1);
+			$(`#${value}Slider`).val(res[value] != undefined ? res[value] : 1);
+			$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
 			$(`#${value}Slider`).change(function () {
 				chrome.storage.sync.set({
 					[value]: $(`#${value}Slider`).val()
@@ -130,6 +132,9 @@ function loadSettings() {
 						'Your changes have been saved! The changes will take effect on restart.'
 					);
 				});
+			});
+			$(`#${value}Slider`).on('input', function () {
+				$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
 			});
 		});
 

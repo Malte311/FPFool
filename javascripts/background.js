@@ -58,10 +58,10 @@ function runApplication() {
 					// Necessary to check in here because of asynchronous calls.
 					count++;
 					if (count == historyItems.length) {
-						visitUrls(res.activeAlgorithm != undefined ?
-							res.activeAlgorithm :
-							data.availableAlgorithms.DEFAULT
-						);
+						// visitUrls(res.activeAlgorithm != undefined ?
+						// 	res.activeAlgorithm :
+						// 	data.availableAlgorithms.DEFAULT
+						// );
 					}
 				});
 			}

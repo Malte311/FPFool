@@ -3,7 +3,7 @@
 /*
  * Specifies if the application should be run in debug mode.
  */
-const debug = false;
+const debug = true;
 
 /*
  * Holds the path to the data.json file.
@@ -26,15 +26,41 @@ var windowId;
  */
 var currentTabs = [];
 
+/*
+ * Keeps track of third party websites which might be interesting to visit.
+ */
+var thirdParties = [];
+
 // Start with loading the data.json file.
 fetch(dataPath).then(response => response.json()).then(function (json) {
 	// Save json content in variable to make it accessible elsewhere
 	data = json;
 
-	// Create an array of fixed size such that push and splice are not neccessary anymore (they 
-	// both cause problems because there are multiple calls in parallel when adding or removing 
-	// tabs). Afterwards, we fill array with invalid ids, such that we are not accessing the id 
-	// of an undefined element.
+	/*
+	 * Keep track of third party requests, so we can visit these sites if we want to.
+	 */
+	chrome.webRequest.onBeforeRequest.addListener(function (det) {
+			if (det.type != 'stylesheet' && det.initiator != undefined) {
+				// We are only interested in third party sites, so we ignore first party requests.
+				// (otherwise we would get way too many requests to consider)
+				var startIndex = det.initiator.indexOf('.') + 1;
+				var endIndex = det.initiator.indexOf(det.initiator.match(/\.[a-z]{2,3}($|\/)/)[0]);
+				if (!det.url.includes(det.initiator.substring(startIndex, endIndex))) {
+					// TODO
+				}
+			}
+		}, {
+			urls: ['http://*/*', 'https://*/*']
+		},
+		['requestBody']
+	);
+
+	/* 
+	 * Create an array of fixed size such that push and splice are not neccessary anymore (they 
+	 * both cause problems because there are multiple calls in parallel when adding or removing 
+	 * tabs). Afterwards, we fill array with invalid ids, such that we are not accessing the id 
+	 * of an undefined element.
+	 */
 	chrome.storage.sync.get([data.availableSettings.maxConnectCount], function (response) {
 		currentTabs = new Array(parseInt(response[data.availableSettings.maxConnectCount]));
 		currentTabs.fill({
@@ -127,8 +153,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 		chrome.windows.create({
 			focused: debug ? true : false,
 			setSelfAsOpener: true,
-			width: currWindow.width,
-			height: currWindow.height,
+			width: debug ? 1600 : currWindow.width,
+			height: debug ? 1000 : currWindow.height,
 			url: chrome.runtime.getURL("./html/workingPage.html")
 		}, function (window) {
 			// Setting the state to 'minimized' in the create options seems not to work, so we update

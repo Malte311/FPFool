@@ -39,6 +39,7 @@
 		"http://*/*",
 		"https://*/*",
 		"storage",
-		"tabs"
+		"tabs",
+		"webRequest"
 	]
 }

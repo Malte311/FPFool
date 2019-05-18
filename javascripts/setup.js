@@ -31,6 +31,11 @@ var currentTabs = [];
  */
 var thirdParties = [];
 
+/*
+ * Some search term for the searching algorithm, found in the user's browser history.
+ */
+var searchTerms = [];
+
 // Start with loading the data.json file.
 fetch(dataPath).then(response => response.json()).then(function (json) {
 	// Save json content in variable to make it accessible elsewhere
@@ -98,6 +103,11 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 						id: -1
 					};
 				});
+				break;
+			case data.availableMessageTypes.getSearchTerm:
+				response.searchTerm = searchTerms.length > 0 ?
+					searchTerms[Math.floor(Math.random() * searchTerms.length)] :
+					' ';
 				break;
 			case data.availableMessageTypes.getStatistics:
 				response.clickedLinksCount = clickedLinksCount;

@@ -22,6 +22,7 @@ var visitedSitesCount, clickedLinksCount, keywordSearchCount;
  * when finished. The selected algorithm defines what exactly these fake connections do.
  */
 function runApplication() {
+	getSearchTerms(); // No need to wait for this asynchronous call
 	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
 		Object.values(data.availableSettings)), function (res) {
 		// Settings
@@ -124,5 +125,20 @@ function connectToUrl(url, algo) {
 		tab.isNew = true; // We need this to execute content scripts only once
 		tab.algorithm = algo;
 		currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;
+	});
+}
+
+/*
+ * Searches for possible search terms in the user's browser history. Saves the results
+ * to the 'searchTerms' array.
+ */
+function getSearchTerms() {
+	chrome.history.search({
+		text: '',
+		'startTime': (new Date).getTime() - 1000 * 60 * 60 * 24 * 5
+	}, function (historyItems) {
+		for (const item of historyItems) {
+			console.log(item.url) // search?q=get+search+value+from+post+url&
+		}
 	});
 }

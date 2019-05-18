@@ -15,7 +15,7 @@ fi
 cloc ./ > result.txt
 
 # Parse the result for markdown format
-node github.js result.txt
+node cloc.js result.txt
 
 # Remove temporary file again
 rm result.txt

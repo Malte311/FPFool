@@ -39,7 +39,7 @@ $(document).ready(function () {
 						break;
 				}
 			} else if (response.disconnect) {
-				setTimeout(disconnect, weightedRandom(5000, 500));
+				setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
 			}
 		});
 	});
@@ -83,27 +83,30 @@ function navigatePage() {
  * Tries to find input fields on the current webpage and simulates a user typing in things in
  * these input fields.
  * 
- * The user input is currently chosen from a dictionary.
  */
 function searchPage() {
 	const dict = ["JavaScript", "HTML", "CSS"];
 
-	var inputs = [];
-	$(':input[type=text]').each(function () {
-		inputs.push(this);
-	});
+	var inputField = $(':input[type=text]').first();
+	if (inputField.length > 0) {
+		chrome.runtime.sendMessage({
+			type: 'getSearchTerm'
+		}, function (response) {
 
-	var randomInput = inputs[0];
-	var searchTerm = dict[Math.floor(Math.random() * dict.length)];
-	$(randomInput).val(searchTerm);
-	var action = $(randomInput).closest('form').attr('action');
-	setTimeout(function () {
-		updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
-		updateStatistics('keywordSearchCount');
-		updateStatistics('visitedSitesCount');
+		});
+		var searchTerm = dict[Math.floor(Math.random() * dict.length)];
+		$(inputField).val(searchTerm);
+		var action = $(inputField).closest('form').attr('action');
+		setTimeout(function () {
+			updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
+			updateStatistics('keywordSearchCount');
+			updateStatistics('visitedSitesCount');
 
-		$(randomInput).closest('form').submit();
-	}, weightedRandom(8000));
+			$(inputField).closest('form').submit();
+		}, weightedRandom(8000));
+	} else {
+		setTimeout(disconnect, weightedRandom(6000, weightedRandom(1500)));
+	}
 }
 
 /**

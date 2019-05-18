@@ -12,6 +12,7 @@
 	},
 	"availableMessageTypes": {
 		"disconnect": "disconnect",
+		"getSearchTerm": "getSearchTerm",
 		"getStatistics": "getStatistics",
 		"incClickedLinksCount": "incClickedLinksCount",
 		"incKeywordSearchCount": "incKeywordSearchCount",

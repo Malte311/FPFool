@@ -118,6 +118,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				response.isExec = senderTab != undefined && senderTab.isNew;
 				if (senderTab != undefined) {
 					response.algo = senderTab.algorithm; // Tells the tab which algorithm to execute
+					response.disconnect = !senderTab.isNew; // Disconnect after redirect
 					senderTab.isNew = false;
 				}
 				break;

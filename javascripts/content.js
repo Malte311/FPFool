@@ -29,7 +29,7 @@ $(document).ready(function () {
 
 				switch (response.algo) {
 					case data.availableAlgorithms.DEFAULT:
-						setTimeout(disconnect, Math.floor(Math.random() * 5000));
+						setTimeout(disconnect, weightedRandom(5000));
 						break;
 					case data.availableAlgorithms.NAVIGATE:
 						navigatePage();
@@ -38,6 +38,8 @@ $(document).ready(function () {
 						searchPage();
 						break;
 				}
+			} else if (response.disconnect) {
+				setTimeout(disconnect, weightedRandom(5000, 500));
 			}
 		});
 	});
@@ -73,9 +75,8 @@ function navigatePage() {
 		updateStatistics('clickedLinksCount');
 		updateStatistics('visitedSitesCount');
 
-		setTimeout(disconnect, Math.floor(Math.random() * 15000 + 1500));
 		$(randomVisit)[0].click();
-	}, Math.floor(Math.random() * 8000));
+	}, weightedRandom(8000));
 }
 
 /**
@@ -101,9 +102,8 @@ function searchPage() {
 		updateStatistics('keywordSearchCount');
 		updateStatistics('visitedSitesCount');
 
-		setTimeout(disconnect, Math.floor(Math.random() * 15000 + 1500));
 		$(randomInput).closest('form').submit();
-	}, Math.floor(Math.random() * 8000));
+	}, weightedRandom(8000));
 }
 
 /**
@@ -133,4 +133,15 @@ function updateStatus(url, type, searchTerm, toUrl) {
 		searchTerm: searchTerm,
 		toUrl: toUrl
 	}, function (response) {});
+}
+
+/**
+ * Return a weighted random number. The number can have a minimum value, if wanted.
+ * 
+ * @param {number} weight The number to multiply our random generated number with.
+ * @param {number} minVal The minimum number to return, defaults to zero.
+ */
+function weightedRandom(weight, minVal = 0) {
+	var retVal = Math.floor(Math.random() * weight);
+	return retVal > minVal ? retVal : minVal;
 }

@@ -85,28 +85,35 @@ function navigatePage() {
  * 
  */
 function searchPage() {
-	const dict = ["JavaScript", "HTML", "CSS"];
-
-	var inputField = $(':input[type=text]').first();
-	if (inputField.length > 0) {
-		chrome.runtime.sendMessage({
-			type: 'getSearchTerm'
-		}, function (response) {
-
-		});
-		var searchTerm = dict[Math.floor(Math.random() * dict.length)];
-		$(inputField).val(searchTerm);
-		var action = $(inputField).closest('form').attr('action');
-		setTimeout(function () {
-			updateStatus(location.href, 'SEARCH', searchTerm, location.href + action.substring(1));
-			updateStatistics('keywordSearchCount');
-			updateStatistics('visitedSitesCount');
-
-			$(inputField).closest('form').submit();
-		}, weightedRandom(8000));
-	} else {
-		setTimeout(disconnect, weightedRandom(6000, weightedRandom(1500)));
+	var inputField = $(':input[type=search]').first();
+	if (inputField.length == 0) {
+		inputField = $(':input[type=text]').first();
 	}
+
+	chrome.runtime.sendMessage({
+		type: 'getSearchTerm'
+	}, function (response) {
+		var form = $(inputField).closest('form');
+		var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;
+		var rS = form.attr('role') != undefined ? form.attr('role').includes('search') : false;
+
+		// Make sure that 1. a search field exists and 2. a search term is available.
+		if (inputField.length > 0 && (aS || rS) && response.searchTerm != ' ') {
+
+			$(inputField).val(response.searchTerm);
+			setTimeout(function () {
+				// TODO: New url: Replace location.href with only the basic domain (cut after .com)
+				updateStatus(location.href, 'SEARCH', response.searchTerm, location.href + response.searchTerm.replace(/ /g, '+'));
+				updateStatistics('keywordSearchCount');
+				updateStatistics('visitedSitesCount');
+
+				//form.submit();
+			}, weightedRandom(8000));
+		} else {
+			updateStatus(location.href, 'SEARCHFAIL', response.searchTerm, '&ndash;');
+			setTimeout(disconnect, weightedRandom(6000, weightedRandom(1500)));
+		}
+	});
 }
 
 /**

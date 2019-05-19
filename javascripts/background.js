@@ -137,8 +137,16 @@ function getSearchTerms() {
 		text: '',
 		'startTime': (new Date).getTime() - 1000 * 60 * 60 * 24 * 5
 	}, function (historyItems) {
-		for (const item of historyItems) {
-			console.log(item.url) // search?q=get+search+value+from+post+url&
+		for (const historyItem of historyItems) {
+			var url = historyItem.url;
+			if (url.indexOf('?q=') > 0) {
+				searchTerms.push(
+					url.substring(
+						url.indexOf('?q=') + 3,
+						url.indexOf('&') > 0 ? url.indexOf('&') : url.length
+					).replace(/\+/g, ' ')
+				);
+			}
 		}
 	});
 }

@@ -40,6 +40,9 @@ $(document).ready(function () {
 					case data.availableActionTypes.SEARCH:
 						action = `Searched for \"${request.searchTerm}\".`;
 						break;
+					case data.availableActionTypes.SEARCHFAIL:
+						action = 'Tried to search, but did not work.'
+						break;
 					default:
 						action = 'Unknown action.';
 						break;
@@ -89,6 +92,9 @@ function appendTable(tabId, urlFrom, urlTo, action, type) {
 			break;
 		case data.availableActionTypes.SEARCH:
 			color = '<tr class=\"table-warning\">'; // Yellow
+			break;
+		case data.availableActionTypes.SEARCHFAIL:
+			color = '<tr class=\"table-dark\">'; // Dark grey
 			break;
 		default:
 			color = '<tr class=\"table-active\">'; // Grey

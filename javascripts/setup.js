@@ -48,9 +48,10 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			if (det.type != 'stylesheet' && det.initiator != undefined) {
 				// We are only interested in third party sites, so we ignore first party requests.
 				// (otherwise we would get way too many requests to consider)
-				var startIndex = det.initiator.indexOf('.') + 1;
-				var endIndex = det.initiator.indexOf(det.initiator.match(/\.[a-z]{2,3}($|\/)/)[0]);
-				if (!det.url.includes(det.initiator.substring(startIndex, endIndex))) {
+				var startInd = det.initiator.indexOf('.') + 1;
+				var urlExtension = det.initiator.match(/\.[a-z]{2,3}($|\/)/);
+				var endInd = urlExtension != null ? det.initiator.indexOf(urlExtension[0]) : -1;
+				if (endInd > 0 && !det.url.includes(det.initiator.substring(startInd, endInd))) {
 					// TODO
 				}
 			}

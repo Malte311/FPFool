@@ -3,7 +3,8 @@
 		"OPEN": "OPEN",
 		"NAVIGATE": "NAVIGATE",
 		"REMOVE": "REMOVE",
-		"SEARCH": "SEARCH"
+		"SEARCH": "SEARCH",
+		"SEARCHFAIL": "SEARCHFAIL"
 	},
 	"availableAlgorithms": {
 		"DEFAULT": "Default algorithm",

@@ -90,27 +90,33 @@ function searchPage() {
 		inputField = $(':input[type=text]').first();
 	}
 
+	var urlSplitted = document.domain.split('.');
 	chrome.runtime.sendMessage({
-		type: 'getSearchTerm'
-	}, function (response) {
+		type: 'getSearchTerm',
+		domain: urlSplitted.length > 2 ? urlSplitted[1] : urlSplitted[0]
+	}, function (resp) {
 		var form = $(inputField).closest('form');
 		var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;
 		var rS = form.attr('role') != undefined ? form.attr('role').includes('search') : false;
 
 		// Make sure that 1. a search field exists and 2. a search term is available.
-		if (inputField.length > 0 && (aS || rS) && response.searchTerm != ' ') {
-
-			$(inputField).val(response.searchTerm);
+		if (inputField.length > 0 && (aS || rS) && resp.searchTerm != ' ') {
 			setTimeout(function () {
-				// TODO: New url: Replace location.href with only the basic domain (cut after .com)
-				updateStatus(location.href, 'SEARCH', response.searchTerm, location.href + response.searchTerm.replace(/ /g, '+'));
+				$(inputField).val(resp.searchTerm);
+				var protocol = location.href.startsWith('https://') ? 'https://' : 'http://';
+				updateStatus(
+					location.href,
+					'SEARCH',
+					resp.searchTerm,
+					protocol + document.domain + '/search?q=' + encodeURIComponent(resp.searchTerm)
+				);
 				updateStatistics('keywordSearchCount');
 				updateStatistics('visitedSitesCount');
 
-				//form.submit();
+				form.submit();
 			}, weightedRandom(8000));
 		} else {
-			updateStatus(location.href, 'SEARCHFAIL', response.searchTerm, '&ndash;');
+			updateStatus(location.href, 'SEARCHFAIL', resp.searchTerm, '&ndash;');
 			setTimeout(disconnect, weightedRandom(6000, weightedRandom(1500)));
 		}
 	});

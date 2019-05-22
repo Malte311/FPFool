@@ -141,10 +141,10 @@ function getSearchTerms() {
 			var url = historyItem.url;
 			if (url.indexOf('?q=') > 0) {
 				searchTerms.push(
-					url.substring(
+					decodeURIComponent(url.substring(
 						url.indexOf('?q=') + 3,
 						url.indexOf('&') > 0 ? url.indexOf('&') : url.length
-					).replace(/\+/g, ' ')
+					).replace(/\+/g, ' '))
 				);
 			}
 		}

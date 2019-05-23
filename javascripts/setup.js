@@ -29,7 +29,12 @@ var currentTabs = [];
 /*
  * Keeps track of third party websites which might be interesting to visit.
  */
-var thirdParties = [];
+var thirdParties = new Map();
+
+/*
+ * Keeps track of the websites we want to visit next.
+ */
+var queue = [];
 
 /*
  * Some search term for the searching algorithm, found in the user's browser history.
@@ -45,14 +50,29 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * Keep track of third party requests, so we can visit these sites if we want to.
 	 */
 	chrome.webRequest.onBeforeRequest.addListener(function (det) {
-			if (det.type != 'stylesheet' && det.initiator != undefined) {
+			const excludedTypes = ['stylesheet', 'image']; // Reduce unnecessary effort
+			if (!excludedTypes.includes(det.type) && det.initiator != undefined) {
 				// We are only interested in third party sites, so we ignore first party requests.
 				// (otherwise we would get way too many requests to consider)
 				var startInd = det.initiator.indexOf('.') + 1;
 				var urlExtension = det.initiator.match(/\.[a-z]{2,3}($|\/)/);
 				var endInd = urlExtension != null ? det.initiator.indexOf(urlExtension[0]) : -1;
 				if (endInd > 0 && !det.url.includes(det.initiator.substring(startInd, endInd))) {
-					// TODO
+					var val = thirdParties.get(det.initiator);
+					thirdParties.set(
+						det.initiator,
+						val != undefined ?
+						(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
+					);
+
+					// Find other websites that use the same third party and are not added to the
+					// queue yet
+					for (const [key, val] of thirdParties) {
+						if (!key.includes(det.initiator.substring(startInd, endInd)) &&
+							val.includes(det.url) && !queue.includes(key)) {
+							queue.push(key);
+						}
+					}
 				}
 			}
 		}, {

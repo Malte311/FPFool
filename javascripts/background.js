@@ -11,6 +11,10 @@ var browserHistory = new Map();
  */
 var maxConnectCount = 10;
 
+var restartTime = 120 * 1000; // TODO: Calc by user behaviour (visits per minute/hour), 
+// first call instant, then interval
+var maxTabsCount = 2;
+
 /*
  * Variables for statistical information (like the total number of visited sites, clicked links
  * and so on). These are updated in real time, so its important they are global.
@@ -87,25 +91,26 @@ function visitUrls(algo) {
 		browserHistoryAsArray.length - 1
 	][1];
 
+	// Keep the algorithm running
 	var connectionCount = 0;
-	var visitsLeft = true;
-	while (visitsLeft) {
-		visitsLeft = false;
+	var repeat = setInterval(function () {
 		for (const [key, value] of browserHistory) {
 			if (value < maxVisits && key.startsWith('http')) { // Do not visit extension page
-				visitsLeft = true;
-				browserHistory.set(key, browserHistory.get(key) + 1);
-
-				setTimeout(function () {
-					connectToUrl(key, algo);
+				var waiting = setInterval(function () {
+					if (maxTabsCount > currentTabs.reduce((n, val) => n + (val.id != -1), 0)) {
+						clearInterval(waiting);
+						browserHistory.set(key, browserHistory.get(key) + 1);
+						connectToUrl(key, algo);
+					}
 				}, Math.floor(Math.random() * 20000 + 750));
 
 				if (++connectionCount == maxConnectCount) {
-					return;
+					clearInterval(repeat);
+					break;
 				}
 			}
 		}
-	}
+	}, restartTime);
 }
 
 /**
@@ -144,7 +149,7 @@ function getSearchTerms() {
 					decodeURIComponent(url.substring(
 						url.indexOf('?q=') + 3,
 						url.indexOf('&') > 0 ? url.indexOf('&') : url.length
-					).replace(/\+/g, ' '))
+					))
 				);
 			}
 		}

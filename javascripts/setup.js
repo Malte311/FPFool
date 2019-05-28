@@ -71,6 +71,11 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 						if (!key.includes(det.initiator.substring(startInd, endInd)) &&
 							val.includes(det.url) && !queue.includes(key)) {
 							queue.push(key);
+							// Restart loop if queue was empty before and maximum number of
+							// connections is not reached yet.
+							if (!(queue.length > 1) && connectionCount < maxConnectCount) {
+								connectLoop();
+							}
 						}
 					}
 				}

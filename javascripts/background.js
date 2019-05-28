@@ -34,6 +34,16 @@ var maxTabsCount = 5;
  */
 var visitedSitesCount, clickedLinksCount, keywordSearchCount;
 
+/*
+ * Defines the currently selected algorithm.
+ */
+var activeAlgorithm;
+
+/*
+ * Holds the amount of connections made so far.
+ */
+var connectionCount = 0;
+
 /**
  * Starts the application: Creates fake connections in the hidden window and removes the tabs
  * when finished. The selected algorithm defines what exactly these fake connections do.
@@ -43,9 +53,14 @@ function runApplication() {
 	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
 		Object.values(data.availableSettings)), function (res) {
 		// Settings
-		maxConnectCount = res.maxConnectCount != undefined ? res.maxConnectCount : maxConnectCount;
+		maxConnectCount = res.maxConnectCount != undefined ?
+			parseInt(res.maxConnectCount) :
+			maxConnectCount;
 		var interval = res.interval != undefined ? parseInt(res.interval) : 1; // Default 1 day
 		interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs milliseconds
+		activeAlgorithm = res.activeAlgorithm != undefined ?
+			res.activeAlgorithm :
+			data.availableAlgorithms.DEFAULT;
 
 		// Statistics
 		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
@@ -81,25 +96,27 @@ function runApplication() {
 						maxVisits = Math.max(...browserHistory.values());
 
 						// First call instant, then interval
-						var connectionCount = 1; // One connection is always being made below
-						connectToUrl(queue.shift(), res.activeAlgorithm != undefined ?
-							res.activeAlgorithm :
-							data.availableAlgorithms.DEFAULT
-						);
-						var running = setInterval(function () {
-							connectToUrl(queue.shift(), res.activeAlgorithm != undefined ?
-								res.activeAlgorithm :
-								data.availableAlgorithms.DEFAULT
-							);
-							if ((++connectionCount == maxConnectCount) || !(queue.length > 0)) {
-								clearInterval(running);
-							}
-						}, restartTime);
+						connectToUrl(queue.shift(), activeAlgorithm);
+						connectionCount++;
+						connectLoop();
 					}
 				});
 			}
 		});
 	});
+}
+
+/**
+ * Repeats connecting to webpages.
+ */
+function connectLoop() {
+	var running = setInterval(function () {
+		connectToUrl(queue.shift(), activeAlgorithm);
+
+		if ((++connectionCount > maxConnectCount) || !(queue.length > 0)) {
+			clearInterval(running);
+		}
+	}, restartTime);
 }
 
 /**
@@ -110,9 +127,6 @@ function runApplication() {
  * @param {string} algo The algorithm used in this tab.
  */
 function connectToUrl(url, algo) {
-	if (debug) {
-		console.log(`${queue.length} items remaining in queue. \r\n`);
-	}
 	// Do not visit a page too many times and do not visit the extension page
 	// (does not start with http)
 	if ((browserHistory.has(url) && browserHistory.get(url) >= maxVisits) ||

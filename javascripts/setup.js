@@ -212,7 +212,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				});
 			});
 
-			runApplication();
+			//runApplication();
+			test();
 		});
 	});
 });

@@ -12,7 +12,7 @@ var browserHistory = new Map();
 var maxConnectCount = 10;
 
 var restartTime = 120 * 1000; // TODO: Calc by user behaviour (visits per minute/hour), 
-// first call instant, then interval
+// first call instant, then interval; remove history prep from visitsUrls
 var maxTabsCount = 2;
 
 /*
@@ -63,10 +63,17 @@ function runApplication() {
 					// Necessary to check in here because of asynchronous calls.
 					count++;
 					if (count == historyItems.length) {
+						// First call instant, then interval
 						visitUrls(res.activeAlgorithm != undefined ?
 							res.activeAlgorithm :
 							data.availableAlgorithms.DEFAULT
 						);
+						setInterval(function() {
+							visitUrls(res.activeAlgorithm != undefined ?
+								res.activeAlgorithm :
+								data.availableAlgorithms.DEFAULT
+							);
+						}, restartTime);
 					}
 				});
 			}
@@ -93,24 +100,21 @@ function visitUrls(algo) {
 
 	// Keep the algorithm running
 	var connectionCount = 0;
-	var repeat = setInterval(function () {
-		for (const [key, value] of browserHistory) {
-			if (value < maxVisits && key.startsWith('http')) { // Do not visit extension page
-				var waiting = setInterval(function () {
-					if (maxTabsCount > currentTabs.reduce((n, val) => n + (val.id != -1), 0)) {
-						clearInterval(waiting);
-						browserHistory.set(key, browserHistory.get(key) + 1);
-						connectToUrl(key, algo);
-					}
-				}, Math.floor(Math.random() * 20000 + 750));
-
-				if (++connectionCount == maxConnectCount) {
-					clearInterval(repeat);
-					break;
+	for (const [key, value] of browserHistory) {
+		if (value < maxVisits && key.startsWith('http')) { // Do not visit extension page
+			var waiting = setInterval(function () {
+				if (maxTabsCount > currentTabs.reduce((n, val) => n + (val.id != -1), 0)) {
+					clearInterval(waiting);
+					browserHistory.set(key, browserHistory.get(key) + 1);
+					connectToUrl(key, algo);
 				}
+			}, Math.floor(Math.random() * 20000 + 750));
+
+			if (++connectionCount == maxConnectCount) {
+				break;
 			}
 		}
-	}, restartTime);
+	}
 }
 
 /**
@@ -153,5 +157,17 @@ function getSearchTerms() {
 				);
 			}
 		}
+	});
+}
+
+function test() {
+	var now = (new Date).getTime();
+	var diff = 1000 * 60 * 60 * 24;
+	chrome.history.search({
+		'text': '',
+		'startTime': now - diff // Last day
+	},function(historyItems) {
+		var quotient = historyItems.length / (diff / 1000 / 24);
+		console.log(historyItems.length, diff / 1000 / 24, quotient);
 	});
 }

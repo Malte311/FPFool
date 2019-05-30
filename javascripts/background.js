@@ -7,9 +7,10 @@
 var browserHistory = new Map();
 
 /*
- * Defines the maximum amount of connections being made.
+ * Defines the maximum amount of connections being made. Maximum amount of connections is this
+ * number multiplied by the number of connections being made by the user per day.
  */
-var maxConnectCount = 10;
+var maxConnectCount = 2;
 
 /*
  * Holds the maximum of visits for an url from the queue. We want to visit all the other sites
@@ -42,7 +43,7 @@ var activeAlgorithm;
 /*
  * Holds the amount of connections made so far.
  */
-var connectionCount = 0;
+var todayConnectionCount = 0;
 
 /**
  * Starts the application: Creates fake connections in the hidden window and removes the tabs
@@ -61,6 +62,9 @@ function runApplication() {
 		activeAlgorithm = res.activeAlgorithm != undefined ?
 			res.activeAlgorithm :
 			data.availableAlgorithms.DEFAULT;
+		todayConnectionCount = res.todayConnectionCount != undefined ?
+			parseInt(todayConnectionCount) :
+			todayConnectionCount;
 
 		// Statistics
 		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
@@ -75,8 +79,9 @@ function runApplication() {
 			'startTime': (new Date).getTime() - interval,
 			'maxResults': res.maxHistoryCount != undefined ? parseInt(res.maxHistoryCount) : 15
 		}, function (historyItems) {
-			// Get the number of visits during the specified time interval.
+			// Get the number of visits for each page during the specified time interval.
 			var count = 0;
+			var totalVisits = 0;
 			for (const historyItem of historyItems) {
 				chrome.history.getVisits({
 					url: historyItem.url
@@ -87,6 +92,7 @@ function runApplication() {
 						item.visitTime >= (new Date).getTime() - interval
 					).length);
 					queue.push(historyItem.url); // Add to processing queue
+					totalVisits += browserHistory.get(historyItem.url);
 
 					// After the last iteration we want to continue by visiting the urls.
 					// Necessary to check in here because of asynchronous calls.
@@ -97,8 +103,12 @@ function runApplication() {
 
 						// First call instant, then interval
 						connectToUrl(queue.shift(), activeAlgorithm);
-						connectionCount++;
-						connectLoop();
+						todayConnectionCount++;
+						connectLoop(
+							Math.ceil(
+								totalVisits / (interval / 1000 / 60 / 60 / 24)
+							) * maxConnectCount
+						);
 					}
 				});
 			}
@@ -108,12 +118,13 @@ function runApplication() {
 
 /**
  * Repeats connecting to webpages.
+ * @param {number} connectionLimit The maximum number of connections per day.
  */
-function connectLoop() {
+function connectLoop(connectionLimit) {
 	var running = setInterval(function () {
 		connectToUrl(queue.shift(), activeAlgorithm);
 
-		if ((++connectionCount > maxConnectCount) || !(queue.length > 0)) {
+		if ((++todayConnectionCount > connectionLimit) || !(queue.length > 0)) {
 			clearInterval(running);
 		}
 	}, restartTime);
@@ -180,16 +191,5 @@ function getSearchTerms() {
 				);
 			}
 		}
-	});
-}
-
-function getUserBehavior() {
-	var interval = 1000 * 60 * 60 * 24;
-	chrome.history.search({
-		'text': '',
-		'startTime': (new Date).getTime() - interval // Last day
-	}, function (historyItems) {
-		var quotient = historyItems.length / (interval / 1000 / 60);
-		console.log(historyItems.length, interval / 1000 / 60, quotient);
 	});
 }

@@ -29,7 +29,8 @@
 		"activeAlgorithm": "activeAlgorithm",
 		"interval": "interval",
 		"maxConnectCount": "maxConnectCount",
-		"maxHistoryCount": "maxHistoryCount"
+		"maxHistoryCount": "maxHistoryCount",
+		"todayConnectionCount": "todayConnectionCount"
 	},
 	"availableStatistics": {
 		"visitedSitesCount": "visitedSitesCount",

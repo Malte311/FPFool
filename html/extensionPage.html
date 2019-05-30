@@ -85,18 +85,17 @@
 				</div>
 				<div class="card bg-light border-primary mb-3 text-center" style="width: 28rem; display: inline-block;">
 					<div class="card-body text-primary">
-						<h3 class="card-text"><em>Max. connections</em></h3>
+						<h3 class="card-text"><em>Max. connections multiplier</em></h3>
 						<div class="alert alert-primary" role="alert">
+							1
+							<input type="range" min="1" max="5" step="1" class="slider" id="maxConnectCountSlider">
 							5
-							<input type="range" min="5" max="60" step="1" class="slider" id="maxConnectCountSlider">
-							60
 							<div id="maxConnectCountSliderVal"></div>
 						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
-						In order to prevent FPFool from establishing too many connections, this setting allows you to
-						limit the total amount of connections being made (too many connections are suspicious to
-						websites).
+						This setting allows you to limit the total amount of connections being made (not more than
+						the selected number times the usual amount of connections from the user per day).
 					</p>
 				</div>
 			</div>

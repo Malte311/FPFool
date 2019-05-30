@@ -3,7 +3,7 @@
 /*
  * Specifies if the application should be run in debug mode.
  */
-const debug = true;
+const debug = false;
 
 /*
  * Holds the path to the data.json file.
@@ -209,7 +209,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 						chrome.storage.sync.set({
 							clickedLinksCount: clickedLinksCount,
 							keywordSearchCount: keywordSearchCount,
-							visitedSitesCount: visitedSitesCount
+							visitedSitesCount: visitedSitesCount,
+							todayConnectionCount: todayConnectionCount
 						}, function (res) {
 							chrome.windows.remove(windowId);
 						});

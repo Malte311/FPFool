@@ -11,18 +11,13 @@ var browserHistory = new Map();
  * number multiplied by the number of connections being made by the user per day.
  */
 var maxConnectCount = 2;
+var connectionLimit = 20;
 
 /*
  * Holds the maximum of visits for an url from the queue. We want to visit all the other sites
  * equally often.
  */
 var maxVisits = 10;
-
-/*
- * Defines the time to wait before continuing visiting urls (to prevent too many visits which
- * may be detected by anti-bot mechanisms).
- */
-var restartTime = 10 * 1000;
 
 /*
  * Holds the maximum number of active tabs at the same time.
@@ -100,15 +95,13 @@ function runApplication() {
 					if (count == historyItems.length) {
 						// Get the max value (because we want to visit all sites equally often
 						maxVisits = Math.max(...browserHistory.values());
+						connectionLimit = Math.ceil(totalVisits / (interval / 1000 / 60 / 60 / 24))
+							* maxConnectCount;
 
 						// First call instant, then interval
 						connectToUrl(queue.shift(), activeAlgorithm);
 						todayConnectionCount++;
-						connectLoop(
-							Math.ceil(
-								totalVisits / (interval / 1000 / 60 / 60 / 24)
-							) * maxConnectCount
-						);
+						connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
 					}
 				});
 			}
@@ -118,16 +111,42 @@ function runApplication() {
 
 /**
  * Repeats connecting to webpages.
- * @param {number} connectionLimit The maximum number of connections per day.
+ * 
+ * @param {number} restartTime Number of milliseconds until a new connection should be made.
  */
-function connectLoop(connectionLimit) {
+function connectLoop(restartTime) {
+	restartTime = Math.trunc(restartTime);
+	var startTime = (new Date).getTime();
 	var running = setInterval(function () {
 		connectToUrl(queue.shift(), activeAlgorithm);
 
 		if ((++todayConnectionCount > connectionLimit) || !(queue.length > 0)) {
 			clearInterval(running);
 		}
+
+		// Pause after 30 seconds; restart after 2 mintues with new interval duration
+		if ((new Date).getTime() > startTime + 30000) {
+			clearInterval(running);
+			setTimeout(function () {
+				if (queue.length > 15) {
+					restartLoop(restartTime * 0.7);
+				}
+				else {
+					restartLoop(restartTime * 1.2);
+				}
+			}, 1000 * 120);
+		}
 	}, restartTime);
+}
+
+/**
+ * Restarts the connection loop. The queue gets shuffled as well.
+ * 
+ * @param {number} restartTime Number of milliseconds until a new connection should be made.
+ */
+function restartLoop(restartTime) {
+	queue = shuffleArray(queue);
+	connectLoop(restartTime);
 }
 
 /**
@@ -193,3 +212,24 @@ function getSearchTerms() {
 		}
 	});
 }
+
+/**
+ * Shuffles a given array.
+ * 
+ * @param {Array} array The array we want to shuffle.
+ */
+function shuffleArray(array) {
+	var currentIndex = array.length;
+	var temporaryValue, randomIndex;
+
+	while (currentIndex != 0) {
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
+
+		temporaryValue = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = temporaryValue;
+	}
+
+	return array;
+};

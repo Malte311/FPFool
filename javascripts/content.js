@@ -29,7 +29,7 @@ $(document).ready(function () {
 
 				switch (response.algo) {
 					case data.availableAlgorithms.DEFAULT:
-						setTimeout(disconnect, weightedRandom(5000));
+						setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
 						break;
 					case data.availableAlgorithms.NAVIGATE:
 						navigatePage();
@@ -76,7 +76,7 @@ function navigatePage() {
 		updateStatistics('visitedSitesCount');
 
 		$(randomVisit)[0].click();
-	}, weightedRandom(8000));
+	}, weightedRandom(8000, 500));
 }
 
 /**
@@ -114,7 +114,7 @@ function searchPage() {
 				updateStatistics('visitedSitesCount');
 
 				form.submit();
-			}, weightedRandom(8000));
+			}, weightedRandom(8000, 1000));
 		} else {
 			updateStatus(location.href, 'SEARCHFAIL', resp.searchTerm, '&ndash;');
 			setTimeout(disconnect, weightedRandom(6000, weightedRandom(1500)));

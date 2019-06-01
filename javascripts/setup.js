@@ -16,6 +16,11 @@ const dataPath = '../data/data.json';
 var data;
 
 /*
+ * Holds the indexedDB database.
+ */
+var database;
+
+/*
  * Saves the id of a minimized extra window in which the extension creates fake connections. This
  * extra window is minimized in order to not distract the user at his work.
  */
@@ -73,7 +78,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 							queue.push(key);
 							// Restart loop if queue was empty before and maximum number of
 							// connections is not reached yet.
-							if (!(queue.length > 1) && connectionCount < connectionLimit) {
+							if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
 								restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
 							}
 						}
@@ -181,6 +186,31 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			url: chrome.runtime.getURL("./html/extensionPage.html")
 		});
 	});
+
+	/*
+	 * Creates a database, if no database exists yet.
+	 * We use the database for saving search terms.
+	 * Database contains following tables:
+	 * searchTerms:
+	 * url | keywords
+	 */
+	if ('indexedDB' in window) {
+		var requestDB = window.indexedDB.open('database', 4);
+
+		requestDB.onupgradeneeded = function (event) {
+			database = requestDB.result;
+			console.log("contains: " + database.objectStoreNames.contains('searchTerms'))
+			if (!database.objectStoreNames.contains('searchTerms')) {
+				var searchOS = database.createObjectStore('searchTerms', {
+					keyPath: 'url'
+				});
+				searchOS.createIndex('keywords', 'keywords', {
+					unique: true, // No duplicate values for a single key
+					multiEntry: false // Adding arrays: Entry can be an array
+				});
+			}
+		}
+	}
 
 	/*
 	 * Creates the window for this extension to work in. It also updates the value of the variable

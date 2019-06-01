@@ -95,8 +95,8 @@ function runApplication() {
 					if (count == historyItems.length) {
 						// Get the max value (because we want to visit all sites equally often
 						maxVisits = Math.max(...browserHistory.values());
-						connectionLimit = Math.ceil(totalVisits / (interval / 1000 / 60 / 60 / 24))
-							* maxConnectCount;
+						connectionLimit = Math.ceil(totalVisits / (interval / 1000 / 60 / 60 / 24)) *
+							maxConnectCount;
 
 						// First call instant, then interval
 						connectToUrl(queue.shift(), activeAlgorithm);
@@ -130,8 +130,7 @@ function connectLoop(restartTime) {
 			setTimeout(function () {
 				if (queue.length > 15) {
 					restartLoop(restartTime * 0.7);
-				}
-				else {
+				} else {
 					restartLoop(restartTime * 1.2);
 				}
 			}, 1000 * 120);
@@ -211,6 +210,18 @@ function getSearchTerms() {
 			}
 		}
 	});
+
+
+	var trans = database.transaction('searchTerms', 'readwrite');
+	var store = trans.objectStore('searchTerms');
+	store.add({
+		url: 'test123',
+		terms: ['Das ist ein Test', 'Immer noch ein Test']
+	});
+
+	var tx = database.transaction('searchTerms', 'readonly');
+	var store = tx.objectStore('searchTerms');
+	console.log(store.get('test123'))
 }
 
 /**

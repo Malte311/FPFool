@@ -90,10 +90,10 @@ function searchPage() {
 		inputField = $(':input[type=text]').first();
 	}
 
-	var urlSplitted = document.domain.split('.');
+	var url = location.href;
 	chrome.runtime.sendMessage({
 		type: 'getSearchTerm',
-		domain: urlSplitted.length > 2 ? urlSplitted[1] : urlSplitted[0]
+		url: url.indexOf('?') < 0 ? url : url.substring(0, url.indexOf('?'))
 	}, function (resp) {
 		var form = $(inputField).closest('form');
 		var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;

@@ -41,11 +41,6 @@ var thirdParties = new Map();
  */
 var queue = [];
 
-/*
- * Some search term for the searching algorithm, found in the user's browser history.
- */
-var searchTerms = [];
-
 // Start with loading the data.json file.
 fetch(dataPath).then(response => response.json()).then(function (json) {
 	// Save json content in variable to make it accessible elsewhere
@@ -136,9 +131,16 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				});
 				break;
 			case data.availableMessageTypes.getSearchTerm:
-				response.searchTerm = searchTerms.length > 0 ?
-					searchTerms[Math.floor(Math.random() * searchTerms.length)] :
-					' ';
+				var trans = database.transaction('searchTerms', 'readonly');
+				var store = trans.objectStore('searchTerms');
+				var getRequest = store.get(request.url);
+
+				// TODO: Wait for this asynchronous function to execute before breaking out
+				getRequest.onsuccess = function (event) {
+					response.searchTerm = getRequest.result != undefined ?
+						getRequest.result.terms[0] :
+						' ';
+				};
 				break;
 			case data.availableMessageTypes.getStatistics:
 				response.clickedLinksCount = clickedLinksCount;
@@ -197,9 +199,12 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	if ('indexedDB' in window) {
 		var requestDB = window.indexedDB.open('database', 4);
 
+		requestDB.onsuccess = function (event) {
+			database = requestDB.result;
+		};
+
 		requestDB.onupgradeneeded = function (event) {
 			database = requestDB.result;
-			console.log("contains: " + database.objectStoreNames.contains('searchTerms'))
 			if (!database.objectStoreNames.contains('searchTerms')) {
 				var searchOS = database.createObjectStore('searchTerms', {
 					keyPath: 'url'
@@ -209,7 +214,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 					multiEntry: false // Adding arrays: Entry can be an array
 				});
 			}
-		}
+		};
 	}
 
 	/*

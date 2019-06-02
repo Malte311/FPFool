@@ -191,7 +191,7 @@ function connectToUrl(url, algo) {
 
 /*
  * Searches for possible search terms in the user's browser history. Saves the results
- * to the 'searchTerms' array.
+ * to the 'searchTerms' objectStore in our database.
  */
 function getSearchTerms() {
 	chrome.history.search({
@@ -201,33 +201,26 @@ function getSearchTerms() {
 		for (const historyItem of historyItems) {
 			var url = historyItem.url;
 			if (url.indexOf('?q=') > 0) {
-				searchTerms.push(
-					decodeURIComponent(url.substring(
-						url.indexOf('?q=') + 3,
-						url.indexOf('&') > 0 ? url.indexOf('&') : url.length
-					))
+				storeInDatabase(
+					'searchTerms',
+					url.substring(0, url.indexOf('?')),
+					decodeURIComponent(
+						url.substring(
+							url.indexOf('?q=') + 3,
+							url.indexOf('&') > 0 ? url.indexOf('&') : url.length
+						)
+					)
 				);
 			}
 		}
 	});
-
-
-	var trans = database.transaction('searchTerms', 'readwrite');
-	var store = trans.objectStore('searchTerms');
-	store.add({
-		url: 'test123',
-		terms: ['Das ist ein Test', 'Immer noch ein Test']
-	});
-
-	var tx = database.transaction('searchTerms', 'readonly');
-	var store = tx.objectStore('searchTerms');
-	console.log(store.get('test123'))
 }
 
 /**
  * Shuffles a given array.
  * 
  * @param {Array} array The array we want to shuffle.
+ * @return {Array} The shuffled array.
  */
 function shuffleArray(array) {
 	var currentIndex = array.length;
@@ -244,3 +237,24 @@ function shuffleArray(array) {
 
 	return array;
 };
+
+/**
+ * Adds new entries to our indexedDB database.
+ * 
+ * @param {Object} objectStore The table we want to update.
+ * @param {string} key The key of the item we want to update/add.
+ * @param {Object} val The new value for the given key.
+ */
+function storeInDatabase(objectStore, key, val) {
+	var trans = database.transaction(objectStore, 'readwrite');
+	var store = trans.objectStore(objectStore);
+	var getRequest = store.get(key);
+
+	getRequest.onsuccess = function (event) {
+		var terms = getRequest.result != undefined ? getRequest.result.terms.concat([val]) : [val];
+		store.put({
+			url: key,
+			terms: terms
+		});
+	};
+}

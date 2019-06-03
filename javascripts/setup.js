@@ -50,37 +50,37 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * Keep track of third party requests, so we can visit these sites if we want to.
 	 */
 	chrome.webRequest.onBeforeRequest.addListener(function (det) {
-			const excludedTypes = ['stylesheet', 'image']; // Reduce unnecessary effort
-			if (!excludedTypes.includes(det.type) && det.initiator != undefined) {
-				// We are only interested in third party sites, so we ignore first party requests.
-				// (otherwise we would get way too many requests to consider)
-				var startInd = det.initiator.indexOf('.') + 1;
-				var urlExtension = det.initiator.match(/\.[a-z]{2,3}($|\/)/);
-				var endInd = urlExtension != null ? det.initiator.indexOf(urlExtension[0]) : -1;
-				if (endInd > 0 && !det.url.includes(det.initiator.substring(startInd, endInd))) {
-					var val = thirdParties.get(det.initiator);
-					thirdParties.set(
-						det.initiator,
-						val != undefined ?
+		const excludedTypes = ['stylesheet', 'image']; // Reduce unnecessary effort
+		if (!excludedTypes.includes(det.type) && det.initiator != undefined) {
+			// We are only interested in third party sites, so we ignore first party requests.
+			// (otherwise we would get way too many requests to consider)
+			var startInd = det.initiator.indexOf('.') + 1;
+			var urlExtension = det.initiator.match(/\.[a-z]{2,3}($|\/)/);
+			var endInd = urlExtension != null ? det.initiator.indexOf(urlExtension[0]) : -1;
+			if (endInd > 0 && !det.url.includes(det.initiator.substring(startInd, endInd))) {
+				var val = thirdParties.get(det.initiator);
+				thirdParties.set(
+					det.initiator,
+					val != undefined ?
 						(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
-					);
+				);
 
-					// Find other websites that use the same third party and are not added to the
-					// queue yet
-					for (const [key, val] of thirdParties) {
-						if (!key.includes(det.initiator.substring(startInd, endInd)) &&
-							val.includes(det.url) && !queue.includes(key)) {
-							queue.push(key);
-							// Restart loop if queue was empty before and maximum number of
-							// connections is not reached yet.
-							if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
-								restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
-							}
+				// Find other websites that use the same third party and are not added to the
+				// queue yet
+				for (const [key, val] of thirdParties) {
+					if (!key.includes(det.initiator.substring(startInd, endInd)) &&
+						val.includes(det.url) && !queue.includes(key)) {
+						queue.push(key);
+						// Restart loop if queue was empty before and maximum number of
+						// connections is not reached yet.
+						if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
+							restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
 						}
 					}
 				}
 			}
-		}, {
+		}
+	}, {
 			urls: ['http://*/*', 'https://*/*']
 		},
 		['requestBody']
@@ -131,16 +131,33 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				});
 				break;
 			case data.availableMessageTypes.getSearchTerm:
-				var trans = database.transaction('searchTerms', 'readonly');
-				var store = trans.objectStore('searchTerms');
-				var getRequest = store.get(request.url);
 
-				// TODO: Wait for this asynchronous function to execute before breaking out
-				getRequest.onsuccess = function (event) {
-					response.searchTerm = getRequest.result != undefined ?
-						getRequest.result.terms[0] :
-						' ';
-				};
+				async function getTheData() {
+					var trans = database.transaction('searchTerms', 'readonly');
+					var store = trans.objectStore('searchTerms');
+					var getRequest = store.get(request.url);
+					var value;
+
+					var pro = new Promise(resolve => {
+						getRequest.onsuccess = function (event) {
+							value = getRequest.result != undefined ?
+								getRequest.result.terms[0] :
+								' ';
+							resolve()
+						};
+					})
+					var pro2 = await pro.then(() => {
+						return value;
+					});
+					console.log(pro, value);
+					return await value;
+				}
+				getTheData();
+				response.searchTerm = value;
+
+				console.log(response.searchTerm);
+
+				console.log("Returning " + response.searchTerm);
 				break;
 			case data.availableMessageTypes.getStatistics:
 				response.clickedLinksCount = clickedLinksCount;

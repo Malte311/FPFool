@@ -48,65 +48,65 @@ function runApplication() {
 	getSearchTerms(); // No need to wait for this asynchronous call
 	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
 		Object.values(data.availableSettings)), function (res) {
-		// Settings
-		maxConnectCount = res.maxConnectCount != undefined ?
-			parseInt(res.maxConnectCount) :
-			maxConnectCount;
-		var interval = res.interval != undefined ? parseInt(res.interval) : 1; // Default 1 day
-		interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs milliseconds
-		activeAlgorithm = res.activeAlgorithm != undefined ?
-			res.activeAlgorithm :
-			data.availableAlgorithms.DEFAULT;
-		todayConnectionCount = res.todayConnectionCount != undefined ?
-			parseInt(todayConnectionCount) :
-			todayConnectionCount;
+			// Settings
+			maxConnectCount = res.maxConnectCount != undefined ?
+				parseInt(res.maxConnectCount) :
+				maxConnectCount;
+			var interval = res.interval != undefined ? parseInt(res.interval) : 1; // Default 1 day
+			interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs milliseconds
+			activeAlgorithm = res.activeAlgorithm != undefined ?
+				res.activeAlgorithm :
+				data.availableAlgorithms.DEFAULT;
+			todayConnectionCount = res.todayConnectionCount != undefined ?
+				parseInt(todayConnectionCount) :
+				todayConnectionCount;
 
-		// Statistics
-		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
-		clickedLinksCount = res.clickedLinksCount != undefined ? res.clickedLinksCount : 0;
-		keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;
+			// Statistics
+			visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
+			clickedLinksCount = res.clickedLinksCount != undefined ? res.clickedLinksCount : 0;
+			keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;
 
-		// Gets the browser history to establish connections to sites which have already been
-		// visited (we want all urls, default interval is 24 hours, default maximum amount of
-		// entries is 15).
-		chrome.history.search({
-			'text': '', // All entries in a given time interval
-			'startTime': (new Date).getTime() - interval,
-			'maxResults': res.maxHistoryCount != undefined ? parseInt(res.maxHistoryCount) : 15
-		}, function (historyItems) {
-			// Get the number of visits for each page during the specified time interval.
-			var count = 0;
-			var totalVisits = 0;
-			for (const historyItem of historyItems) {
-				chrome.history.getVisits({
-					url: historyItem.url
-				}, function (results) {
-					// Save which urls were visited and how often they were visited (using a 
-					// key-value datastructure for this purpose).
-					browserHistory.set(historyItem.url, results.filter(item =>
-						item.visitTime >= (new Date).getTime() - interval
-					).length);
-					queue.push(historyItem.url); // Add to processing queue
-					totalVisits += browserHistory.get(historyItem.url);
+			// Gets the browser history to establish connections to sites which have already been
+			// visited (we want all urls, default interval is 24 hours, default maximum amount of
+			// entries is 15).
+			chrome.history.search({
+				'text': '', // All entries in a given time interval
+				'startTime': (new Date).getTime() - interval,
+				'maxResults': res.maxHistoryCount != undefined ? parseInt(res.maxHistoryCount) : 15
+			}, function (historyItems) {
+				// Get the number of visits for each page during the specified time interval.
+				var count = 0;
+				var totalVisits = 0;
+				for (const historyItem of historyItems) {
+					chrome.history.getVisits({
+						url: historyItem.url
+					}, function (results) {
+						// Save which urls were visited and how often they were visited (using a 
+						// key-value datastructure for this purpose).
+						browserHistory.set(historyItem.url, results.filter(item =>
+							item.visitTime >= (new Date).getTime() - interval
+						).length);
+						queue.push(historyItem.url); // Add to processing queue
+						totalVisits += browserHistory.get(historyItem.url);
 
-					// After the last iteration we want to continue by visiting the urls.
-					// Necessary to check in here because of asynchronous calls.
-					count++;
-					if (count == historyItems.length) {
-						// Get the max value (because we want to visit all sites equally often
-						maxVisits = Math.max(...browserHistory.values());
-						connectionLimit = Math.ceil(totalVisits / (interval / 1000 / 60 / 60 / 24)) *
-							maxConnectCount;
+						// After the last iteration we want to continue by visiting the urls.
+						// Necessary to check in here because of asynchronous calls.
+						count++;
+						if (count == historyItems.length) {
+							// Get the max value (because we want to visit all sites equally often
+							maxVisits = Math.max(...browserHistory.values());
+							connectionLimit = Math.ceil(totalVisits / (interval / 1000 / 60 / 60 / 24)) *
+								maxConnectCount;
 
-						// First call instant, then interval
-						connectToUrl(queue.shift(), activeAlgorithm);
-						todayConnectionCount++;
-						connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
-					}
-				});
-			}
+							// First call instant, then interval
+							connectToUrl(queue.shift(), activeAlgorithm);
+							todayConnectionCount++;
+							connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
+						}
+					});
+				}
+			});
 		});
-	});
 }
 
 /**

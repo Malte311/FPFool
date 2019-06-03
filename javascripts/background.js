@@ -208,7 +208,7 @@ function getSearchTerms() {
 						url.substring(
 							url.indexOf('?q=') + 3,
 							url.indexOf('&') > 0 ? url.indexOf('&') : url.length
-						)
+						).replace(/\+/g, ' ')
 					)
 				);
 			}
@@ -257,4 +257,15 @@ function storeInDatabase(objectStore, key, val) {
 			terms: terms
 		});
 	};
+}
+
+/**
+ * Returns the value for a given key from our indexedDB database.
+ * 
+ * @param {Object} objectStore The table we want to update.
+ * @param {string} key The key of the item we want to update/add.
+ * @return {Promise} The corresponding value to the given key.
+ */
+async function getFromDatabase(objectStore, key) {
+	return await database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
 }

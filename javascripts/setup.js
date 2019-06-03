@@ -123,6 +123,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 */
 	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		var response = {};
+		var asyncCall = false; // For asynchronous responses
 		switch (request.type) {
 			case data.availableMessageTypes.disconnect:
 				chrome.tabs.remove(sender.tab.id, function () {
@@ -132,33 +133,15 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				});
 				break;
 			case data.availableMessageTypes.getSearchTerm:
-
-				async function getTheData() {
-					var trans = database.transaction('searchTerms', 'readonly');
-					var store = trans.objectStore('searchTerms');
-					var getRequest = store.get(request.url);
-					var value;
-
-					var pro = new Promise(resolve => {
-						getRequest.onsuccess = function (event) {
-							value = getRequest.result != undefined ?
-								getRequest.result.terms[0] :
-								' ';
-							resolve()
-						};
-					})
-					var pro2 = await pro.then(() => {
-						return value;
-					});
-					console.log(pro, value);
-					return await value;
-				}
-				getTheData();
-				response.searchTerm = value;
-
-				console.log(response.searchTerm);
-
-				console.log("Returning " + response.searchTerm);
+				asyncCall = true;
+				getFromDatabase('searchTerms', request.url).then(function (idbRequest) {
+					idbRequest.onsuccess = function (event) {
+						response.searchTerm = idbRequest.result != undefined ?
+							idbRequest.result.terms[0] :
+							' ';
+						sendResponse(response);
+					};
+				});
 				break;
 			case data.availableMessageTypes.getStatistics:
 				response.clickedLinksCount = clickedLinksCount;
@@ -195,7 +178,11 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				return; // Don't answer unknown messages
 		}
 
-		sendResponse(response);
+		if (!asyncCall) {
+			sendResponse(response);
+		} else {
+			return true; // Keep message channel open until response sent (happens inside of case)
+		}
 	});
 
 	/*

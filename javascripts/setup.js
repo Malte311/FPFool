@@ -28,6 +28,7 @@ var windowId;
 
 /*
  * Keeps track of the tabs which are currently open to create fake connections.
+ * (initialized in the runApplication() function before creating the first connection)
  */
 var currentTabs = [];
 
@@ -86,19 +87,6 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 		},
 		['requestBody']
 	);
-
-	/* 
-	 * Create an array of fixed size such that push and splice are not neccessary anymore (they 
-	 * both cause problems because there are multiple calls in parallel when adding or removing 
-	 * tabs). Afterwards, we fill array with invalid ids, such that we are not accessing the id 
-	 * of an undefined element.
-	 */
-	chrome.storage.sync.get([data.availableSettings.maxConnectCount], function (response) {
-		currentTabs = new Array(parseInt(response[data.availableSettings.maxConnectCount]));
-		currentTabs.fill({
-			id: -1
-		});
-	});
 
 	/*
 	 * Waits for messages from content scripts. Answers these messages appropriately:

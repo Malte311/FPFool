@@ -98,6 +98,17 @@ function runApplication() {
 						connectionLimit = Math.ceil(totalVisits / (interval / 1000 / 60 / 60 / 24)) *
 							maxConnectCount;
 
+						/* 
+						 * Create an array of fixed size such that push and splice are not neccessary anymore (they 
+						 * both cause problems because there are multiple calls in parallel when adding or removing 
+						 * tabs). Afterwards, we fill array with invalid ids, such that we are not accessing the id 
+						 * of an undefined element.
+						 */
+						currentTabs = new Array(connectionLimit);
+						currentTabs.fill({
+							id: -1
+						});
+
 						// First call instant, then interval
 						connectToUrl(queue.shift(), activeAlgorithm);
 						todayConnectionCount++;

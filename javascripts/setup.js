@@ -141,7 +141,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				getFromDatabase('searchTerms', request.url).then(function (req) {
 					req.onsuccess = function (event) {
 						response.searchTerm = req.result != undefined ?
-							req.result.terms[Math.floor(Math.random() * req.result.terms.length)] :
+							req.result.terms[Math.floor(Math.random() * req.result.terms.length)][0] :
 							' ';
 						sendResponse(response);
 					};

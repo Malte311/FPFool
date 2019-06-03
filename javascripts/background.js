@@ -207,8 +207,8 @@ function getSearchTerms() {
 					.forEach(function (val, ind, arr) {
 						var url = historyItem.url;
 						if (url.indexOf('?q=') > 0) {
-							url = url.substring(0, url.indexOf('?'));
-							getFromDatabase('searchTerms', url).then(function (res) {
+							var key = url.substring(0, url.indexOf('?'));
+							getFromDatabase('searchTerms', key).then(function (res) {
 								res.onsuccess = function (event) {
 									var isDuplicate = false;
 									if (!(res.result == undefined)) {
@@ -221,7 +221,7 @@ function getSearchTerms() {
 									if (!isDuplicate) {
 										storeInDatabase(
 											'searchTerms',
-											url,
+											key,
 											[decodeURIComponent(
 												url.substring(
 													url.indexOf('?q=') + 3,

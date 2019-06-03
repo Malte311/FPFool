@@ -110,6 +110,10 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * request.type == 'getStatistics'
 	 * Returns all variables holding statistical information (e.g. total amount of visited sites).
 	 * 
+	 * request.type == 'getSearchTerm'
+	 * Searches for terms in our indexedDB database for the requesting url, then returns these
+	 * terms (if found any, otherwise we return an empty string).
+	 * 
 	 * request.type == 'inc...'
 	 * Increments the value of the specified variable.
 	 * 
@@ -134,10 +138,10 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				break;
 			case data.availableMessageTypes.getSearchTerm:
 				asyncCall = true;
-				getFromDatabase('searchTerms', request.url).then(function (idbRequest) {
-					idbRequest.onsuccess = function (event) {
-						response.searchTerm = idbRequest.result != undefined ?
-							idbRequest.result.terms[0] :
+				getFromDatabase('searchTerms', request.url).then(function (req) {
+					req.onsuccess = function (event) {
+						response.searchTerm = req.result != undefined ?
+							req.result.terms[Math.floor(Math.random() * req.result.terms.length)] :
 							' ';
 						sendResponse(response);
 					};
@@ -211,12 +215,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 		requestDB.onupgradeneeded = function (event) {
 			database = requestDB.result;
 			if (!database.objectStoreNames.contains('searchTerms')) {
-				var searchOS = database.createObjectStore('searchTerms', {
+				database.createObjectStore('searchTerms', {
 					keyPath: 'url'
-				});
-				searchOS.createIndex('keywords', 'keywords', {
-					unique: true, // No duplicate values for a single key
-					multiEntry: false // Adding arrays: Entry can be an array
 				});
 			}
 		};

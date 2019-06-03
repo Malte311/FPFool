@@ -194,24 +194,49 @@ function connectToUrl(url, algo) {
  * to the 'searchTerms' objectStore in our database.
  */
 function getSearchTerms() {
+	var interval = 1000 * 60 * 60 * 24 * 5;
 	chrome.history.search({
 		text: '',
-		'startTime': (new Date).getTime() - 1000 * 60 * 60 * 24 * 5
+		'startTime': (new Date).getTime() - interval
 	}, function (historyItems) {
 		for (const historyItem of historyItems) {
-			var url = historyItem.url;
-			if (url.indexOf('?q=') > 0) {
-				storeInDatabase(
-					'searchTerms',
-					url.substring(0, url.indexOf('?')),
-					decodeURIComponent(
-						url.substring(
-							url.indexOf('?q=') + 3,
-							url.indexOf('&') > 0 ? url.indexOf('&') : url.length
-						).replace(/\+/g, ' ')
-					)
-				);
-			}
+			chrome.history.getVisits({
+				url: historyItem.url
+			}, function (results) {
+				results.filter(item => item.visitTime >= (new Date).getTime() - interval)
+					.forEach(function (val, ind, arr) {
+						var url = historyItem.url;
+						if (url.indexOf('?q=') > 0) {
+							url = url.substring(0, url.indexOf('?'));
+							getFromDatabase('searchTerms', url).then(function (res) {
+								res.onsuccess = function (event) {
+									var isDuplicate = false;
+									if (!(res.result == undefined)) {
+										res.result.terms.forEach(function (v, i, a) {
+											if (v[1] == Math.trunc(val.visitTime)) {
+												isDuplicate = true;
+											}
+										});
+									}
+									if (!isDuplicate) {
+										storeInDatabase(
+											'searchTerms',
+											url,
+											[decodeURIComponent(
+												url.substring(
+													url.indexOf('?q=') + 3,
+													(url.indexOf('&') > 0 ?
+														url.indexOf('&') :
+														url.length)
+												).replace(/\+/g, ' ')
+											), Math.trunc(val.visitTime)]
+										);
+									}
+								};
+							});
+						}
+					});
+			});
 		}
 	});
 }

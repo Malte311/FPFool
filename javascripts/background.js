@@ -52,6 +52,9 @@ function runApplication() {
 		maxConnectCount = res.maxConnectCount != undefined ?
 			parseInt(res.maxConnectCount) :
 			maxConnectCount;
+		maxTabsCount = res.maxTabsCount != undefined ?
+			parseInt(res.maxTabsCount) :
+			maxTabsCount;
 		var interval = res.interval != undefined ? parseInt(res.interval) : 1; // Default 1 day
 		interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs milliseconds
 		activeAlgorithm = res.activeAlgorithm != undefined ?

@@ -30,6 +30,7 @@
 		"interval": "interval",
 		"maxConnectCount": "maxConnectCount",
 		"maxHistoryCount": "maxHistoryCount",
+		"maxTabsCount": "maxTabsCount",
 		"todayConnectionCount": "todayConnectionCount"
 	},
 	"availableStatistics": {

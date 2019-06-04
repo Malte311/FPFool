@@ -69,7 +69,7 @@
 				<div class="card bg-light border-primary mb-3 text-center"
 					style="width: 28rem; display: inline-block; margin-right: 30px;">
 					<div class="card-body text-primary">
-						<h3 class="card-text"><em>Max. history entries</em></h3>
+						<h3 class="card-text"><em>Website limit</em></h3>
 						<div class="alert alert-primary" role="alert">
 							5
 							<input type="range" min="5" max="20" step="1" class="slider" id="maxHistoryCountSlider">
@@ -78,14 +78,30 @@
 						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
-						Sometimes, there may exist a lot of browser history entries even in a short period of time.
-						This option allows you to limit the number of browser history entries to visit not too many
-						different websites.
+						Sometimes, there may be a lot of browser history entries even in a short period of time.
+						This option allows you to limit the number of <b>different</b> websites that should get
+						visited by this tool.
+					</p>
+				</div>
+				<div class="card bg-light border-primary mb-3 text-center"
+					style="width: 28rem; display: inline-block; margin-right: 30px;">
+					<div class="card-body text-primary">
+						<h3 class="card-text"><em>Tab limit</em></h3>
+						<div class="alert alert-primary" role="alert">
+							3
+							<input type="range" min="3" max="10" step="1" class="slider" id="maxTabsCountSlider">
+							10
+							<div id="maxTabsCountSliderVal"></div>
+						</div>
+					</div>
+					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
+						The tab limit is the maximum amount of tabs being open at the same time.
+						<br><br><br>
 					</p>
 				</div>
 				<div class="card bg-light border-primary mb-3 text-center" style="width: 28rem; display: inline-block;">
 					<div class="card-body text-primary">
-						<h3 class="card-text"><em>Max. connections multiplier</em></h3>
+						<h3 class="card-text"><em>Connection limit factor</em></h3>
 						<div class="alert alert-primary" role="alert">
 							1
 							<input type="range" min="1" max="5" step="1" class="slider" id="maxConnectCountSlider">

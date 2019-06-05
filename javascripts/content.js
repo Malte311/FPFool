@@ -19,6 +19,15 @@ $(document).ready(function () {
 		// Save json content in variable to make it accessible elsewhere
 		data = json;
 
+		// Tell the background script when window is resized
+		window.addEventListener('resize', function (event) {
+			chrome.runtime.sendMessage({
+				type: 'resize',
+				width: event.target.outerWidth,
+				height: event.target.outerHeight
+			}, function (response) {});
+		});
+
 		chrome.runtime.sendMessage({
 			type: 'isExec'
 		}, function (response) {

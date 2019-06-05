@@ -42,10 +42,59 @@ var thirdParties = new Map();
  */
 var queue = [];
 
+/*
+ * Loads the saved window state to restore it.
+ */
+chrome.storage.sync.get('windowState', function (result) {
+	if (result != undefined) {
+		chrome.windows.getCurrent(function (currWindow) {
+			chrome.windows.update(currWindow.id, {
+				state: result.windowState.state,
+				width: result.windowState.width,
+				height: result.windowState.height
+			});
+		});
+	}
+});
+
 // Start with loading the data.json file.
 fetch(dataPath).then(response => response.json()).then(function (json) {
 	// Save json content in variable to make it accessible elsewhere
 	data = json;
+
+	/*
+	 * Saves the window state of the users' window. We do this in order to restore this state on
+	 * restart, because otherwise the window would adapt the state of the hidden window (which
+	 * is not very user-friendly). State gets updated anytime the window changes its state.
+	 */
+	chrome.runtime.onInstalled.addListener(function () {
+		chrome.windows.getCurrent(function (currWindow) {
+			chrome.storage.sync.set({
+				windowState: {
+					state: currWindow.state,
+					width: currWindow.width,
+					height: currWindow.height
+				}
+			});
+		});
+	});
+
+	/*
+	 * Saves changes to the window state.
+	 */
+	chrome.tabs.onCreated.addListener(function (tab) {
+		if (windowId != undefined && tab.windowId != windowId) { // Only consider real tabs
+			chrome.windows.get(tab.windowId, function (currWindow) {
+				chrome.storage.sync.set({
+					windowState: {
+						state: currWindow.state,
+						width: currWindow.width,
+						height: currWindow.height
+					}
+				});
+			});
+		}
+	});
 
 	/*
 	 * Keep track of third party requests, so we can visit these sites if we want to.
@@ -164,6 +213,17 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 					visitedSitesCount: visitedSitesCount,
 					clickedLinksCount: clickedLinksCount,
 					keywordSearchCount: keywordSearchCount
+				});
+				break;
+			case data.availableMessageTypes.resize:
+				chrome.windows.getCurrent(function (currWindow) {
+					chrome.storage.sync.set({
+						windowState: {
+							state: currWindow.state,
+							width: request.width,
+							height: request.height
+						}
+					});
 				});
 				break;
 			default:

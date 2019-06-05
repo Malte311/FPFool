@@ -19,7 +19,8 @@
 		"incKeywordSearchCount": "incKeywordSearchCount",
 		"incVisitedSitesCount": "incVisitedSitesCount",
 		"isExec": "isExec",
-		"resetStatistics": "resetStatistics"
+		"resetStatistics": "resetStatistics",
+		"resize": "resize"
 	},
 	"availableTabs": {
 		"SETTINGS": "pills-settings-tab",

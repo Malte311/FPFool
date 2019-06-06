@@ -175,7 +175,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				break;
 			case data.availableMessageTypes.getSearchTerm:
 				asyncCall = true;
-				getFromDatabase('searchTerms', request.url).then(function (req) {
+				getFromDatabase('searchTerms', getNameFromUrl(request.url)).then(function (req) {
 					req.onsuccess = function (event) {
 						response.searchTerm = req.result != undefined ?
 							req.result.terms[Math.floor(Math.random() * req.result.terms.length)][0] :

@@ -99,10 +99,9 @@ function searchPage() {
 		inputField = $(':input[type=text]').first();
 	}
 
-	var url = location.href;
 	chrome.runtime.sendMessage({
 		type: 'getSearchTerm',
-		url: url.indexOf('?') < 0 ? url : url.substring(0, url.indexOf('?'))
+		url: document.domain
 	}, function (resp) {
 		var form = $(inputField).closest('form');
 		var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;

@@ -84,13 +84,17 @@ function runApplication() {
 				chrome.history.getVisits({
 					url: historyItem.url
 				}, function (results) {
+					var shortUrl = historyItem.url;
+					if (shortUrl.indexOf('?') > 0) {
+						shortUrl = shortUrl.substring(0, shortUrl.indexOf('?'));
+					}
 					// Save which urls were visited and how often they were visited (using a 
 					// key-value datastructure for this purpose).
-					browserHistory.set(historyItem.url, results.filter(item =>
+					browserHistory.set(shortUrl, results.filter(item =>
 						item.visitTime >= (new Date).getTime() - interval
 					).length);
-					queue.push(historyItem.url); // Add to processing queue
-					totalVisits += browserHistory.get(historyItem.url);
+					queue.push(shortUrl); // Add to processing queue
+					totalVisits += browserHistory.get(shortUrl);
 
 					// After the last iteration we want to continue by visiting the urls.
 					// Necessary to check in here because of asynchronous calls.
@@ -221,7 +225,7 @@ function getSearchTerms() {
 					.forEach(function (val, ind, arr) {
 						var url = historyItem.url;
 						if (url.indexOf('?q=') > 0) {
-							var key = url.substring(0, url.indexOf('?'));
+							var key = getNameFromUrl(url);
 							getFromDatabase('searchTerms', key).then(function (res) {
 								res.onsuccess = function (event) {
 									var isDuplicate = false;
@@ -307,4 +311,31 @@ function storeInDatabase(objectStore, key, val) {
  */
 async function getFromDatabase(objectStore, key) {
 	return await database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
+}
+
+/**
+ * Gets the name of an url, e.g.
+ * +----------------------+------------+
+ * | input                | output     |
+ * +----------------------+------------+
+ * | www.google.com       | google     |
+ * | www.mail.google.com  | google     |
+ * +----------------------+------------+
+ * Note: Might not work perfectly, but it works for all important websites.
+ * 
+ * @param {string} url The url of which we want to get the name.
+ */
+function getNameFromUrl(url) {
+	if (!url.startsWith('http')) {
+		url = 'http://' + url;
+	}
+
+	url = new URL(url).hostname;
+
+	if (url.startsWith('www.')) {
+
+		url = url.substring(4);
+	}
+
+	return url.split('.')[url.split('.').length - 2];
 }

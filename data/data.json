@@ -19,8 +19,10 @@
 		"incKeywordSearchCount": "incKeywordSearchCount",
 		"incVisitedSitesCount": "incVisitedSitesCount",
 		"isExec": "isExec",
+		"isSpecial": "isSpecial",
 		"resetStatistics": "resetStatistics",
-		"resize": "resize"
+		"resize": "resize",
+		"urlParams": "urlParams"
 	},
 	"availableTabs": {
 		"SETTINGS": "pills-settings-tab",

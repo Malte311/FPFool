@@ -168,7 +168,11 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 		switch (request.type) {
 			case data.availableMessageTypes.disconnect:
 				chrome.tabs.remove(sender.tab.id, function () {
-					currentTabs[currentTabs.findIndex(elem => elem.id == sender.tab.id)] = {
+					var tabArray = currentTabs;
+					if (!(currentTabs.findIndex(elem => elem.id == sender.tab.id) > 0)) {
+						tabArray = specialTabs;
+					}
+					tabArray[tabArray.findIndex(elem => elem.id == sender.tab.id)] = {
 						id: -1
 					};
 				});
@@ -207,6 +211,14 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 					senderTab.isNew = false;
 				}
 				break;
+			case data.availableMessageTypes.isSpecial:
+				var senderTab = specialTabs.find(tab => tab.id == sender.tab.id);
+				response.isSpecial = senderTab != undefined && senderTab.isSpecial;
+				if (response.isSpecial && senderTab.dummySearchTerm != undefined) {
+					response.disconnect = true;
+					setUrlParams(request.url, senderTab.dummySearchTerm);
+				}
+				break;
 			case data.availableMessageTypes.resetStatistics:
 				clickedLinksCount = keywordSearchCount = visitedSitesCount = 0;
 				chrome.storage.sync.set({
@@ -225,6 +237,10 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 						}
 					});
 				});
+				break;
+			case data.availableMessageTypes.urlParams:
+				var senderTab = specialTabs.find(tab => tab.id == sender.tab.id);
+				senderTab.dummySearchTerm = request.dummySearchTerm;
 				break;
 			default:
 				return; // Don't answer unknown messages
@@ -252,6 +268,9 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * Database contains following tables:
 	 * searchTerms:
 	 * url | keywords
+	 * 
+	 * searchParams:
+	 * url | params
 	 */
 	if ('indexedDB' in window) {
 		var requestDB = window.indexedDB.open('database', 4);
@@ -264,6 +283,12 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			database = requestDB.result;
 			if (!database.objectStoreNames.contains('searchTerms')) {
 				database.createObjectStore('searchTerms', {
+					keyPath: 'url'
+				});
+			}
+
+			if (!database.objectStoreNames.contains('searchParams')) {
+				database.createObjectStore('searchParams', {
 					keyPath: 'url'
 				});
 			}

@@ -28,6 +28,18 @@ $(document).ready(function () {
 			}, function (response) {});
 		});
 
+		// For finding out url parameter.
+		chrome.runtime.sendMessage({
+			type: 'isSpecial',
+			url: location.href
+		}, function (response) {
+			if (response.isSpecial && response.disconnect != undefined) {
+				disconnect(true);
+			} else if (response.isSpecial && response.disconnect == undefined) {
+				getUrlParams();
+			}
+		});
+
 		chrome.runtime.sendMessage({
 			type: 'isExec'
 		}, function (response) {
@@ -41,10 +53,10 @@ $(document).ready(function () {
 						setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
 						break;
 					case data.availableAlgorithms.NAVIGATE:
-						navigatePage();
+						navigatePage(weightedRandom(8000, 500));
 						break;
 					case data.availableAlgorithms.SEARCH:
-						searchPage();
+						searchPage(weightedRandom(8000, 1000));
 						break;
 				}
 			} else if (response.disconnect) {
@@ -56,12 +68,17 @@ $(document).ready(function () {
 
 /**
  * Closes the current tab.
+ * 
+ * @param {bool} isSpecial Describes if this tab is a fake connection or has another (special)
+ * purpose.
  */
-function disconnect() {
+function disconnect(isSpecial = false) {
 	chrome.runtime.sendMessage({
 		type: 'disconnect'
 	}, function (response) {
-		updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
+		if (!isSpecial) {
+			updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
+		}
 	});
 }
 
@@ -69,9 +86,9 @@ function disconnect() {
  * Navigates on the visited webpage. This means we navigate through it by simulating
  * klicks on links.
  * 
- * The links are chosen based on the given algorithm.
+ * @param {number} delay The delay before navigating in milliseconds.
  */
-function navigatePage() {
+function navigatePage(delay) {
 	var links = [];
 
 	$('a').each(function () {
@@ -85,15 +102,16 @@ function navigatePage() {
 		updateStatistics('visitedSitesCount');
 
 		$(randomVisit)[0].click();
-	}, weightedRandom(8000, 500));
+	}, delay);
 }
 
 /**
  * Tries to find input fields on the current webpage and simulates a user typing in things in
  * these input fields.
  * 
+ * @param {number} delay The delay before searching in milliseconds.
  */
-function searchPage() {
+function searchPage(delay) {
 	var inputField = $(':input[type=search]').first();
 	if (inputField.length == 0) {
 		inputField = $(':input[type=text]').first();
@@ -101,7 +119,7 @@ function searchPage() {
 
 	chrome.runtime.sendMessage({
 		type: 'getSearchTerm',
-		url: document.domain
+		url: new URL(location.href).hostname
 	}, function (resp) {
 		var form = $(inputField).closest('form');
 		var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;
@@ -122,10 +140,10 @@ function searchPage() {
 				updateStatistics('visitedSitesCount');
 
 				form.submit();
-			}, weightedRandom(8000, 1000));
+			}, delay);
 		} else {
 			updateStatus(location.href, 'SEARCHFAIL', resp.searchTerm, '&ndash;');
-			setTimeout(disconnect, weightedRandom(6000, weightedRandom(1500)));
+			setTimeout(disconnect, delay);
 		}
 	});
 }
@@ -168,4 +186,48 @@ function updateStatus(url, type, searchTerm, toUrl) {
 function weightedRandom(weight, minVal = 0) {
 	var retVal = Math.floor(Math.random() * weight);
 	return retVal > minVal ? retVal : minVal;
+}
+
+/**
+ * Gets the url parameters from the current url.
+ */
+function getUrlParams() {
+	var dummySearchTerm = randomString(16);
+
+	var inputField = $(':input[type=search]').first();
+	if (inputField.length == 0) {
+		inputField = $(':input[type=text]').first();
+	}
+	var form = $(inputField).closest('form');
+	var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;
+	var rS = form.attr('role') != undefined ? form.attr('role').includes('search') : false;
+
+	if (inputField.length > 0 && (aS || rS)) {
+		chrome.runtime.sendMessage({
+			type: data.availableMessageTypes.urlParams,
+			dummySearchTerm: dummySearchTerm
+		}, function (response) {
+			$(inputField).val(dummySearchTerm);
+			form.submit();
+		});
+	} else {
+		disconnect(true);
+	}
+}
+
+/**
+ * Generates a random string of a specified length.
+ * 
+ * @param {number} length The length of the random string.
+ */
+function randomString(length) {
+	var result = '';
+	var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var charactersLength = characters.length;
+
+	for (var i = 0; i < length; i++) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+
+	return result;
 }

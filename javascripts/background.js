@@ -40,12 +40,20 @@ var activeAlgorithm;
  */
 var todayConnectionCount = 0;
 
+/*
+ * Holds special tabs for getting search terms.
+ */
+var specialTabs = new Array(100).fill({
+	id: -1
+});
+
 /**
  * Starts the application: Creates fake connections in the hidden window and removes the tabs
  * when finished. The selected algorithm defines what exactly these fake connections do.
  */
 function runApplication() {
 	getSearchTerms(); // No need to wait for this asynchronous call
+	return;
 	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
 		Object.values(data.availableSettings)), function (res) {
 		// Settings
@@ -217,45 +225,94 @@ function getSearchTerms() {
 		text: '',
 		'startTime': (new Date).getTime() - interval
 	}, function (historyItems) {
+		var i = 0;
 		for (const historyItem of historyItems) {
 			chrome.history.getVisits({
 				url: historyItem.url
-			}, function (results) {
-				results.filter(item => item.visitTime >= (new Date).getTime() - interval)
-					.forEach(function (val, ind, arr) {
-						var url = historyItem.url;
-						if (url.indexOf('?q=') > 0) {
-							var key = getNameFromUrl(url);
-							getFromDatabase('searchTerms', key).then(function (res) {
-								res.onsuccess = function (event) {
-									var isDuplicate = false;
-									if (!(res.result == undefined)) {
-										res.result.terms.forEach(function (v, i, a) {
-											if (v[1] == Math.trunc(val.visitTime)) {
-												isDuplicate = true;
-											}
-										});
-									}
-									if (!isDuplicate) {
-										storeInDatabase(
-											'searchTerms',
-											key,
-											[decodeURIComponent(
-												url.substring(
-													url.indexOf('?q=') + 3,
-													(url.indexOf('&') > 0 ?
-														url.indexOf('&') :
-														url.length)
-												).replace(/\+/g, ' ')
-											), Math.trunc(val.visitTime)]
-										);
-									}
-								};
-							});
-						}
-					});
+			}, function (res) {
+				var visits = res.filter(item => item.visitTime >= (new Date).getTime() - interval);
+				for (var visit of visits) {
+					getSearchTerm(historyItem.url, visit.visitTime);
+					break;
+				};
 			});
+			i++;
+			if (i == 10)
+				break;
 		}
+	});
+}
+
+/**
+ * Grabs search terms for a given url. The timestamp is needed to avoid multiple saves of the
+ * same search terms.
+ * 
+ * @param {string} url The visited website.
+ * @param {number} visitTime Timestamp of the visit time.
+ */
+function getSearchTerm(url, visitTime) {
+	// Only consider urls with parameters
+	if (url.indexOf('?') > 0) {
+		var key = url.startsWith('http') ?
+			new URL(url).hostname :
+			new URL('http://' + url).hostname;
+		key = key.startsWith('www.') ? key : 'www.' + key;
+
+		getFromDatabase('searchParams', key).then(function (databaseResult) {
+			databaseResult.onsuccess = function (event) {
+				// Find out url params
+				if (databaseResult.result == undefined) {
+					chrome.tabs.create({
+						windowId: windowId,
+						index: currentTabs.length,
+						url: 'http://' + key,
+						active: false
+					}, function (tab) {
+						tab.isSpecial = true;
+						specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
+					});
+				} else {
+					getFromDatabase('searchTerms', key).then(function (res) {
+						res.onsuccess = function (event) {
+							var isDuplicate = false;
+							if (!(res.result == undefined)) {
+								res.result.terms.forEach(function (v, i, a) {
+									if (v[1] == Math.trunc(visitTime)) {
+										isDuplicate = true;
+									}
+								});
+							}
+							if (!isDuplicate) {
+								var term = new URLSearchParams(url.split('?')[1])
+									.get(databaseResult.result.terms[0]);
+								storeInDatabase('searchTerms', key, [
+									decodeURIComponent(term), Math.trunc(visitTime)
+								]);
+							}
+						};
+					});
+				}
+			};
+		});
+	}
+}
+
+/**
+ * Sets the url parmaeter for a given url.
+ * 
+ * @param {string} url The url for which we want to set the parameter.
+ * @param {string} dummySearchTerm The search term used to find out the parameter.
+ */
+function setUrlParams(url, dummySearchTerm) {
+	var params = new URLSearchParams(url.split('?')[1]);
+	for (const [key, val] of params.entries()) {
+		if (val == dummySearchTerm) {
+			storeInDatabase('searchParams', new URL(url).hostname, key, false);
+			break;
+		}
+	}
+	chrome.history.deleteUrl({
+		url: url
 	});
 }
 
@@ -287,14 +344,16 @@ function shuffleArray(array) {
  * @param {Object} objectStore The table we want to update.
  * @param {string} key The key of the item we want to update/add.
  * @param {Object} val The new value for the given key.
+ * @param {bool} append Specifies if a value should be appended or overwritten.
  */
-function storeInDatabase(objectStore, key, val) {
+function storeInDatabase(objectStore, key, val, append = true) {
 	var trans = database.transaction(objectStore, 'readwrite');
 	var store = trans.objectStore(objectStore);
 	var getRequest = store.get(key);
 
 	getRequest.onsuccess = function (event) {
-		var terms = getRequest.result != undefined ? getRequest.result.terms.concat([val]) : [val];
+		var terms = (getRequest.result != undefined && append) ?
+			getRequest.result.terms.concat([val]) : [val];
 		store.put({
 			url: key,
 			terms: terms
@@ -311,31 +370,4 @@ function storeInDatabase(objectStore, key, val) {
  */
 async function getFromDatabase(objectStore, key) {
 	return await database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
-}
-
-/**
- * Gets the name of an url, e.g.
- * +----------------------+------------+
- * | input                | output     |
- * +----------------------+------------+
- * | www.google.com       | google     |
- * | www.mail.google.com  | google     |
- * +----------------------+------------+
- * Note: Might not work perfectly, but it works for all important websites.
- * 
- * @param {string} url The url of which we want to get the name.
- */
-function getNameFromUrl(url) {
-	if (!url.startsWith('http')) {
-		url = 'http://' + url;
-	}
-
-	url = new URL(url).hostname;
-
-	if (url.startsWith('www.')) {
-
-		url = url.substring(4);
-	}
-
-	return url.split('.')[url.split('.').length - 2];
 }

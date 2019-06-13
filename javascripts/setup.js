@@ -229,7 +229,14 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				response.isSpecial = senderTab != undefined && senderTab.isSpecial;
 				if (response.isSpecial && senderTab.dummySearchTerm != undefined) {
 					response.disconnect = true;
-					setUrlParams(request.url, senderTab.dummySearchTerm, senderTab.visitTimes);
+					if (senderTab.dummySearchTerm != '') {
+						setUrlParams(
+							request.url,
+							senderTab.dummySearchTerm,
+							senderTab.visitTimes,
+							senderTab.originUrl
+						);
+					}
 				}
 				break;
 			case data.availableMessageTypes.resetStatistics:

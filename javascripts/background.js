@@ -233,7 +233,7 @@ function getSearchTerms() {
 	chrome.history.search({
 		text: '',
 		'startTime': (new Date).getTime() - interval,
-		maxResults: 10
+		maxResults: 100
 	}, function (historyItems) {
 		// Remove duplicates
 		historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
@@ -303,9 +303,10 @@ function getSearchTerm(url, visitTimes) {
 					}, function (tab) {
 						tab.isSpecial = true;
 						tab.visitTimes = visitTimes;
+						tab.originUrl = url;
 						specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
 					});
-				} else if (res.result.terms[0] != '') {
+				} else if (res.result.terms != undefined && res.result.terms[0] != '') {
 					var term = new URLSearchParams(url.split('?')[1]).get(res.result.terms[0]);
 					for (var visitTime of visitTimes) {
 						storeInDatabase('searchTerms', key, [
@@ -325,18 +326,30 @@ function getSearchTerm(url, visitTimes) {
  * @param {string} dummySearchTerm The search term used to find out the parameter.
  * @param {array} visitTimes Array of visit times for the url to get search terms after updating
  * the url parameter.
+ * @param {string} originUrl Optional parameter in case the origin url differs from the url (some
+ * websites redirect after search).
  */
-function setUrlParams(url, dummySearchTerm, visitTimes) {
+function setUrlParams(url, dummySearchTerm, visitTimes, originUrl) {
 	var params = new URLSearchParams(url.split('?')[1]);
 	for (const [key, val] of params.entries()) {
 		if (val.toLowerCase() == dummySearchTerm.toLowerCase()) { // Some sites capitalize queries
+			// If origin url redirects us, the origin url itself is not searchable.
+			if (url != originUrl) {
+				storeInDatabase('searchParams', getKeyFromUrl(originUrl), '', false, function () {
+					chrome.history.deleteUrl({
+						url: originUrl
+					});
+				});
+			}
+
 			storeInDatabase('searchParams', getKeyFromUrl(url), key, false, function () {
 				chrome.history.deleteUrl({
 					url: url
 				}, function () {
-					getSearchTerm(url, visitTimes);
+					getSearchTerm(originUrl, visitTimes);
 				});
 			});
+
 			break;
 		}
 	}

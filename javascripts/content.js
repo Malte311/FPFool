@@ -211,7 +211,13 @@ function getUrlParams() {
 			form.submit();
 		});
 	} else {
-		disconnect(true);
+		chrome.runtime.sendMessage({
+			type: data.availableMessageTypes.urlParams,
+			dummySearchTerm: '',
+			url: location.href
+		}, function (response) {
+			disconnect(true);
+		});
 	}
 }
 

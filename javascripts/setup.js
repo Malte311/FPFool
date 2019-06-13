@@ -254,6 +254,9 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			case data.availableMessageTypes.urlParams:
 				var senderTab = specialTabs.find(tab => tab.id == sender.tab.id);
 				senderTab.dummySearchTerm = request.dummySearchTerm;
+				if (request.dummySearchTerm == '') { // Not searchable
+					storeInDatabase('searchParams', getKeyFromUrl(request.url), '', false);
+				}
 				break;
 			default:
 				return; // Don't answer unknown messages

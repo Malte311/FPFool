@@ -233,8 +233,11 @@ function getSearchTerms() {
 	chrome.history.search({
 		text: '',
 		'startTime': (new Date).getTime() - interval,
-		maxResults: 100
+		maxResults: 10
 	}, function (historyItems) {
+		// Remove duplicates
+		historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
+
 		for (const historyItem of historyItems) {
 			// Only consider urls with parameter
 			if (historyItem.url.indexOf('?') < 0) {
@@ -259,11 +262,13 @@ function getSearchTerms() {
 										break;
 									}
 								}
+
 								if (!isDuplicate) {
 									visitTimesToAdd.push(visit.visitTime);
 								}
 							} else {
-								visitTimesToAdd.concat(visits);
+								visitTimesToAdd = visitTimesToAdd
+									.concat(visits.map(v => Math.trunc(v.visitTime)));
 								break;
 							}
 						}
@@ -300,7 +305,7 @@ function getSearchTerm(url, visitTimes) {
 						tab.visitTimes = visitTimes;
 						specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
 					});
-				} else {
+				} else if (res.result.terms[0] != '') {
 					var term = new URLSearchParams(url.split('?')[1]).get(res.result.terms[0]);
 					for (var visitTime of visitTimes) {
 						storeInDatabase('searchTerms', key, [
@@ -324,16 +329,17 @@ function getSearchTerm(url, visitTimes) {
 function setUrlParams(url, dummySearchTerm, visitTimes) {
 	var params = new URLSearchParams(url.split('?')[1]);
 	for (const [key, val] of params.entries()) {
-		if (val == dummySearchTerm) {
+		if (val.toLowerCase() == dummySearchTerm.toLowerCase()) { // Some sites capitalize queries
 			storeInDatabase('searchParams', getKeyFromUrl(url), key, false, function () {
-				getSearchTerm(url, visitTimes);
+				chrome.history.deleteUrl({
+					url: url
+				}, function () {
+					getSearchTerm(url, visitTimes);
+				});
 			});
 			break;
 		}
 	}
-	chrome.history.deleteUrl({
-		url: url
-	});
 }
 
 /**

@@ -125,7 +125,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 							// Restart loop if queue was empty before and maximum number of
 							// connections is not reached yet.
 							if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
-								restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
+								//restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
 							}
 						}
 					}
@@ -234,7 +234,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 							request.url,
 							senderTab.dummySearchTerm,
 							senderTab.visitTimes,
-							senderTab.originUrl
+							senderTab.originUrl,
+							senderTab.resolve
 						);
 					}
 				}

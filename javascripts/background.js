@@ -229,12 +229,12 @@ function getKeyFromUrl(url) {
  * to the 'searchTerms' objectStore in our database.
  */
 function getSearchTerms() {
-	var interval = 1000 * 60 * 60 * 24 * 7;
+	var time = 1000 * 60 * 60 * 24 * 7;
 	chrome.history.search({
 		text: '',
-		'startTime': (new Date).getTime() - interval,
-		maxResults: 100
-	}, function (historyItems) {
+		'startTime': (new Date).getTime() - time,
+		maxResults: 120
+	}, async function (historyItems) {
 		// Remove duplicates
 		historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
 
@@ -244,39 +244,48 @@ function getSearchTerms() {
 				continue;
 			}
 
-			chrome.history.getVisits({
-				url: historyItem.url
-			}, function (res) {
-				var visits = res.filter(item => item.visitTime >= (new Date).getTime() - interval);
-
-				getFromDatabase('searchTerms', getKeyFromUrl(historyItem.url)).then((res) => {
-					res.onsuccess = function (event) {
-						var visitTimesToAdd = [];
-						for (var visit of visits) {
-							if (!(res.result == undefined)) {
-								var isDuplicate = false;
-								for (var term of res.result.terms) {
-									// term[1] holds the visit time of that search term
-									if (term[1] == Math.trunc(visit.visitTime)) {
-										isDuplicate = true;
-										break;
+			await new Promise(resolve => {
+				chrome.history.getVisits({
+					url: historyItem.url
+				}, function (res) {
+					var visits = res.filter(item => item.visitTime >= (new Date).getTime() - time);
+					getFromDatabase('searchTerms', getKeyFromUrl(historyItem.url)).then((res) => {
+						res.onsuccess = function (event) {
+							var visitTimesToAdd = [];
+							for (var visit of visits) {
+								if (!(res.result == undefined)) {
+									var isDuplicate = false;
+									for (var term of res.result.terms) {
+										// term[1] holds the visit time of that search term
+										if (term[1] == Math.trunc(visit.visitTime)) {
+											isDuplicate = true;
+											break;
+										}
 									}
-								}
 
-								if (!isDuplicate) {
-									visitTimesToAdd.push(visit.visitTime);
+									if (!isDuplicate) {
+										visitTimesToAdd.push(visit.visitTime);
+									}
+								} else {
+									visitTimesToAdd = visitTimesToAdd
+										.concat(visits.map(v => Math.trunc(v.visitTime)));
+									break;
 								}
-							} else {
-								visitTimesToAdd = visitTimesToAdd
-									.concat(visits.map(v => Math.trunc(v.visitTime)));
-								break;
 							}
-						}
-						getSearchTerm(historyItem.url, visitTimesToAdd);
-					};
+
+							if (visitTimesToAdd.length > 0) {
+								getSearchTerm(historyItem.url, visitTimesToAdd).then(function () {
+									resolve();
+								});
+							} else {
+								resolve();
+							}
+						};
+					});
 				});
 			});
 		}
+		console.log("done")
 	});
 }
 
@@ -287,34 +296,41 @@ function getSearchTerms() {
  * @param {string} url The visited website.
  * @param {array} visitTimes Timestamps of the visit times for this url.
  */
-function getSearchTerm(url, visitTimes) {
+async function getSearchTerm(url, visitTimes) {
 	// Only consider urls with parameters
 	if (url.indexOf('?') > 0) {
-		var key = getKeyFromUrl(url);
-		getFromDatabase('searchParams', key).then(function (res) {
-			res.onsuccess = function (event) {
-				// Find out url params, since they are not existing in our database yet
-				if (res.result == undefined) {
-					chrome.tabs.create({
-						windowId: windowId,
-						index: currentTabs.length,
-						url: url.split('?')[0],
-						active: false
-					}, function (tab) {
-						tab.isSpecial = true;
-						tab.visitTimes = visitTimes;
-						tab.originUrl = url;
-						specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
-					});
-				} else if (res.result.terms != undefined && res.result.terms[0] != '') {
-					var term = new URLSearchParams(url.split('?')[1]).get(res.result.terms[0]);
-					for (var visitTime of visitTimes) {
-						storeInDatabase('searchTerms', key, [
-							decodeURIComponent(term), Math.trunc(visitTime)
-						]);
+		await new Promise(resolve => {
+			var key = getKeyFromUrl(url);
+			getFromDatabase('searchParams', key).then(function (res) {
+				res.onsuccess = function (event) {
+					// Find out url params, since they are not existing in our database yet
+					if (res.result == undefined) {
+						chrome.tabs.create({
+							windowId: windowId,
+							index: currentTabs.length,
+							url: url.split('?')[0],
+							active: false
+						}, function (tab) {
+							tab.isSpecial = true;
+							tab.visitTimes = visitTimes;
+							tab.originUrl = url;
+							tab.resolve = resolve;
+							specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
+						});
+					} else if (res.result.terms != undefined && res.result.terms[0] != '') {
+						var term = new URLSearchParams(url.split('?')[1]).get(res.result.terms[0]);
+						if (term != null) {
+							for (var visitTime of visitTimes) {
+								storeInDatabase('searchTerms', key, [
+									decodeURIComponent(term), Math.trunc(visitTime)
+								]);
+							}
+						}
+
+						resolve();
 					}
-				}
-			};
+				};
+			});
 		});
 	}
 }
@@ -328,8 +344,9 @@ function getSearchTerm(url, visitTimes) {
  * the url parameter.
  * @param {string} originUrl Optional parameter in case the origin url differs from the url (some
  * websites redirect after search).
+ * @param {function} resolve Resolves the underlying promise, e.g. the next url can get its params.
  */
-function setUrlParams(url, dummySearchTerm, visitTimes, originUrl) {
+function setUrlParams(url, dummySearchTerm, visitTimes, originUrl, resolve) {
 	var params = new URLSearchParams(url.split('?')[1]);
 	for (const [key, val] of params.entries()) {
 		if (val.toLowerCase() == dummySearchTerm.toLowerCase()) { // Some sites capitalize queries
@@ -338,21 +355,33 @@ function setUrlParams(url, dummySearchTerm, visitTimes, originUrl) {
 				storeInDatabase('searchParams', getKeyFromUrl(originUrl), '', false, function () {
 					chrome.history.deleteUrl({
 						url: originUrl
+					}, function () {
+						storeInDatabase('searchParams', getKeyFromUrl(url), key, false, () => {
+							chrome.history.deleteUrl({
+								url: url
+							}, function () {
+								resolve();
+								getSearchTerm(originUrl, visitTimes);
+							});
+						});
+					});
+				});
+			} else {
+				storeInDatabase('searchParams', getKeyFromUrl(url), key, false, function () {
+					chrome.history.deleteUrl({
+						url: url
+					}, function () {
+						resolve();
+						getSearchTerm(originUrl, visitTimes);
 					});
 				});
 			}
 
-			storeInDatabase('searchParams', getKeyFromUrl(url), key, false, function () {
-				chrome.history.deleteUrl({
-					url: url
-				}, function () {
-					getSearchTerm(originUrl, visitTimes);
-				});
-			});
-
 			break;
 		}
 	}
+
+	resolve();
 }
 
 /**

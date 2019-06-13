@@ -7,8 +7,8 @@
 var browserHistory = new Map();
 
 /*
- * Defines the maximum amount of connections being made. Maximum amount of connections is this
- * number multiplied by the number of connections being made by the user per day.
+ * Defines the maximum amount of connections being made. The connection limit is the number
+ * of maxConnectCount multiplied by the number of connections being made by the user per day.
  */
 var maxConnectCount = 2;
 var connectionLimit = 20;
@@ -215,30 +215,62 @@ function connectToUrl(url, algo) {
 	}, 3000); // Check all 3 seconds if a new tab can be opened
 }
 
+/**
+ * Turns an url into a key for our database. The key is simply the hostname of that url.
+ * @param {string} url The url of which we want to get a key.
+ */
+function getKeyFromUrl(url) {
+	var key = url.startsWith('http') ? new URL(url).hostname : new URL('http://' + url).hostname;
+	return key.startsWith('www.') ? key : 'www.' + key;
+}
+
 /*
  * Searches for possible search terms in the user's browser history. Saves the results
  * to the 'searchTerms' objectStore in our database.
  */
 function getSearchTerms() {
-	var interval = 1000 * 60 * 60 * 24 * 5;
+	var interval = 1000 * 60 * 60 * 24 * 7;
 	chrome.history.search({
 		text: '',
-		'startTime': (new Date).getTime() - interval
+		'startTime': (new Date).getTime() - interval,
+		maxResults: 100
 	}, function (historyItems) {
-		var i = 0;
 		for (const historyItem of historyItems) {
+			// Only consider urls with parameter
+			if (historyItem.url.indexOf('?') < 0) {
+				continue;
+			}
+
 			chrome.history.getVisits({
 				url: historyItem.url
 			}, function (res) {
 				var visits = res.filter(item => item.visitTime >= (new Date).getTime() - interval);
-				for (var visit of visits) {
-					getSearchTerm(historyItem.url, visit.visitTime);
-					break;
-				};
+
+				getFromDatabase('searchTerms', getKeyFromUrl(historyItem.url)).then((res) => {
+					res.onsuccess = function (event) {
+						var visitTimesToAdd = [];
+						for (var visit of visits) {
+							if (!(res.result == undefined)) {
+								var isDuplicate = false;
+								for (var term of res.result.terms) {
+									// term[1] holds the visit time of that search term
+									if (term[1] == Math.trunc(visit.visitTime)) {
+										isDuplicate = true;
+										break;
+									}
+								}
+								if (!isDuplicate) {
+									visitTimesToAdd.push(visit.visitTime);
+								}
+							} else {
+								visitTimesToAdd.concat(visits);
+								break;
+							}
+						}
+						getSearchTerm(historyItem.url, visitTimesToAdd);
+					};
+				});
 			});
-			i++;
-			if (i == 10)
-				break;
 		}
 	});
 }
@@ -248,49 +280,32 @@ function getSearchTerms() {
  * same search terms.
  * 
  * @param {string} url The visited website.
- * @param {number} visitTime Timestamp of the visit time.
+ * @param {array} visitTimes Timestamps of the visit times for this url.
  */
-function getSearchTerm(url, visitTime) {
+function getSearchTerm(url, visitTimes) {
 	// Only consider urls with parameters
 	if (url.indexOf('?') > 0) {
-		var key = url.startsWith('http') ?
-			new URL(url).hostname :
-			new URL('http://' + url).hostname;
-		key = key.startsWith('www.') ? key : 'www.' + key;
-
-		getFromDatabase('searchParams', key).then(function (databaseResult) {
-			databaseResult.onsuccess = function (event) {
-				// Find out url params
-				if (databaseResult.result == undefined) {
+		var key = getKeyFromUrl(url);
+		getFromDatabase('searchParams', key).then(function (res) {
+			res.onsuccess = function (event) {
+				// Find out url params, since they are not existing in our database yet
+				if (res.result == undefined) {
 					chrome.tabs.create({
 						windowId: windowId,
 						index: currentTabs.length,
-						url: 'http://' + key,
+						url: url.split('?')[0],
 						active: false
 					}, function (tab) {
 						tab.isSpecial = true;
 						specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
 					});
 				} else {
-					getFromDatabase('searchTerms', key).then(function (res) {
-						res.onsuccess = function (event) {
-							var isDuplicate = false;
-							if (!(res.result == undefined)) {
-								res.result.terms.forEach(function (v, i, a) {
-									if (v[1] == Math.trunc(visitTime)) {
-										isDuplicate = true;
-									}
-								});
-							}
-							if (!isDuplicate) {
-								var term = new URLSearchParams(url.split('?')[1])
-									.get(databaseResult.result.terms[0]);
-								storeInDatabase('searchTerms', key, [
-									decodeURIComponent(term), Math.trunc(visitTime)
-								]);
-							}
-						};
-					});
+					var term = new URLSearchParams(url.split('?')[1]).get(res.result.terms[0]);
+					for (var visitTime of visitTimes) {
+						storeInDatabase('searchTerms', key, [
+							decodeURIComponent(term), Math.trunc(visitTime)
+						]);
+					}
 				}
 			};
 		});

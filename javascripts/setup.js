@@ -144,12 +144,12 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * The content script wants the corresponding tab to be removed. The tab gets removed and the
 	 * content script gets a notification about it.
 	 * 
-	 * request.type == 'getStatistics'
-	 * Returns all variables holding statistical information (e.g. total amount of visited sites).
-	 * 
 	 * request.type == 'getSearchTerm'
 	 * Searches for terms in our indexedDB database for the requesting url, then returns these
 	 * terms (if found any, otherwise we return an empty string).
+	 * 
+	 * request.type == 'getStatistics'
+	 * Returns all variables holding statistical information (e.g. total amount of visited sites).
 	 * 
 	 * request.type == 'inc...'
 	 * Increments the value of the specified variable.
@@ -159,8 +159,21 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * script is running in a tab created by this extension and the content script was not executed
 	 * before.
 	 * 
+	 * request.type == 'isSpecial'
+	 * Content script asks if it is special. Special means that it should not create fake
+	 * connections but instead get search parameter to find our search terms for a given url.
+	 * 
 	 * request.type == 'resetStatistics'
 	 * Resets all variables holding statistical information.
+	 * 
+	 * request.type == 'resize'
+	 * Content script tells the background script whenever the user resizes the window such that
+	 * we can save the window state for restoring it on startup.
+	 * 
+	 * request.type == 'urlParams'
+	 * Content script tells the background script the search term used for finding out the url
+	 * params. After this, the content script will redirect and send another 'isSpecial' message
+	 * to tell the url after the redirection.
 	 */
 	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		var response = {};

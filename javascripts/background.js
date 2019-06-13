@@ -297,6 +297,7 @@ function getSearchTerm(url, visitTimes) {
 						active: false
 					}, function (tab) {
 						tab.isSpecial = true;
+						tab.visitTimes = visitTimes;
 						specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
 					});
 				} else {
@@ -317,12 +318,16 @@ function getSearchTerm(url, visitTimes) {
  * 
  * @param {string} url The url for which we want to set the parameter.
  * @param {string} dummySearchTerm The search term used to find out the parameter.
+ * @param {array} visitTimes Array of visit times for the url to get search terms after updating
+ * the url parameter.
  */
-function setUrlParams(url, dummySearchTerm) {
+function setUrlParams(url, dummySearchTerm, visitTimes) {
 	var params = new URLSearchParams(url.split('?')[1]);
 	for (const [key, val] of params.entries()) {
 		if (val == dummySearchTerm) {
-			storeInDatabase('searchParams', new URL(url).hostname, key, false);
+			storeInDatabase('searchParams', getKeyFromUrl(url), key, false, function () {
+				getSearchTerm(url, visitTimes);
+			});
 			break;
 		}
 	}
@@ -360,8 +365,9 @@ function shuffleArray(array) {
  * @param {string} key The key of the item we want to update/add.
  * @param {Object} val The new value for the given key.
  * @param {bool} append Specifies if a value should be appended or overwritten.
+ * @param {function} callback Optional callback function, executed after updating the database.
  */
-function storeInDatabase(objectStore, key, val, append = true) {
+function storeInDatabase(objectStore, key, val, append = true, callback) {
 	var trans = database.transaction(objectStore, 'readwrite');
 	var store = trans.objectStore(objectStore);
 	var getRequest = store.get(key);
@@ -369,10 +375,14 @@ function storeInDatabase(objectStore, key, val, append = true) {
 	getRequest.onsuccess = function (event) {
 		var terms = (getRequest.result != undefined && append) ?
 			getRequest.result.terms.concat([val]) : [val];
-		store.put({
+		var update = store.put({
 			url: key,
 			terms: terms
 		});
+
+		update.onsuccess = function (event) {
+			typeof callback === 'function' && callback();
+		};
 	};
 }
 

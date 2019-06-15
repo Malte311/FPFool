@@ -121,13 +121,12 @@ function searchPage(delay) {
 		if (inputField != null && resp.searchTerm != ' ') {
 			setTimeout(function () {
 				$(inputField).val(resp.searchTerm);
-				var protocol = location.href.startsWith('https://') ? 'https://' : 'http://';
+
 				updateStatus(
 					location.href,
 					'SEARCH',
 					resp.searchTerm,
-					protocol + document.domain + "?" + resp.searchParam + "=" +
-					encodeURIComponent(resp.searchTerm)
+					`${location.href}?${resp.searchParam}=${encodeURIComponent(resp.searchTerm)}`
 				);
 				updateStatistics('keywordSearchCount');
 				updateStatistics('visitedSitesCount');

@@ -121,12 +121,12 @@ function searchPage(delay) {
 		if (inputField != null && resp.searchTerm != ' ') {
 			setTimeout(function () {
 				$(inputField).val(resp.searchTerm);
-
+				var url = location.href.indexOf('?') > 0 ? location.href + '&' : location.href + '?';
 				updateStatus(
 					location.href,
 					'SEARCH',
 					resp.searchTerm,
-					`${location.href}?${resp.searchParam}=${encodeURIComponent(resp.searchTerm)}`
+					`${url}${resp.searchParam}=${encodeURIComponent(resp.searchTerm)}`
 				);
 				updateStatistics('keywordSearchCount');
 				updateStatistics('visitedSitesCount');

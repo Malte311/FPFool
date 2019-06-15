@@ -125,7 +125,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 							// Restart loop if queue was empty before and maximum number of
 							// connections is not reached yet.
 							if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
-								//restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
+								restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
 							}
 						}
 					}
@@ -192,7 +192,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				break;
 			case data.availableMessageTypes.getSearchTerm:
 				asyncCall = true;
-				getFromDatabase('searchTerms', getNameFromUrl(request.url)).then(function (req) {
+				getFromDatabase('searchTerms', getKeyFromUrl(request.url)).then(function (req) {
 					req.onsuccess = function (event) {
 						response.searchTerm = req.result != undefined ?
 							req.result.terms[Math.floor(Math.random() * req.result.terms.length)][0] :
@@ -267,8 +267,9 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				senderTab.dummySearchTerm = request.dummySearchTerm;
 				if (request.dummySearchTerm == '') { // Not searchable
 					// This url is done, so resolve it. Mark it as non-searchable as well.
-					senderTab.resolve();
-					storeInDatabase('searchParams', getKeyFromUrl(request.url), '', false);
+					storeInDatabase('searchParams', getKeyFromUrl(senderTab.originUrl), '', false, () => {
+						senderTab.resolve();
+					});
 				}
 				break;
 			default:
@@ -368,7 +369,21 @@ function createWindow() {
 				});
 			});
 
-			runApplication();
+			// Prepare the database (getSearchTerms); afterwards run the application.
+			// Note: The database is only update every hour.
+			chrome.storage.sync.get(['lastSearchTermsInit'], result => {
+				if (result.lastSearchTermsInit == undefined ||
+					result.lastSearchTermsInit <= (new Date).getTime() - 1000 * 60 * 60) {
+					getSearchTerms().then(function () {
+						chrome.storage.sync.set({
+							lastSearchTermsInit: (new Date).getTime()
+						});
+						runApplication();
+					});
+				} else {
+					runApplication();
+				}
+			});
 		});
 	});
 }

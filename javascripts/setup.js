@@ -197,7 +197,20 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 						response.searchTerm = req.result != undefined ?
 							req.result.terms[Math.floor(Math.random() * req.result.terms.length)][0] :
 							' ';
-						sendResponse(response);
+
+						if (response.searchTerm != ' ') {
+							getFromDatabase('searchParams', getKeyFromUrl(request.url)).then(r => {
+								r.onsuccess = function (event) {
+									response.searchParam = r.result != undefined ?
+										r.result.terms[0] :
+										' ';
+
+									sendResponse(response);
+								};
+							});
+						} else {
+							sendResponse(response);
+						}
 					};
 				});
 				break;

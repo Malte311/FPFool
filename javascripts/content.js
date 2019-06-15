@@ -112,21 +112,13 @@ function navigatePage(delay) {
  * @param {number} delay The delay before searching in milliseconds.
  */
 function searchPage(delay) {
-	var inputField = $(':input[type=search]').first();
-	if (inputField.length == 0) {
-		inputField = $(':input[type=text]').first();
-	}
-
 	chrome.runtime.sendMessage({
 		type: 'getSearchTerm',
 		url: new URL(location.href).hostname
 	}, function (resp) {
-		var form = $(inputField).closest('form');
-		var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;
-		var rS = form.attr('role') != undefined ? form.attr('role').includes('search') : false;
-
+		var inputField = getSearchInputField();
 		// Make sure that 1. a search field exists and 2. a search term is available.
-		if (inputField.length > 0 && (aS || rS) && resp.searchTerm != ' ') {
+		if (inputField != null && resp.searchTerm != ' ') {
 			setTimeout(function () {
 				$(inputField).val(resp.searchTerm);
 				var protocol = location.href.startsWith('https://') ? 'https://' : 'http://';
@@ -134,12 +126,13 @@ function searchPage(delay) {
 					location.href,
 					'SEARCH',
 					resp.searchTerm,
-					protocol + document.domain + '/search?q=' + encodeURIComponent(resp.searchTerm)
+					protocol + document.domain + "?" + resp.searchParam + "=" +
+					encodeURIComponent(resp.searchTerm)
 				);
 				updateStatistics('keywordSearchCount');
 				updateStatistics('visitedSitesCount');
 
-				form.submit();
+				$(inputField).closest('form').submit();
 			}, delay);
 		} else {
 			updateStatus(location.href, 'SEARCHFAIL', resp.searchTerm, '&ndash;');
@@ -193,32 +186,43 @@ function weightedRandom(weight, minVal = 0) {
  */
 function getUrlParams() {
 	var dummySearchTerm = randomString(16);
+	var inputField = getSearchInputField();
 
-	var inputField = $(':input[type=search]').first();
-	if (inputField.length == 0) {
-		inputField = $(':input[type=text]').first();
-	}
-	var form = $(inputField).closest('form');
-	var aS = form.attr('action') != undefined ? form.attr('action').includes('search') : false;
-	var rS = form.attr('role') != undefined ? form.attr('role').includes('search') : false;
-
-	if (inputField.length > 0 && (aS || rS)) {
-		chrome.runtime.sendMessage({
-			type: data.availableMessageTypes.urlParams,
-			dummySearchTerm: dummySearchTerm
-		}, function (response) {
+	chrome.runtime.sendMessage({
+		type: data.availableMessageTypes.urlParams,
+		dummySearchTerm: inputField != null ? dummySearchTerm : ''
+	}, function (response) {
+		if (inputField != null) {
 			$(inputField).val(dummySearchTerm);
-			form.submit();
-		});
-	} else {
-		chrome.runtime.sendMessage({
-			type: data.availableMessageTypes.urlParams,
-			dummySearchTerm: '',
-			url: location.href
-		}, function (response) {
+			$(inputField).closest('form').submit();
+		} else {
 			disconnect(true);
-		});
+		}
+	});
+}
+
+/**
+ * Searches for an input field on the current page such that we can search the page.
+ */
+function getSearchInputField() {
+	var inputField = $(':input[type=search]').first().length > 0 || $(':input[type=text]').first();
+	var form = $(inputField).closest('form');
+
+	// Make sure that we don't fill our a login form or something similar.
+	// We only want to use search fields. (Note that this approach may not always work perfectly)
+	var isSearchField =
+		form.find(':input[type=search]').length == 1 ||
+		form.find(':input[type=text]').length == 1;
+
+	isSearchField = isSearchField &&
+		form.find(':input[type=email]').length == 0 &&
+		form.find(':input[type=password]').length == 0;
+
+	if (inputField.length > 0 && isSearchField) {
+		return inputField;
 	}
+
+	return null;
 }
 
 /**

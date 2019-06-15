@@ -229,6 +229,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				response.isSpecial = senderTab != undefined && senderTab.isSpecial;
 				if (response.isSpecial && senderTab.dummySearchTerm != undefined) {
 					response.disconnect = true;
+					// resolve() is called in getUrlParams() if condition is true
 					if (senderTab.dummySearchTerm != '') {
 						setUrlParams(
 							request.url,
@@ -237,6 +238,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 							senderTab.originUrl,
 							senderTab.resolve
 						);
+					} else {
+						senderTab.resolve();
 					}
 				}
 				break;
@@ -263,6 +266,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				var senderTab = specialTabs.find(tab => tab.id == sender.tab.id);
 				senderTab.dummySearchTerm = request.dummySearchTerm;
 				if (request.dummySearchTerm == '') { // Not searchable
+					// This url is done, so resolve it. Mark it as non-searchable as well.
+					senderTab.resolve();
 					storeInDatabase('searchParams', getKeyFromUrl(request.url), '', false);
 				}
 				break;
@@ -299,10 +304,6 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	if ('indexedDB' in window) {
 		var requestDB = window.indexedDB.open('database', 4);
 
-		requestDB.onsuccess = function (event) {
-			database = requestDB.result;
-		};
-
 		requestDB.onupgradeneeded = function (event) {
 			database = requestDB.result;
 			if (!database.objectStoreNames.contains('searchTerms')) {
@@ -317,8 +318,20 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				});
 			}
 		};
-	}
 
+		requestDB.onsuccess = function (event) {
+			database = requestDB.result;
+			createWindow();
+		};
+	}
+});
+
+/**
+ * Creates the hidden window and starts the application. Note: This function gets only called,
+ * if condition 'indexedDB' in window is true. This means that this extension needs indexedDB
+ * in order to run.
+ */
+function createWindow() {
 	/*
 	 * Creates the window for this extension to work in. It also updates the value of the variable
 	 * windowId, so we can access the window at any time.
@@ -331,8 +344,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			height: debug ? 1000 : currWindow.height,
 			url: chrome.runtime.getURL("./html/workingPage.html")
 		}, function (window) {
-			// Setting the state to 'minimized' in the create options seems not to work, so we update
-			// it instantly after the window has been created.
+			// Setting the state to 'minimized' in the create options seems not to work, so we
+			// update it instantly after the window has been created.
 			chrome.windows.update(window.id, {
 				state: debug ? 'normal' : 'minimized'
 			});
@@ -358,4 +371,4 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			runApplication();
 		});
 	});
-});
+}

@@ -45,9 +45,9 @@ var queue = [];
 /*
  * Loads the saved window state to restore it.
  */
-chrome.storage.sync.get('windowState', function (result) {
+chrome.storage.sync.get('windowState', result => {
 	if (result != undefined) {
-		chrome.windows.getCurrent(function (currWindow) {
+		chrome.windows.getCurrent(currWindow => {
 			chrome.windows.update(currWindow.id, {
 				state: result.windowState.state,
 				width: result.windowState.width,
@@ -58,7 +58,7 @@ chrome.storage.sync.get('windowState', function (result) {
 });
 
 // Start with loading the data.json file.
-fetch(dataPath).then(response => response.json()).then(function (json) {
+fetch(dataPath).then(response => response.json()).then(json => {
 	// Save json content in variable to make it accessible elsewhere
 	data = json;
 
@@ -67,8 +67,8 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * restart, because otherwise the window would adapt the state of the hidden window (which
 	 * is not very user-friendly). State gets updated anytime the window changes its state.
 	 */
-	chrome.runtime.onInstalled.addListener(function () {
-		chrome.windows.getCurrent(function (currWindow) {
+	chrome.runtime.onInstalled.addListener(() => {
+		chrome.windows.getCurrent(currWindow => {
 			chrome.storage.sync.set({
 				windowState: {
 					state: currWindow.state,
@@ -82,9 +82,9 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	/*
 	 * Saves changes to the window state.
 	 */
-	chrome.tabs.onCreated.addListener(function (tab) {
+	chrome.tabs.onCreated.addListener(tab => {
 		if (windowId != undefined && tab.windowId != windowId) { // Only consider real tabs
-			chrome.windows.get(tab.windowId, function (currWindow) {
+			chrome.windows.get(tab.windowId, currWindow => {
 				chrome.storage.sync.set({
 					windowState: {
 						state: currWindow.state,
@@ -100,7 +100,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * Keep track of third party requests, so we can visit these sites if we want to.
 	 */
 	chrome.webRequest.onBeforeRequest.addListener(
-		function (det) {
+		det => {
 			const excludedTypes = ['stylesheet', 'image']; // Reduce unnecessary effort
 			if (!excludedTypes.includes(det.type) && det.initiator != undefined) {
 				// We are only interested in third party sites, so we ignore first party requests.
@@ -113,7 +113,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 					thirdParties.set(
 						det.initiator,
 						val != undefined ?
-						(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
+							(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
 					);
 
 					// Find other websites that use the same third party and are not added to the
@@ -175,12 +175,12 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	 * params. After this, the content script will redirect and send another 'isSpecial' message
 	 * to tell the url after the redirection.
 	 */
-	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		var response = {};
 		var asyncCall = false; // For asynchronous responses
 		switch (request.type) {
 			case data.availableMessageTypes.disconnect:
-				chrome.tabs.remove(sender.tab.id, function () {
+				chrome.tabs.remove(sender.tab.id, () => {
 					var tabArray = currentTabs;
 					if (!(currentTabs.findIndex(elem => elem.id == sender.tab.id) > 0)) {
 						tabArray = specialTabs;
@@ -192,15 +192,15 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				break;
 			case data.availableMessageTypes.getSearchTerm:
 				asyncCall = true;
-				getFromDatabase('searchTerms', getKeyFromUrl(request.url)).then(function (req) {
-					req.onsuccess = function (event) {
+				getFromDatabase('searchTerms', getKeyFromUrl(request.url)).then(req => {
+					req.onsuccess = event => {
 						response.searchTerm = req.result != undefined ?
 							req.result.terms[Math.floor(Math.random() * req.result.terms.length)][0] :
 							' ';
 
 						if (response.searchTerm != ' ') {
 							getFromDatabase('searchParams', getKeyFromUrl(request.url)).then(r => {
-								r.onsuccess = function (event) {
+								r.onsuccess = event => {
 									response.searchParam = r.result != undefined ?
 										r.result.terms[0] :
 										' ';
@@ -265,7 +265,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 				});
 				break;
 			case data.availableMessageTypes.resize:
-				chrome.windows.getCurrent(function (currWindow) {
+				chrome.windows.getCurrent(currWindow => {
 					chrome.storage.sync.set({
 						windowState: {
 							state: currWindow.state,
@@ -299,7 +299,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	/*
 	 * Opens the extension options page whenever the user clicks on the extension icon.
 	 */
-	chrome.browserAction.onClicked.addListener(function () {
+	chrome.browserAction.onClicked.addListener(() => {
 		chrome.tabs.create({
 			url: chrome.runtime.getURL("./html/extensionPage.html")
 		});
@@ -318,7 +318,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 	if ('indexedDB' in window) {
 		var requestDB = window.indexedDB.open('database', 4);
 
-		requestDB.onupgradeneeded = function (event) {
+		requestDB.onupgradeneeded = event => {
 			database = requestDB.result;
 			if (!database.objectStoreNames.contains('searchTerms')) {
 				database.createObjectStore('searchTerms', {
@@ -333,7 +333,7 @@ fetch(dataPath).then(response => response.json()).then(function (json) {
 			}
 		};
 
-		requestDB.onsuccess = function (event) {
+		requestDB.onsuccess = event => {
 			database = requestDB.result;
 			createWindow();
 		};
@@ -350,14 +350,14 @@ function createWindow() {
 	 * Creates the window for this extension to work in. It also updates the value of the variable
 	 * windowId, so we can access the window at any time.
 	 */
-	chrome.windows.getCurrent(function (currWindow) {
+	chrome.windows.getCurrent(currWindow => {
 		chrome.windows.create({
 			focused: debug ? true : false,
 			setSelfAsOpener: true,
 			width: debug ? 1600 : currWindow.width,
 			height: debug ? 1000 : currWindow.height,
 			url: chrome.runtime.getURL("./html/workingPage.html")
-		}, function (window) {
+		}, window => {
 			// Setting the state to 'minimized' in the create options seems not to work, so we
 			// update it instantly after the window has been created.
 			chrome.windows.update(window.id, {
@@ -366,8 +366,8 @@ function createWindow() {
 			windowId = window.id;
 
 			// Write statistics to storage when the window is closed.
-			chrome.windows.onRemoved.addListener(function (winId) {
-				chrome.windows.getAll(function (windows) {
+			chrome.windows.onRemoved.addListener(winId => {
+				chrome.windows.getAll(windows => {
 					// Close the extension if it is the only window left
 					if (windows.length == 1 && windowId == windows[0].id) {
 						chrome.storage.sync.set({
@@ -375,7 +375,7 @@ function createWindow() {
 							keywordSearchCount: keywordSearchCount,
 							visitedSitesCount: visitedSitesCount,
 							todayConnectionCount: todayConnectionCount
-						}, function (res) {
+						}, res => {
 							chrome.windows.remove(windowId);
 						});
 					}
@@ -387,7 +387,7 @@ function createWindow() {
 			chrome.storage.sync.get(['lastSearchTermsInit'], result => {
 				if (result.lastSearchTermsInit == undefined ||
 					result.lastSearchTermsInit <= (new Date).getTime() - 1000 * 60 * 60) {
-					getSearchTerms().then(function () {
+					getSearchTerms().then(() => {
 						chrome.storage.sync.set({
 							lastSearchTermsInit: (new Date).getTime()
 						});

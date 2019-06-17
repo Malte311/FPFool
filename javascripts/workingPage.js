@@ -14,8 +14,8 @@ var data;
  * Executes the script when the page has loaded. This script logs the acitivities performed
  * by the extension.
  */
-$(document).ready(function () {
-	fetch(dataPath).then(response => response.json()).then(function (json) {
+$(document).ready(() => {
+	fetch(dataPath).then(response => response.json()).then(json => {
 		// Save json content in variable to make it accessible elsewhere
 		data = json;
 
@@ -24,7 +24,7 @@ $(document).ready(function () {
 
 		// Waits for messages from content scripts. The content scripts will inform this script
 		// whenever they perform an action, so we can update the status information.
-		chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			if (data.availableActionTypes.hasOwnProperty(request.type)) {
 				var action;
 				switch (request.type) {
@@ -62,8 +62,8 @@ $(document).ready(function () {
  * @param {string} tableId The id of the table we want to make sortable.
  */
 function addClickEventToTable(tableId) {
-	$(`#${tableId} thead tr th`).each(function () {
-		$(this).click(function () {
+	$(`#${tableId} thead tr th`).each(() => {
+		$(this).click(() => {
 			sortTable($(this).attr('num'), tableId);
 		});
 	});
@@ -135,7 +135,7 @@ function setDynamicTitle() {
 	var currentTitle = document.title;
 	var index = 0;
 
-	setInterval(function () {
+	setInterval(() => {
 		document.title = currentTitle + dots[index];
 		index = (index + 1) % dots.length;
 	}, 500);

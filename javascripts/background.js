@@ -53,7 +53,7 @@ var specialTabs = new Array(100).fill({
  */
 function runApplication() {
 	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
-		Object.values(data.availableSettings)), function (res) {
+		Object.values(data.availableSettings)), res => {
 		// Settings
 		maxConnectCount = res.maxConnectCount != undefined ?
 			parseInt(res.maxConnectCount) :
@@ -82,14 +82,14 @@ function runApplication() {
 			'text': '', // All entries in a given time interval
 			'startTime': (new Date).getTime() - interval,
 			'maxResults': res.maxHistoryCount != undefined ? parseInt(res.maxHistoryCount) : 15
-		}, function (historyItems) {
+		}, historyItems => {
 			// Get the number of visits for each page during the specified time interval.
 			var count = 0;
 			var totalVisits = 0;
 			for (const historyItem of historyItems) {
 				chrome.history.getVisits({
 					url: historyItem.url
-				}, function (results) {
+				}, results => {
 					var shortUrl = historyItem.url;
 					if (shortUrl.indexOf('?') > 0) {
 						shortUrl = shortUrl.substring(0, shortUrl.indexOf('?'));
@@ -144,7 +144,7 @@ function runApplication() {
 function connectLoop(restartTime) {
 	restartTime = Math.trunc(restartTime);
 	var startTime = (new Date).getTime();
-	var running = setInterval(function () {
+	var running = setInterval(() => {
 		connectToUrl(queue.shift(), activeAlgorithm);
 
 		if ((++todayConnectionCount > connectionLimit) || !(queue.length > 0)) {
@@ -154,7 +154,7 @@ function connectLoop(restartTime) {
 		// Pause after 30 seconds; restart after 2 mintues with new interval duration
 		if ((new Date).getTime() > startTime + 30000) {
 			clearInterval(running);
-			setTimeout(function () {
+			setTimeout(() => {
 				if (queue.length > 15) {
 					restartLoop(restartTime * 0.7);
 				} else {
@@ -191,7 +191,7 @@ function connectToUrl(url, algo) {
 	}
 
 	// If the tab limit is reached, wait until we can open a new tab again
-	var waiting = setInterval(function () {
+	var waiting = setInterval(() => {
 		if (maxTabsCount > currentTabs.reduce((n, val) => n + (val.id != -1), 0)) {
 			// If we can open a new tab, stop waiting and do not repeat anything
 			clearInterval(waiting);
@@ -207,7 +207,7 @@ function connectToUrl(url, algo) {
 				index: currentTabs.length,
 				url: url,
 				active: false
-			}, function (tab) {
+			}, tab => {
 				tab.isNew = true; // We need this to execute content scripts only once
 				tab.algorithm = algo;
 				currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;
@@ -229,7 +229,7 @@ async function getSearchTerms() {
 			text: '',
 			'startTime': (new Date).getTime() - time,
 			maxResults: 120
-		}, function (historyItems) {
+		}, historyItems => {
 			// Remove duplicates
 			historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
 			getTermForEachItem(historyItems, time).then(() => resolve());
@@ -253,10 +253,10 @@ async function getTermForEachItem(historyItems, time) {
 		await new Promise(resolve => {
 			chrome.history.getVisits({
 				url: historyItem.url
-			}, function (res) {
+			}, res => {
 				var visits = res.filter(v => v.visitTime >= (new Date).getTime() - time);
 				getFromDatabase('searchTerms', getKeyFromUrl(historyItem.url)).then(re => {
-					re.onsuccess = function (event) {
+					re.onsuccess = event => {
 						var visitTimesToAdd = [];
 						// Check for every visit if it already exists. If not, add it.
 						for (var visit of visits) {
@@ -308,8 +308,8 @@ async function getSearchTerm(url, visitTimes) {
 	if (url.indexOf('?') > 0) {
 		return await new Promise(resolve => {
 			var key = getKeyFromUrl(url);
-			getFromDatabase('searchParams', key).then(function (res) {
-				res.onsuccess = function (event) {
+			getFromDatabase('searchParams', key).then(res => {
+				res.onsuccess = event => {
 					// Find out url params, since they are not existing in our database yet.
 					// If condition is met, resolve() is called after getting the params from
 					// this tab (which happens via message passing).
@@ -319,7 +319,7 @@ async function getSearchTerm(url, visitTimes) {
 							index: currentTabs.length,
 							url: url.split('?')[0],
 							active: false
-						}, function (tab) {
+						}, tab => {
 							tab.isSpecial = true;
 							tab.visitTimes = visitTimes;
 							tab.originUrl = url;
@@ -365,14 +365,14 @@ function setUrlParams(url, dummySearchTerm, visitTimes, originUrl, resolve) {
 		if (val.toLowerCase() == dummySearchTerm.toLowerCase()) { // Some sites capitalize queries
 			// If origin url redirects us, the origin url itself is not searchable.
 			if (url != originUrl) {
-				storeInDatabase('searchParams', getKeyFromUrl(originUrl), '', false, function () {
+				storeInDatabase('searchParams', getKeyFromUrl(originUrl), '', false, () => {
 					chrome.history.deleteUrl({
 						url: originUrl
-					}, function () {
+					}, () => {
 						storeInDatabase('searchParams', getKeyFromUrl(url), key, false, () => {
 							chrome.history.deleteUrl({
 								url: url
-							}, function () {
+							}, () => {
 								resolve();
 								getSearchTerm(originUrl, visitTimes);
 							});
@@ -380,10 +380,10 @@ function setUrlParams(url, dummySearchTerm, visitTimes, originUrl, resolve) {
 					});
 				});
 			} else {
-				storeInDatabase('searchParams', getKeyFromUrl(url), key, false, function () {
+				storeInDatabase('searchParams', getKeyFromUrl(url), key, false, () => {
 					chrome.history.deleteUrl({
 						url: url
-					}, function () {
+					}, () => {
 						resolve();
 						getSearchTerm(originUrl, visitTimes);
 					});
@@ -423,7 +423,7 @@ function storeInDatabase(objectStore, key, val, append = true, callback) {
 	var store = trans.objectStore(objectStore);
 	var getRequest = store.get(key);
 
-	getRequest.onsuccess = function (event) {
+	getRequest.onsuccess = event => {
 		var terms = (getRequest.result != undefined && append) ?
 			getRequest.result.terms.concat([val]) : [val];
 		var update = store.put({
@@ -431,7 +431,7 @@ function storeInDatabase(objectStore, key, val, append = true, callback) {
 			terms: terms
 		});
 
-		update.onsuccess = function (event) {
+		update.onsuccess = event => {
 			typeof callback === 'function' && callback();
 		};
 	};

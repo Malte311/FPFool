@@ -14,24 +14,24 @@ var data;
  * Executes the script when the page has loaded. This script allows the user to customize the
  * extension as well as to take a look at some statistics.
  */
-$(document).ready(function () {
-	fetch(dataPath).then(response => response.json()).then(function (json) {
+$(document).ready(() => {
+	fetch(dataPath).then(response => response.json()).then(json => {
 		// Save json content in variable to make it accessible elsewhere
 		data = json;
 
 		// Add onclick events to each tab
-		$.each(data.availableTabs, function (key, value) {
+		$.each(data.availableTabs, (key, value) => {
 			addClickEventToTab(value);
 		});
 
-		// Update statistics in real time
-		chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+		// Update statistics in real time (parameter false means no animation of the numbers)
+		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			if (request.type != undefined && request.type.startsWith('inc')) {
 				loadStatistics(false);
 			}
 		});
 
-		// On startup, the settings tab is active
+		// On startup, the settings tab is active (because it is the first one)
 		loadSettings();
 	});
 });
@@ -43,7 +43,7 @@ $(document).ready(function () {
  * @param {string} tabId The id of the tab to which we want to add an onclick event.
  */
 function addClickEventToTab(tabId) {
-	$(`#${tabId}`).click(function () {
+	$(`#${tabId}`).click(() => {
 		switch (tabId) {
 			case data.availableTabs.SETTINGS:
 				loadSettings();
@@ -71,27 +71,16 @@ function createInfoAlert(divId, text) {
 		</div>
 	`);
 
-	setTimeout(function () {
+	setTimeout(() => {
 		$(`#${divId}`).html(''); // Remove alert after a short time
 	}, 5000);
-}
-
-/**
- * Creates a tooltip for a given text.
- * 
- * @param {string} text The text to which we want to add a tooltip.
- * @param {string} tooltip The tooltip on hovering over the text.
- * @return {string} The html string containing the text with its tooltip.
- */
-function createTooltip(text, tooltip) {
-	return `<span rel=\"tooltip\" title=\"${tooltip}\">${text}</span>`;
 }
 
 /**
  * Loads the content of the settings tab.
  */
 function loadSettings() {
-	chrome.storage.sync.get(Object.values(data.availableSettings), function (res) {
+	chrome.storage.sync.get(Object.values(data.availableSettings), res => {
 		$('#activeAlgorithm').text(res.activeAlgorithm != undefined ?
 			res.activeAlgorithm :
 			data.availableAlgorithms.DEFAULT
@@ -99,19 +88,19 @@ function loadSettings() {
 		showAlgorithmExplanation(); // Displays what the algorithm does.
 
 		$('#algorithmDropdown').html(''); // Clear before appending new things
-		$.each(data.availableAlgorithms, function (key, value) {
+		$.each(data.availableAlgorithms, (key, value) => {
 			$('#algorithmDropdown').append(`
 				<a class=\"dropdown-item\" id=\"${key}\" href=\"#\">${value}</a>
 			`);
 		});
 
-		$('#algorithmDropdown').children().each(function () {
-			$(this).click(function () {
+		$('#algorithmDropdown').children().each(() => {
+			$(this).click(() => {
 				var key = $(this).attr('id');
 				$('#activeAlgorithm').text(data.availableAlgorithms[key]);
 				chrome.storage.sync.set({
 					[data.availableSettings.activeAlgorithm]: data.availableAlgorithms[key]
-				}, function (res) {
+				}, res => {
 					showAlgorithmExplanation();
 					createInfoAlert('infoDisplayDiv',
 						'Algorithm changed successfully! The changes will take effect on restart.'
@@ -120,20 +109,20 @@ function loadSettings() {
 			});
 		});
 
-		$.each(data.availableSettings, function (key, value) {
+		$.each(data.availableSettings, (key, value) => {
 			$(`#${value}Slider`).val(res[value] != undefined ? res[value] : 1);
 			$(`#${value}Slider`).attr('value', res[value] != undefined ? res[value] : 1);
 			$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
-			$(`#${value}Slider`).change(function () {
+			$(`#${value}Slider`).change(() => {
 				chrome.storage.sync.set({
 					[value]: $(`#${value}Slider`).val()
-				}, function (res) {
+				}, res => {
 					createInfoAlert('infoDisplayDiv',
 						'Your changes have been saved! The changes will take effect on restart.'
 					);
 				});
 			});
-			$(`#${value}Slider`).on('input', function () {
+			$(`#${value}Slider`).on('input', () => {
 				$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
 			});
 		});
@@ -147,19 +136,19 @@ function loadSettings() {
  */
 function loadStatistics(animate) {
 	// Tells the content script to reset all variables and to save the new state in the storage.
-	$('#resetBtn').click(function () {
+	$('#resetBtn').click(() => {
 		chrome.runtime.sendMessage({
 			type: 'resetStatistics'
-		}, function (response) {
+		}, response => {
 			loadStatistics(false); // Reload statistics afterwards
 		});
 	});
 
 	chrome.runtime.sendMessage({
 		type: 'getStatistics'
-	}, function (response) {
-		chrome.storage.sync.get(Object.values(data.availableStatistics), function (res) {
-			$.each(data.availableStatistics, function (key, value) {
+	}, response => {
+		chrome.storage.sync.get(Object.values(data.availableStatistics), res => {
+			$.each(data.availableStatistics, (key, value) => {
 				// All time
 				$(`#${value}`).html(response[key] != undefined ? response[value] : 0);
 				// Current session (idea: Subtract the number in the storage from the number in the
@@ -182,16 +171,16 @@ function loadStatistics(animate) {
  * Creates an animation to display a number.
  */
 function numberAnimation() {
-	$('.count').each(function () {
+	$('.count').each(() => {
 		$(this).prop('Counter', 0).animate({
 			Counter: $(this).text()
 		}, {
-			duration: 750,
-			easing: 'swing',
-			step: function (now) {
-				$(this).text(Math.ceil(now));
-			}
-		});
+				duration: 750,
+				easing: 'swing',
+				step: now => {
+					$(this).text(Math.ceil(now));
+				}
+			});
 	});
 }
 
@@ -200,7 +189,7 @@ function numberAnimation() {
  * the algorithm does.
  */
 function showAlgorithmExplanation() {
-	chrome.storage.sync.get(data.availableSettings.activeAlgorithm, function (res) {
+	chrome.storage.sync.get(data.availableSettings.activeAlgorithm, res => {
 		switch (res.activeAlgorithm) {
 			case data.availableAlgorithms.NAVIGATE:
 				$('#algorithmSelectPara').html(`

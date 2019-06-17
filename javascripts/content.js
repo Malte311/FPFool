@@ -14,25 +14,25 @@ var data;
  * Executes this content script when the webpage has loaded. This script performs fake actions
  * on faked connections according to a given algorithm.
  */
-$(document).ready(function () {
-	fetch(dataPath).then(response => response.json()).then(function (json) {
+$(document).ready(() => {
+	fetch(dataPath).then(response => response.json()).then(json => {
 		// Save json content in variable to make it accessible elsewhere
 		data = json;
 
 		// Tell the background script when window is resized
-		window.addEventListener('resize', function (event) {
+		window.addEventListener('resize', event => {
 			chrome.runtime.sendMessage({
 				type: 'resize',
 				width: event.target.outerWidth,
 				height: event.target.outerHeight
-			}, function (response) {});
+			}, response => { });
 		});
 
 		// For finding out url parameter.
 		chrome.runtime.sendMessage({
 			type: 'isSpecial',
 			url: location.href
-		}, function (response) {
+		}, response => {
 			if (response.isSpecial && response.disconnect != undefined) {
 				disconnect(true);
 			} else if (response.isSpecial && response.disconnect == undefined) {
@@ -42,7 +42,7 @@ $(document).ready(function () {
 
 		chrome.runtime.sendMessage({
 			type: 'isExec'
-		}, function (response) {
+		}, response => {
 			// Only run this script for tabs created by this extension.
 			if (response.isExec) {
 				updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
@@ -75,7 +75,7 @@ $(document).ready(function () {
 function disconnect(isSpecial = false) {
 	chrome.runtime.sendMessage({
 		type: 'disconnect'
-	}, function (response) {
+	}, response => {
 		if (!isSpecial) {
 			updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
 		}
@@ -91,12 +91,12 @@ function disconnect(isSpecial = false) {
 function navigatePage(delay) {
 	var links = [];
 
-	$('a').each(function () {
+	$('a').each(() => {
 		links.push(this);
 	});
 
 	var randomVisit = links[Math.floor(Math.random() * links.length)];
-	setTimeout(function () {
+	setTimeout(() => {
 		updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
 		updateStatistics('clickedLinksCount');
 		updateStatistics('visitedSitesCount');
@@ -115,11 +115,11 @@ function searchPage(delay) {
 	chrome.runtime.sendMessage({
 		type: 'getSearchTerm',
 		url: new URL(location.href).hostname
-	}, function (resp) {
+	}, resp => {
 		var inputField = getSearchInputField();
 		// Make sure that 1. a search field exists and 2. a search term is available.
 		if (inputField != null && resp.searchTerm != ' ') {
-			setTimeout(function () {
+			setTimeout(() => {
 				$(inputField).val(resp.searchTerm);
 				var url = location.href.indexOf('?') > 0 ? location.href + '&' : location.href + '?';
 				updateStatus(
@@ -148,7 +148,7 @@ function searchPage(delay) {
 function updateStatistics(property) {
 	chrome.runtime.sendMessage({
 		type: 'inc' + property.charAt(0).toUpperCase() + property.substring(1)
-	}, function (response) {});
+	}, response => { });
 }
 
 /**
@@ -166,7 +166,7 @@ function updateStatus(url, type, searchTerm, toUrl) {
 		type: type,
 		searchTerm: searchTerm,
 		toUrl: toUrl
-	}, function (response) {});
+	}, response => { });
 }
 
 /**
@@ -190,7 +190,7 @@ function getUrlParams() {
 	chrome.runtime.sendMessage({
 		type: data.availableMessageTypes.urlParams,
 		dummySearchTerm: inputField != null ? dummySearchTerm : ''
-	}, function (response) {
+	}, response => {
 		if (inputField != null) {
 			$(inputField).val(dummySearchTerm);
 			$(inputField).closest('form').submit();

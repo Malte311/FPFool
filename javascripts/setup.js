@@ -113,7 +113,7 @@ fetch(dataPath).then(response => response.json()).then(json => {
 					thirdParties.set(
 						det.initiator,
 						val != undefined ?
-							(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
+						(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
 					);
 
 					// Find other websites that use the same third party and are not added to the

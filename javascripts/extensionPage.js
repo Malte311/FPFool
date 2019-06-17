@@ -180,7 +180,8 @@ function numberAnimation() {
 				step: now => {
 					$(this).text(Math.ceil(now));
 				}
-			});
+			}
+		);
 	});
 }
 

@@ -25,7 +25,7 @@ $(document).ready(() => {
 				type: 'resize',
 				width: event.target.outerWidth,
 				height: event.target.outerHeight
-			}, response => { });
+			}, response => {});
 		});
 
 		// For finding out url parameter.
@@ -148,7 +148,7 @@ function searchPage(delay) {
 function updateStatistics(property) {
 	chrome.runtime.sendMessage({
 		type: 'inc' + property.charAt(0).toUpperCase() + property.substring(1)
-	}, response => { });
+	}, response => {});
 }
 
 /**
@@ -166,7 +166,7 @@ function updateStatus(url, type, searchTerm, toUrl) {
 		type: type,
 		searchTerm: searchTerm,
 		toUrl: toUrl
-	}, response => { });
+	}, response => {});
 }
 
 /**
@@ -204,7 +204,7 @@ function getUrlParams() {
  * Searches for an input field on the current page such that we can search the page.
  */
 function getSearchInputField() {
-	var inputField = $(':input[type=search]').first().length > 0 || $(':input[type=text]').first();
+	var inputField = $(':input[type=search]').first() || $(':input[type=text]').first();
 	var form = $(inputField).closest('form');
 
 	// Make sure that we don't fill our a login form or something similar.

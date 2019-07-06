@@ -175,13 +175,12 @@ function numberAnimation() {
 		$(this).prop('Counter', 0).animate({
 			Counter: $(this).text()
 		}, {
-				duration: 750,
-				easing: 'swing',
-				step: now => {
-					$(this).text(Math.ceil(now));
-				}
+			duration: 750,
+			easing: 'swing',
+			step: now => {
+				$(this).text(Math.ceil(now));
 			}
-		);
+		});
 	});
 }
 

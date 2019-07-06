@@ -151,7 +151,7 @@ function connectLoop(restartTime) {
 			clearInterval(running);
 		}
 
-		// Pause after 30 seconds; restart after 2 mintues with new interval duration
+		// Pause after 30 seconds; restart after 1-3 mintues with new interval duration
 		if ((new Date).getTime() > startTime + 30000) {
 			clearInterval(running);
 			setTimeout(() => {
@@ -160,7 +160,7 @@ function connectLoop(restartTime) {
 				} else {
 					restartLoop(restartTime * 1.2);
 				}
-			}, 1000 * 120);
+			}, 1000 * (queue.length > 15 ? 60 : (queue.length > 5 ? 120 : 180)));
 		}
 	}, restartTime);
 }

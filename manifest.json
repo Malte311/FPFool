@@ -9,14 +9,14 @@
 	"background": {
 		"scripts": [
 			"./lib/jquery.min.js",
-			"./javascripts/setup.js",
-			"./javascripts/background.js"
+			"./javascripts/background/setup.js",
+			"./javascripts/background/background.js"
 		],
 		"persistent": true
 	},
 	"content_scripts": [{
 		"matches": ["http://*/*", "https://*/*"],
-		"js": ["./lib/jquery.min.js", "./javascripts/content.js"]
+		"js": ["./lib/jquery.min.js", "./javascripts/content/content.js"]
 	}],
 	"browser_action": {
 		"default_title": "FPFool",

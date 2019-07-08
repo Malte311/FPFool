@@ -10,7 +10,8 @@
 		"scripts": [
 			"./lib/jquery.min.js",
 			"./javascripts/background/setup.js",
-			"./javascripts/background/background.js"
+			"./javascripts/background/background.js",
+			"./javascripts/background/search.js"
 		],
 		"persistent": true
 	},

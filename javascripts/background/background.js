@@ -52,6 +52,8 @@ var specialTabs = new Array(100).fill({
  * when finished. The selected algorithm defines what exactly these fake connections do.
  */
 function runApplication() {
+	getSuggestion("hello");
+	return;
 	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
 		Object.values(data.availableSettings)), res => {
 		// Settings
@@ -431,6 +433,7 @@ function storeInDatabase(objectStore, key, val, append = true, callback) {
 			terms: terms
 		});
 
+		// Call callback, if it is defined
 		update.onsuccess = event => {
 			typeof callback === 'function' && callback();
 		};

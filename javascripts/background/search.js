@@ -26,13 +26,57 @@ function chooseTerm(suggestions, alreadyChosen) {
  * @param {string} term The search term for which we want to find a suggestion.
  */
 function getSuggestion(term) {
-	var words = term.split(' ');
-	var finished = false;
-	var maxRuns = 200;
-	while (!finished && maxRuns > 0) {
+	return getSuggestionRecursive(term, term, 0, []);
+}
 
-		maxRuns--;
+function getSuggestionRecursive(original, current, runs, alreadyDone) {
+	var words = getAllWords(current);
+	alreadyDone.concat(words);
+	var found = null;
+	if (runs++ < 200) {
+		words.forEach((val, ind, arr) => {
+			requestAPI(suggestionAPI, val).then((result) => {
+				if (result == ' ')
+					return;
+
+				var suggestion = chooseTerm(result, alreadyDone);
+				alreadyDone.push(suggestion);
+
+				var suggestionWords = suggestion.split(' ');
+				var termWords = original.split(' ');
+
+				if (suggestionWords.length == termWords.length &&
+					!suggestionWords.some(w => termWords.includes(w))) {
+					found = suggestion;
+					return;
+				} else {
+					getSuggestion(original, suggestion, runs, alreadyDone);
+				}
+			});
+			if (found != null)
+				return;
+		});
 	}
+
+	return found != null ? found : ' ';
+}
+
+function getAllWords(term) {
+	var powerset = [];
+
+	var words = term.split(' ');
+	var currWord = '';
+	for (var i = 0; i < words.length; i++) {
+		currWord += words[i];
+		powerset.push(words[i]);
+		for (var j = i + 1; j < words.length; j++) {
+			currWord += (' ' + words[j]);
+			powerset.push(currWord);
+		}
+		currWord = '';
+	}
+
+	return powerset;
 }
 
 /**
@@ -41,17 +85,17 @@ function getSuggestion(term) {
  * @param {string} api The Google suggestion API.
  * @param {string} term The term which should get completed.
  */
-function requestAPI(api, term) {
+async function requestAPI(api, term) {
 	return await new Promise((resolve, reject) => {
 		var http = new XMLHttpRequest();
 
-		http.onreadystatechange = function() {
+		http.onreadystatechange = function () {
 			if (this.readyState == 4 && this.status == 200) {
 				/* Split at first comma, because the answer looks like this (for term 'hello'):
-				* ["hello",["hello fresh","hello body","hello","hello kitty","hello neighbor",
-				* "hello body code","hello fresh rezepte","helloween","hello again",
-				* "hello fresh gutschein"]]
-				*/
+				 * ["hello",["hello fresh","hello body","hello","hello kitty","hello neighbor",
+				 * "hello body code","hello fresh rezepte","helloween","hello again",
+				 * "hello fresh gutschein"]]
+				 */
 				var response = this.responseText.split(/,(.+)/)[1];
 				var quoteCount = 0;
 				var currentWord = '';
@@ -59,8 +103,7 @@ function requestAPI(api, term) {
 				for (var i = 0; i < response.length; i++) {
 					if (quoteCount % 2 == 1) { // Quotation mark open, word begins here
 						currentWord += response.charAt(i);
-					}
-					else if (currentWord != '') { // Quotation mark close, word ended here
+					} else if (currentWord != '') { // Quotation mark close, word ended here
 						suggestions.push(currentWord);
 						currentWord = '';
 					}
@@ -70,9 +113,11 @@ function requestAPI(api, term) {
 				}
 
 				resolve(suggestions);
+			} else {
+				resolve(' ');
 			}
 		};
-		
+
 		http.open('GET', `${api}&q=${term}`, true);
 		http.send();
 	});

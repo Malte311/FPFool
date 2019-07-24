@@ -25,17 +25,6 @@ var maxVisits = 10;
 var maxTabsCount = 5;
 
 /*
- * Variables for statistical information (like the total number of visited sites, clicked links
- * and so on). These are updated in real time, so its important they are global.
- */
-var visitedSitesCount, clickedLinksCount, keywordSearchCount;
-
-/*
- * Defines the currently selected algorithm.
- */
-var activeAlgorithm;
-
-/*
  * Holds the amount of connections made so far.
  */
 var todayConnectionCount = 0;
@@ -52,10 +41,7 @@ var specialTabs = new Array(100).fill({
  * when finished. The selected algorithm defines what exactly these fake connections do.
  */
 function runApplication() {
-	getSuggestion("hello");
-	return;
-	chrome.storage.sync.get(Object.values(data.availableStatistics).concat(
-		Object.values(data.availableSettings)), res => {
+	chrome.storage.sync.get(Object.values(data.availableSettings), res => {
 		// Settings
 		maxConnectCount = res.maxConnectCount != undefined ?
 			parseInt(res.maxConnectCount) :
@@ -65,17 +51,9 @@ function runApplication() {
 			maxTabsCount;
 		var interval = res.interval != undefined ? parseInt(res.interval) : 1; // Default 1 day
 		interval = interval * 1000 * 60 * 60 * 24; // interval has unit days but needs millisec
-		activeAlgorithm = res.activeAlgorithm != undefined ?
-			res.activeAlgorithm :
-			data.availableAlgorithms.DEFAULT;
 		todayConnectionCount = res.todayConnectionCount != undefined ?
 			parseInt(todayConnectionCount) :
 			todayConnectionCount;
-
-		// Statistics
-		visitedSitesCount = res.visitedSitesCount != undefined ? res.visitedSitesCount : 0;
-		clickedLinksCount = res.clickedLinksCount != undefined ? res.clickedLinksCount : 0;
-		keywordSearchCount = res.keywordSearchCount != undefined ? res.keywordSearchCount : 0;
 
 		// Gets the browser history to establish connections to sites which have already been
 		// visited (we want all urls, default interval is 24 hours, default maximum amount of
@@ -128,7 +106,7 @@ function runApplication() {
 						});
 
 						// First call instant, then interval
-						connectToUrl(queue.shift(), activeAlgorithm);
+						connectToUrl(queue.shift());
 						todayConnectionCount++;
 						connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
 					}
@@ -147,7 +125,7 @@ function connectLoop(restartTime) {
 	restartTime = Math.trunc(restartTime);
 	var startTime = (new Date).getTime();
 	var running = setInterval(() => {
-		connectToUrl(queue.shift(), activeAlgorithm);
+		connectToUrl(queue.shift());
 
 		if ((++todayConnectionCount > connectionLimit) || !(queue.length > 0)) {
 			clearInterval(running);
@@ -182,9 +160,8 @@ function restartLoop(restartTime) {
  * We open the given url in a new tab in our hidden browser window.
  * 
  * @param {string} url The url we want to connect to.
- * @param {string} algo The algorithm used in this tab.
  */
-function connectToUrl(url, algo) {
+function connectToUrl(url) {
 	// Do not visit a page too many times and do not visit the extension page
 	// (does not start with http)
 	if ((browserHistory.has(url) && browserHistory.get(url) >= maxVisits) ||
@@ -211,7 +188,7 @@ function connectToUrl(url, algo) {
 				active: false
 			}, tab => {
 				tab.isNew = true; // We need this to execute content scripts only once
-				tab.algorithm = algo;
+				tab.type = 'execAlgo';
 				currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;
 			});
 		}
@@ -223,19 +200,19 @@ function connectToUrl(url, algo) {
 /*
  * Searches for possible search terms in the user's browser history. Saves the results
  * to the 'searchTerms' objectStore in our database.
+ * 
+ * @param {function} callback Mandatory callback function.
  */
-async function getSearchTerms() {
-	return await new Promise(resolve => {
-		var time = 1000 * 60 * 60 * 24 * 7;
-		chrome.history.search({
-			text: '',
-			'startTime': (new Date).getTime() - time,
-			maxResults: 120
-		}, historyItems => {
-			// Remove duplicates
-			historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
-			getTermForEachItem(historyItems, time).then(() => resolve());
-		});
+function getSearchTerms(callback) {
+	var time = 1000 * 60 * 60 * 24 * 7;
+	chrome.history.search({
+		text: '',
+		'startTime': (new Date).getTime() - time,
+		maxResults: 120
+	}, historyItems => {
+		// Remove duplicates
+		historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
+		getTermForEachItem(historyItems, time).then(() => callback());
 	});
 }
 
@@ -243,54 +220,52 @@ async function getSearchTerms() {
  * Gets the search term for a list of urls from the browser history.
  * 
  * @param {array} historyItems The array of visited urls.
- * @param {number} time Timestamp of the start time for the visits. 
+ * @param {number} time Timestamp of the start time for the visits.
+ * @param {function} callback Mandatory callback function.
  */
-async function getTermForEachItem(historyItems, time) {
+function getTermForEachItem(historyItems, time, callback) {
 	for (const historyItem of historyItems) {
 		// Only consider urls with parameter
 		if (historyItem.url.indexOf('?') < 0) {
 			continue;
 		}
 
-		await new Promise(resolve => {
-			chrome.history.getVisits({
-				url: historyItem.url
-			}, res => {
-				var visits = res.filter(v => v.visitTime >= (new Date).getTime() - time);
-				getFromDatabase('searchTerms', getKeyFromUrl(historyItem.url)).then(re => {
-					re.onsuccess = event => {
-						var visitTimesToAdd = [];
-						// Check for every visit if it already exists. If not, add it.
-						for (var visit of visits) {
-							if (!(re.result == undefined)) {
-								var isDuplicate = false;
-								for (var term of re.result.terms) {
-									// term[1] holds the visit time of that search term
-									if (term[1] == Math.trunc(visit.visitTime)) {
-										isDuplicate = true;
-										break;
-									}
-								}
-
-								if (!isDuplicate) {
-									visitTimesToAdd.push(visit.visitTime);
-								}
-							} else {
-								visitTimesToAdd = visitTimesToAdd
-									.concat(visits.map(v => Math.trunc(v.visitTime)));
+		chrome.history.getVisits({
+			url: historyItem.url
+		}, res => {
+			var visits = res.filter(v => v.visitTime >= (new Date).getTime() - time);
+			getFromDatabase('searchTerms', getKeyFromUrl(historyItem.url), re => {
+				var visitTimesToAdd = [];
+				// Check for every visit if it already exists. If not, add it.
+				for (var visit of visits) {
+					if (!(re == undefined)) {
+						var isDuplicate = false;
+						for (var term of re.terms) {
+							// term[1] holds the visit time of that search term
+							if (term[1] == Math.trunc(visit.visitTime)) {
+								isDuplicate = true;
 								break;
 							}
 						}
 
-						if (visitTimesToAdd.length > 0) {
-							getSearchTerm(historyItem.url, visitTimesToAdd).then(() => {
-								resolve();
-							});
-						} else {
-							resolve();
+						if (!isDuplicate) {
+							visitTimesToAdd.push(visit.visitTime);
 						}
-					};
-				});
+					} else {
+						visitTimesToAdd = visitTimesToAdd
+							.concat(visits.map(v => Math.trunc(v.visitTime)));
+						break;
+					}
+				}
+
+				if (visitTimesToAdd.length > 0) {
+					getSearchTerm(historyItem.url, visitTimesToAdd).then(() => {
+						callback();
+					});
+				} else {
+					callback();
+				}
+
 			});
 		});
 	}
@@ -304,49 +279,45 @@ async function getTermForEachItem(historyItems, time) {
  * 
  * @param {string} url The visited website.
  * @param {array} visitTimes Timestamps of the visit times for this url.
+ * @param {function} callback Mandatory callback function.
  */
-async function getSearchTerm(url, visitTimes) {
+function getSearchTerm(url, visitTimes, callback) {
 	// Only consider urls with parameters
 	if (url.indexOf('?') > 0) {
-		return await new Promise(resolve => {
-			var key = getKeyFromUrl(url);
-			getFromDatabase('searchParams', key).then(res => {
-				res.onsuccess = event => {
-					// Find out url params, since they are not existing in our database yet.
-					// If condition is met, resolve() is called after getting the params from
-					// this tab (which happens via message passing).
-					if (res.result == undefined) {
-						chrome.tabs.create({
-							windowId: windowId,
-							index: currentTabs.length,
-							url: url.split('?')[0],
-							active: false
-						}, tab => {
-							tab.isSpecial = true;
-							tab.visitTimes = visitTimes;
-							tab.originUrl = url;
-							tab.resolve = resolve;
-							specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
-						});
-					} else if (res.result.terms != undefined && res.result.terms[0] != '') {
-						var term = new URLSearchParams(url.split('?')[1]).get(res.result.terms[0]);
-						if (term != null) { // Only store existing terms
-							for (var visitTime of visitTimes) {
-								storeInDatabase('searchTerms', key, [
-									decodeURIComponent(term), Math.trunc(visitTime)
-								]);
-							}
-						}
-						resolve();
-					} else {
-						resolve();
+		var key = getKeyFromUrl(url);
+		getFromDatabase('searchParams', key, res => {
+			// Find out url params, since they are not existing in our database yet.
+			// If condition is met, callback() is called after getting the params from
+			// this tab (which happens via message passing).
+			if (res == undefined) {
+				chrome.tabs.create({
+					windowId: windowId,
+					index: currentTabs.length,
+					url: url.split('?')[0],
+					active: false
+				}, tab => {
+					tab.type = 'getUrlParam';
+					tab.visitTimes = visitTimes;
+					tab.originUrl = url;
+					tab.resolve = callback;
+					specialTabs[specialTabs.findIndex(elem => elem.id == -1)] = tab;
+				});
+			} else if (res.terms != undefined && res.terms[0] != '') {
+				var term = new URLSearchParams(url.split('?')[1]).get(res.terms[0]);
+				if (term != null) { // Only store existing terms
+					for (var visitTime of visitTimes) {
+						storeInDatabase('searchTerms', key, [
+							decodeURIComponent(term), Math.trunc(visitTime)
+						]);
 					}
-				};
-			});
+				}
+				callback();
+			} else {
+				callback();
+			}
+
 		});
 	}
-
-	return true;
 }
 
 /**
@@ -401,36 +372,3 @@ function setUrlParams(url, dummySearchTerm, visitTimes, originUrl, resolve) {
 		resolve();
 	}
 }
-
-/**
- * Turns an url into a key for our database. The key is simply the hostname of that url.
- * @param {string} url The url of which we want to get a key.
- */
-function getKeyFromUrl(url) {
-	var key = url.startsWith('http') ? new URL(url).hostname : new URL('http://' + url).hostname;
-	return key.startsWith('www.') ? key : 'www.' + key;
-}
-
-
-
-/**
- * Shuffles a given array.
- * 
- * @param {Array} array The array we want to shuffle.
- * @return {Array} The shuffled array.
- */
-function shuffleArray(array) {
-	var currentIndex = array.length;
-	var temporaryValue, randomIndex;
-
-	while (currentIndex != 0) {
-		randomIndex = Math.floor(Math.random() * currentIndex);
-		currentIndex -= 1;
-
-		temporaryValue = array[currentIndex];
-		array[currentIndex] = array[randomIndex];
-		array[randomIndex] = temporaryValue;
-	}
-
-	return array;
-};

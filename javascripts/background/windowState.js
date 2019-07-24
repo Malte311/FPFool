@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Makes sure that the window state is restored and monitored, such that the extension does not
  * change the original state of the users window.
@@ -32,14 +34,21 @@ function restoreWindowState() {
  */
 function initWindowState() {
 	chrome.runtime.onInstalled.addListener(() => {
-		chrome.windows.getCurrent(currWindow => {
-			chrome.storage.sync.set({
-				windowState: {
-					state: currWindow.state,
-					width: currWindow.width,
-					height: currWindow.height
-				}
-			});
+		setWindowState();
+	});
+}
+
+/**
+ * Sets the window state if the user changes it.
+ */
+function setWindowState() {
+	chrome.windows.getCurrent(currWindow => {
+		chrome.storage.sync.set({
+			windowState: {
+				state: currWindow.state,
+				width: currWindow.width,
+				height: currWindow.height
+			}
 		});
 	});
 }

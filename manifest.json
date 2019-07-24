@@ -9,19 +9,25 @@
 	"background": {
 		"scripts": [
 			"./lib/jquery.min.js",
+			"./javascripts/background/util.js",
+			"./javascripts/background/thirdParty.js",
 			"./javascripts/background/message.js",
 			"./javascripts/background/browserWindow.js",
 			"./javascripts/background/windowState.js",
 			"./javascripts/background/database.js",
-			"./javascripts/background/setup.js",
-			"./javascripts/background/background.js",
-			"./javascripts/background/search.js"
+			"./javascripts/background/connection.js",
+			"./javascripts/background/search.js",
+			"./javascripts/background/setup.js"
 		],
 		"persistent": true
 	},
 	"content_scripts": [{
 		"matches": ["http://*/*", "https://*/*"],
-		"js": ["./lib/jquery.min.js", "./javascripts/content/content.js"]
+		"js": [
+			"./lib/jquery.min.js", 
+			"./javascripts/content/util.js", 
+			"./javascripts/content/content.js"
+		]
 	}],
 	"browser_action": {
 		"default_title": "FPFool",

@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * Holds the indexedDB database.
  */
@@ -67,8 +69,13 @@ function storeInDatabase(objectStore, key, val, append = true, callback) {
  * 
  * @param {Object} objectStore The table we want to update.
  * @param {string} key The key of the item we want to update/add.
+ * @param {function} callback Mandatory callback function with result from database as parameter.
  * @return {Promise} The corresponding value to the given key.
  */
-async function getFromDatabase(objectStore, key) {
-	return await database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
+function getFromDatabase(objectStore, key, callback) {
+	var req = database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
+
+	req.onsuccess = event => {
+		callback(req.result);
+	}
 }

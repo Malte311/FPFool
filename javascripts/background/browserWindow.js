@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Creates the hidden window and starts the application. It also updates the value of the variable
  * windowId, so we can access the window at any time. Note: This function gets only called,
@@ -68,7 +70,7 @@ function initAndRun() {
 	chrome.storage.sync.get(['lastSearchTermsInit'], result => {
 		if (result.lastSearchTermsInit == undefined ||
 			result.lastSearchTermsInit <= (new Date).getTime() - 1000 * 60 * 60) {
-			getSearchTerms().then(() => {
+			getSearchTerms(() => {
 				chrome.storage.sync.set({
 					lastSearchTermsInit: (new Date).getTime()
 				});

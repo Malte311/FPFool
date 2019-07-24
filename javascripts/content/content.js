@@ -10,9 +10,8 @@ const dataPath = chrome.runtime.getURL('data/data.json');
  */
 var data;
 
-/*
- * Executes this content script when the webpage has loaded. This script performs fake actions
- * on faked connections according to a given algorithm.
+/**
+ * Executes this script on page load.
  */
 $(document).ready(() => {
 	fetch(dataPath).then(response => response.json()).then(json => {
@@ -20,13 +19,16 @@ $(document).ready(() => {
 		data = json;
 
 		// Tell the background script when window is resized
-		window.addEventListener('resize', event => {
-			chrome.runtime.sendMessage({
-				type: 'resize',
-				width: event.target.outerWidth,
-				height: event.target.outerHeight
-			}, response => {});
+		addResizeEventListener();
+		
+		chrome.runtime.sendMessage({
+			type: 'getInfo',
+			infoType: 'type',
+			url: location.href
+		}, response => {
+			determineAction(response);
 		});
+
 
 		// For finding out url parameter.
 		chrome.runtime.sendMessage({
@@ -40,30 +42,51 @@ $(document).ready(() => {
 			}
 		});
 
-		chrome.runtime.sendMessage({
-			type: 'isExec'
-		}, response => {
-			// Only run this script for tabs created by this extension.
-			if (response.isExec) {
-				updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
-
-				switch (response.algo) {
-					case data.availableAlgorithms.DEFAULT:
-						setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
-						break;
-					case data.availableAlgorithms.NAVIGATE:
-						navigatePage(weightedRandom(8000, 500));
-						break;
-					case data.availableAlgorithms.SEARCH:
-						searchPage(weightedRandom(8000, 1000));
-						break;
-				}
-			} else if (response.disconnect) {
-				setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
-			}
-		});
 	});
 });
+
+/**
+ * Tells the background script whenever the window is resized.
+ */
+function addResizeEventListener() {
+	window.addEventListener('resize', event => {
+		chrome.runtime.sendMessage({
+			type: 'resize'
+		}, response => {});
+	});
+}
+
+/**
+ * Determines which action should be performed on the current site.
+ * 
+ * @param {object} response Response from background script which contains the type of this tab.
+ */
+function determineAction(response) {
+	if (response.disconnect) {
+		setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
+		return;
+	}
+
+	switch (response.type) {
+		case 'execAlgo':
+			if (response.execAlgo) { // Only execute once
+				updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
+				execAlgorithm();
+			}
+			break;
+		case 'getUrlParam':
+			if (response.getUrlParam) {
+				getUrlParams();
+			}
+			break;
+		default:
+			return; // Only take action in tabs created by this extension.
+	}
+}
+
+function execAlgorithm() {
+	searchPage(weightedRandom(8000, 1000));
+}
 
 /**
  * Closes the current tab.
@@ -79,27 +102,6 @@ function disconnect(isSpecial = false) {
 			updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
 		}
 	});
-}
-
-/**
- * Navigates on the visited webpage. This means we navigate through it by simulating
- * klicks on links.
- * 
- * @param {number} delay The delay before navigating in milliseconds.
- */
-function navigatePage(delay) {
-	var links = [];
-
-	$('a').each(() => {
-		links.push(this);
-	});
-
-	var randomVisit = links[Math.floor(Math.random() * links.length)];
-	setTimeout(() => {
-		updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
-
-		$(randomVisit)[0].click();
-	}, delay);
 }
 
 /**
@@ -136,35 +138,6 @@ function searchPage(delay) {
 }
 
 /**
- * Updates the status table on the working page. For every action performed by this extension,
- * there will be added a new row containing the following information:
- * 
- * @param {string} url The url on which the action was performed.
- * @param {string} type The type of the action.
- * @param {string} searchTerm The term we searched in case the type was 'search'.
- * @param {string} toUrl The url to which we got directed (if we got directed at all).
- */
-function updateStatus(url, type, searchTerm, toUrl) {
-	chrome.runtime.sendMessage({
-		url: url,
-		type: type,
-		searchTerm: searchTerm,
-		toUrl: toUrl
-	}, response => {});
-}
-
-/**
- * Return a weighted random number. The number can have a minimum value, if wanted.
- * 
- * @param {number} weight The number to multiply our random generated number with.
- * @param {number} minVal The minimum number to return, defaults to zero.
- */
-function weightedRandom(weight, minVal = 0) {
-	var retVal = Math.floor(Math.random() * weight);
-	return retVal > minVal ? retVal : minVal;
-}
-
-/**
  * Gets the url parameters from the current url.
  */
 function getUrlParams() {
@@ -172,7 +145,8 @@ function getUrlParams() {
 	var inputField = getSearchInputField();
 
 	chrome.runtime.sendMessage({
-		type: data.availableMessageTypes.urlParams,
+		type: 'sendInfo',
+		infoType: 'urlParams',
 		dummySearchTerm: inputField != null ? dummySearchTerm : ''
 	}, response => {
 		if (inputField != null) {
@@ -206,21 +180,4 @@ function getSearchInputField() {
 	}
 
 	return null;
-}
-
-/**
- * Generates a random string of a specified length.
- * 
- * @param {number} length The length of the random string.
- */
-function randomString(length) {
-	var result = '';
-	var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	var charactersLength = characters.length;
-
-	for (var i = 0; i < length; i++) {
-		result += characters.charAt(Math.floor(Math.random() * charactersLength));
-	}
-
-	return result;
 }

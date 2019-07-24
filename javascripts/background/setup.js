@@ -22,8 +22,8 @@ var data;
 var windowId;
 
 /*
- * Keeps track of the tabs which are currently open to create fake connections.
- * (initialized in the runApplication() function before creating the first connection)
+ * Keeps track of the tabs which are currently open to create fake connections
+ * (initialized in the runApplication() function before creating the first connection).
  */
 var currentTabs = [];
 
@@ -39,7 +39,7 @@ var queue = [];
 
 // Start with loading the data.json file.
 fetch(dataPath).then(response => response.json()).then(json => {
-	// Save json content in variable to make it accessible elsewhere
+	// Save json content in variable to make it accessible elsewhere.
 	data = json;
 
 	// For usability: Makes sure that the window state does not get changed by this extension.
@@ -48,48 +48,12 @@ fetch(dataPath).then(response => response.json()).then(json => {
 	// Initializes the database and calls createWindow() when done.
 	initDatabase(createWindow);
 
-	/*
-	 * Keep track of third party requests, so we can visit these sites if we want to.
-	 */
-	chrome.webRequest.onBeforeRequest.addListener(
-		det => {
-			const excludedTypes = ['stylesheet', 'image']; // Reduce unnecessary effort
-			if (!excludedTypes.includes(det.type) && det.initiator != undefined) {
-				// We are only interested in third party sites, so we ignore first party requests.
-				// (otherwise we would get way too many requests to consider)
-				var startInd = det.initiator.indexOf('.') + 1;
-				var urlExtension = det.initiator.match(/\.[a-z]{2,3}($|\/)/);
-				var endInd = urlExtension != null ? det.initiator.indexOf(urlExtension[0]) : -1;
-				if (endInd > 0 && !det.url.includes(det.initiator.substring(startInd, endInd))) {
-					var val = thirdParties.get(det.initiator);
-					thirdParties.set(
-						det.initiator,
-						val != undefined ?
-						(val.includes(det.url) ? val : val.concat([det.url])) : [det.url]
-					);
+	// Listens to third party requests and adds matches to the queue.
+	monitorThirdPartyRequests();
 
-					// Find other websites that use the same third party and are not added to the
-					// queue yet
-					for (const [key, val] of thirdParties) {
-						if (!key.includes(det.initiator.substring(startInd, endInd)) &&
-							val.includes(det.url) && !queue.includes(key)) {
-							queue.push(key);
-							// Restart loop if queue was empty before and maximum number of
-							// connections is not reached yet.
-							if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
-								restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
-							}
-						}
-					}
-				}
-			}
-		}, {
-			urls: ['http://*/*', 'https://*/*']
-		},
-		['requestBody']
-	);
+	// For communication between background and content script.
+	addMessageListener();
 
-	addMessageListener(); // For communication between background and content script
-
-	addBrowserAction(); // For opening the extension page when the extension icon is clicked
+	// For opening the extension page when the extension icon is clicked.
+	addBrowserAction();
 });

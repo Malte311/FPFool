@@ -11,14 +11,6 @@
 		"NAVIGATE": "Navigation algorithm",
 		"SEARCH": "Search algorithm"
 	},
-	"availableMessageTypes": {
-		"disconnect": "disconnect",
-		"getSearchTerm": "getSearchTerm",
-		"isExec": "isExec",
-		"isSpecial": "isSpecial",
-		"resize": "resize",
-		"urlParams": "urlParams"
-	},
 	"availableTabs": {
 		"SETTINGS": "pills-settings-tab",
 		"STATISTICS": "pills-statistics-tab"
@@ -30,16 +22,6 @@
 		"maxHistoryCount": "maxHistoryCount",
 		"maxTabsCount": "maxTabsCount",
 		"todayConnectionCount": "todayConnectionCount"
-	},
-	"availableStatistics": {
-		"visitedSitesCount": "visitedSitesCount",
-		"clickedLinksCount": "clickedLinksCount",
-		"keywordSearchCount": "keywordSearchCount"
-	},
-	"availableStatisticsTmp": {
-		"visitedSitesCountTmp": "visitedSitesCountTmp",
-		"clickedLinksCountTmp": "clickedLinksCountTmp",
-		"keywordSearchCountTmp": "keywordSearchCountTmp"
 	},
 	"tables": [
 		"searchParams",

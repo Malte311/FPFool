@@ -21,10 +21,6 @@
 				<a class="nav-link active" id="pills-settings-tab" data-toggle="pill" href="#pills-home" role="tab"
 					aria-controls="pills-home" aria-selected="true">Settings</a>
 			</li>
-			<li class="nav-item">
-				<a class="nav-link" id="pills-statistics-tab" data-toggle="pill" href="#pills-profile" role="tab"
-					aria-controls="pills-profile" aria-selected="false">Statistics</a>
-			</li>
 		</ul>
 	</nav>
 	<div class="tab-content" id="pills-tabContent" style="margin-top: 25px;">
@@ -116,93 +112,6 @@
 				</div>
 			</div>
 			<div class="container-fluid" style="text-align: center; margin-top: 25px;" id="infoDisplayDiv"></div>
-		</div>
-		<div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-			<div class="container-fluid" style="text-align: center;">
-				<h1 class="text-primary">Current session</h1>
-				<div class="card bg-light border-primary mb-3 text-center"
-					style="width: 18rem; display: inline-block; margin-right: 30px;">
-					<div class="card-body text-primary">
-						<h5 class="card-title count display-4" id="visitedSitesCountTmp"></h5>
-						<h3 class="card-text">
-							visited sites
-						</h3>
-					</div>
-				</div>
-				<div class="card bg-light border-primary mb-3 text-center"
-					style="width: 18rem; display: inline-block; margin-right: 30px;">
-					<div class="card-body text-primary">
-						<h5 class="card-title count display-4" id="clickedLinksCountTmp"></h5>
-						<h3 class="card-text">
-							clicked links
-						</h3>
-					</div>
-				</div>
-				<div class="card bg-light border-primary mb-3 text-center" style="width: 18rem; display: inline-block;">
-					<div class="card-body text-primary">
-						<h5 class="card-title count display-4" id="keywordSearchCountTmp"></h5>
-						<h3 class="card-text">
-							keyword searches
-						</h3>
-					</div>
-				</div>
-			</div>
-			<div class="container-fluid" style="text-align: center;">
-				<h1 class="text-primary">All time</h1>
-				<div class="card bg-light border-primary mb-3 text-center"
-					style="width: 18rem; display: inline-block; margin-right: 30px;">
-					<div class="card-body text-primary">
-						<h5 class="card-title count display-4" id="visitedSitesCount"></h5>
-						<h3 class="card-text">
-							visited sites
-						</h3>
-					</div>
-				</div>
-				<div class="card bg-light border-primary mb-3 text-center"
-					style="width: 18rem; display: inline-block; margin-right: 30px;">
-					<div class="card-body text-primary">
-						<h5 class="card-title count display-4" id="clickedLinksCount"></h5>
-						<h3 class="card-text">
-							clicked links
-						</h3>
-					</div>
-				</div>
-				<div class="card bg-light border-primary mb-3 text-center" style="width: 18rem; display: inline-block;">
-					<div class="card-body text-primary">
-						<h5 class="card-title count display-4" id="keywordSearchCount"></h5>
-						<h3 class="card-text">
-							keyword searches
-						</h3>
-					</div>
-				</div>
-			</div>
-			<div class="container-fluid" style="text-align: center; margin-top: 20px;">
-				<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
-					Reset statistics
-				</button>
-			</div>
-			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-				aria-hidden="true">
-				<div class="modal-dialog" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">Reset statistics</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							Do you really want to delete all statistics? This action can not be undone!
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-							<button type="button" class="btn btn-danger" data-dismiss="modal" id="resetBtn">
-								Reset statistics
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 </body>

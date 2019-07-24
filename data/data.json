@@ -14,13 +14,8 @@
 	"availableMessageTypes": {
 		"disconnect": "disconnect",
 		"getSearchTerm": "getSearchTerm",
-		"getStatistics": "getStatistics",
-		"incClickedLinksCount": "incClickedLinksCount",
-		"incKeywordSearchCount": "incKeywordSearchCount",
-		"incVisitedSitesCount": "incVisitedSitesCount",
 		"isExec": "isExec",
 		"isSpecial": "isSpecial",
-		"resetStatistics": "resetStatistics",
 		"resize": "resize",
 		"urlParams": "urlParams"
 	},
@@ -45,5 +40,11 @@
 		"visitedSitesCountTmp": "visitedSitesCountTmp",
 		"clickedLinksCountTmp": "clickedLinksCountTmp",
 		"keywordSearchCountTmp": "keywordSearchCountTmp"
-	}
+	},
+	"tables": [
+		"searchParams",
+		"searchTerms",
+		"thirdParties",
+		"visits"
+	]
 }

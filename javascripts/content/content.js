@@ -46,7 +46,6 @@ $(document).ready(() => {
 			// Only run this script for tabs created by this extension.
 			if (response.isExec) {
 				updateStatus(location.href, 'OPEN', '&ndash;', '&ndash;');
-				updateStatistics('visitedSitesCount');
 
 				switch (response.algo) {
 					case data.availableAlgorithms.DEFAULT:
@@ -98,8 +97,6 @@ function navigatePage(delay) {
 	var randomVisit = links[Math.floor(Math.random() * links.length)];
 	setTimeout(() => {
 		updateStatus(location.href, 'NAVIGATE', '&ndash;', randomVisit.href);
-		updateStatistics('clickedLinksCount');
-		updateStatistics('visitedSitesCount');
 
 		$(randomVisit)[0].click();
 	}, delay);
@@ -128,8 +125,6 @@ function searchPage(delay) {
 					resp.searchTerm,
 					`${url}${resp.searchParam}=${encodeURIComponent(resp.searchTerm)}`
 				);
-				updateStatistics('keywordSearchCount');
-				updateStatistics('visitedSitesCount');
 
 				$(inputField).closest('form').submit();
 			}, delay);
@@ -138,17 +133,6 @@ function searchPage(delay) {
 			setTimeout(disconnect, delay);
 		}
 	});
-}
-
-/**
- * Updates the statistics (number of visited sites, number of clicked links and so on).
- * 
- * @param {string} property The property which should be updated.
- */
-function updateStatistics(property) {
-	chrome.runtime.sendMessage({
-		type: 'inc' + property.charAt(0).toUpperCase() + property.substring(1)
-	}, response => {});
 }
 
 /**

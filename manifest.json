@@ -9,6 +9,10 @@
 	"background": {
 		"scripts": [
 			"./lib/jquery.min.js",
+			"./javascripts/background/message.js",
+			"./javascripts/background/browserWindow.js",
+			"./javascripts/background/windowState.js",
+			"./javascripts/background/database.js",
 			"./javascripts/background/setup.js",
 			"./javascripts/background/background.js",
 			"./javascripts/background/search.js"

@@ -411,45 +411,7 @@ function getKeyFromUrl(url) {
 	return key.startsWith('www.') ? key : 'www.' + key;
 }
 
-/**
- * Adds new entries to our indexedDB database.
- * 
- * @param {Object} objectStore The table we want to update.
- * @param {string} key The key of the item we want to update/add.
- * @param {Object} val The new value for the given key.
- * @param {bool} append Specifies if a value should be appended or overwritten.
- * @param {function} callback Optional callback function, executed after updating the database.
- */
-function storeInDatabase(objectStore, key, val, append = true, callback) {
-	var trans = database.transaction(objectStore, 'readwrite');
-	var store = trans.objectStore(objectStore);
-	var getRequest = store.get(key);
 
-	getRequest.onsuccess = event => {
-		var terms = (getRequest.result != undefined && append) ?
-			getRequest.result.terms.concat([val]) : [val];
-		var update = store.put({
-			url: key,
-			terms: terms
-		});
-
-		// Call callback, if it is defined
-		update.onsuccess = event => {
-			typeof callback === 'function' && callback();
-		};
-	};
-}
-
-/**
- * Returns the value for a given key from our indexedDB database.
- * 
- * @param {Object} objectStore The table we want to update.
- * @param {string} key The key of the item we want to update/add.
- * @return {Promise} The corresponding value to the given key.
- */
-async function getFromDatabase(objectStore, key) {
-	return await database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
-}
 
 /**
  * Shuffles a given array.

@@ -24,13 +24,6 @@ $(document).ready(() => {
 			addClickEventToTab(value);
 		});
 
-		// Update statistics in real time (parameter false means no animation of the numbers)
-		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-			if (request.type != undefined && request.type.startsWith('inc')) {
-				loadStatistics(false);
-			}
-		});
-
 		// On startup, the settings tab is active (because it is the first one)
 		loadSettings();
 	});
@@ -47,9 +40,6 @@ function addClickEventToTab(tabId) {
 		switch (tabId) {
 			case data.availableTabs.SETTINGS:
 				loadSettings();
-				break;
-			case data.availableTabs.STATISTICS:
-				loadStatistics(true);
 				break;
 			default:
 				return; // Unknown id
@@ -129,60 +119,6 @@ function loadSettings() {
 	});
 }
 
-/**
- * Loads the content of the statistics tab.
- * 
- * @param {bool} animate Specifies if the statistics should be animated or not.
- */
-function loadStatistics(animate) {
-	// Tells the content script to reset all variables and to save the new state in the storage.
-	$('#resetBtn').click(() => {
-		chrome.runtime.sendMessage({
-			type: 'resetStatistics'
-		}, response => {
-			loadStatistics(false); // Reload statistics afterwards
-		});
-	});
-
-	chrome.runtime.sendMessage({
-		type: 'getStatistics'
-	}, response => {
-		chrome.storage.sync.get(Object.values(data.availableStatistics), res => {
-			$.each(data.availableStatistics, (key, value) => {
-				// All time
-				$(`#${value}`).html(response[key] != undefined ? response[value] : 0);
-				// Current session (idea: Subtract the number in the storage from the number in the
-				// variable because the variable is kept up to date and we only write back to storage
-				// when quitting the application)
-				$(`#${value}Tmp`).html(
-					(response[key] != undefined ? parseInt(response[value]) : 0) -
-					(res[key] != undefined ? parseInt(res[value]) : 0)
-				);
-			});
-
-			if (animate) {
-				numberAnimation(); // Animate the statistical numbers
-			}
-		});
-	});
-}
-
-/**
- * Creates an animation to display a number.
- */
-function numberAnimation() {
-	$('.count').each(() => {
-		$(this).prop('Counter', 0).animate({
-			Counter: $(this).text()
-		}, {
-			duration: 750,
-			easing: 'swing',
-			step: now => {
-				$(this).text(Math.ceil(now));
-			}
-		});
-	});
-}
 
 /**
  * Diplays a brief information about the currently selected algorithm, so the user knows what

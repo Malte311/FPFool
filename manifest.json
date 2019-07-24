@@ -9,6 +9,8 @@
 	"background": {
 		"scripts": [
 			"./lib/jquery.min.js",
+			"./javascripts/background/browserHistory.js",
+			"./javascripts/background/settings.js",
 			"./javascripts/background/util.js",
 			"./javascripts/background/thirdParty.js",
 			"./javascripts/background/message.js",
@@ -16,7 +18,8 @@
 			"./javascripts/background/windowState.js",
 			"./javascripts/background/database.js",
 			"./javascripts/background/connection.js",
-			"./javascripts/background/search.js",
+			"./javascripts/background/searchTermGeneration.js",
+			"./javascripts/background/searchTermSetup.js",
 			"./javascripts/background/setup.js"
 		],
 		"persistent": true

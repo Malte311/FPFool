@@ -15,28 +15,6 @@ const dataPath = '../data/data.json';
  */
 var data;
 
-/*
- * Saves the id of a minimized extra window in which the extension creates fake connections. This
- * extra window is minimized in order to not distract the user at his work.
- */
-var windowId;
-
-/*
- * Keeps track of the tabs which are currently open to create fake connections
- * (initialized in the runApplication() function before creating the first connection).
- */
-var currentTabs = [];
-
-/*
- * Keeps track of third party websites which might be interesting to visit.
- */
-var thirdParties = new Map();
-
-/*
- * Keeps track of the websites we want to visit next.
- */
-var queue = [];
-
 // Start with loading the data.json file.
 fetch(dataPath).then(response => response.json()).then(json => {
 	// Save json content in variable to make it accessible elsewhere.

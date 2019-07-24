@@ -12,7 +12,7 @@ var data;
 
 /*
  * Executes the script when the page has loaded. This script allows the user to customize the
- * extension as well as to take a look at some statistics.
+ * extension.
  */
 $(document).ready(() => {
 	fetch(dataPath).then(response => response.json()).then(json => {
@@ -20,11 +20,10 @@ $(document).ready(() => {
 		data = json;
 
 		// Add onclick events to each tab
-		$.each(data.availableTabs, (key, value) => {
-			addClickEventToTab(value);
-		});
+		for (const tab of data.availableTabs) {
+			addClickEventToTab(tab);
+		}
 
-		// On startup, the settings tab is active (because it is the first one)
 		loadSettings();
 	});
 });
@@ -38,7 +37,7 @@ $(document).ready(() => {
 function addClickEventToTab(tabId) {
 	$(`#${tabId}`).click(() => {
 		switch (tabId) {
-			case data.availableTabs.SETTINGS:
+			case 'pills-settings-tab':
 				loadSettings();
 				break;
 			default:
@@ -54,12 +53,12 @@ function addClickEventToTab(tabId) {
  * @param {string} text The text which should be displayed inside of the alert.
  */
 function createInfoAlert(divId, text) {
-	$(`#${divId}`).html(`
-		<br>
+	$(`#${divId}`).html(
+		`<br>
 		<div class="alert alert-info" role="alert">
 			${text}			
-		</div>
-	`);
+		</div>`
+	);
 
 	setTimeout(() => {
 		$(`#${divId}`).html(''); // Remove alert after a short time
@@ -70,81 +69,25 @@ function createInfoAlert(divId, text) {
  * Loads the content of the settings tab.
  */
 function loadSettings() {
-	chrome.storage.sync.get(Object.values(data.availableSettings), res => {
-		$('#activeAlgorithm').text(res.activeAlgorithm != undefined ?
-			res.activeAlgorithm :
-			data.availableAlgorithms.DEFAULT
-		);
-		showAlgorithmExplanation(); // Displays what the algorithm does.
+	chrome.storage.sync.get(data.availableSettings, result => {
+		for (const setting of data.availableSettings) {
+			$(`#${setting}Slider`).val(result[setting] != undefined ? result[setting] : 1);
+			$(`#${setting}Slider`).attr('value', result[setting] != undefined ? result[setting] : 1);
+			$(`#${setting}SliderVal`).text($(`#${setting}Slider`).val());
 
-		$('#algorithmDropdown').html(''); // Clear before appending new things
-		$.each(data.availableAlgorithms, (key, value) => {
-			$('#algorithmDropdown').append(`
-				<a class=\"dropdown-item\" id=\"${key}\" href=\"#\">${value}</a>
-			`);
-		});
-
-		$('#algorithmDropdown').children().each(() => {
-			$(this).click(() => {
-				var key = $(this).attr('id');
-				$('#activeAlgorithm').text(data.availableAlgorithms[key]);
+			$(`#${setting}Slider`).change(() => {
 				chrome.storage.sync.set({
-					[data.availableSettings.activeAlgorithm]: data.availableAlgorithms[key]
-				}, res => {
-					showAlgorithmExplanation();
-					createInfoAlert('infoDisplayDiv',
-						'Algorithm changed successfully! The changes will take effect on restart.'
-					);
-				});
-			});
-		});
-
-		$.each(data.availableSettings, (key, value) => {
-			$(`#${value}Slider`).val(res[value] != undefined ? res[value] : 1);
-			$(`#${value}Slider`).attr('value', res[value] != undefined ? res[value] : 1);
-			$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
-			$(`#${value}Slider`).change(() => {
-				chrome.storage.sync.set({
-					[value]: $(`#${value}Slider`).val()
-				}, res => {
+					[setting]: $(`#${setting}Slider`).val()
+				}, result => {
 					createInfoAlert('infoDisplayDiv',
 						'Your changes have been saved! The changes will take effect on restart.'
 					);
 				});
 			});
-			$(`#${value}Slider`).on('input', () => {
-				$(`#${value}SliderVal`).text($(`#${value}Slider`).val());
+
+			$(`#${setting}Slider`).on('input', () => {
+				$(`#${setting}SliderVal`).text($(`#${setting}Slider`).val());
 			});
-		});
-	});
-}
-
-
-/**
- * Diplays a brief information about the currently selected algorithm, so the user knows what
- * the algorithm does.
- */
-function showAlgorithmExplanation() {
-	chrome.storage.sync.get(data.availableSettings.activeAlgorithm, res => {
-		switch (res.activeAlgorithm) {
-			case data.availableAlgorithms.NAVIGATE:
-				$('#algorithmSelectPara').html(`
-					The navigation algorithm visits webpages and navigates on them, e.g.
-					by clicking on links.
-				`);
-				break;
-			case data.availableAlgorithms.SEARCH:
-				$('#algorithmSelectPara').html(`
-					The search algorithm visits webpages and searches for keywords on them.
-				`);
-				break;
-			case data.availableAlgorithms.DEFAULT: // Same as default case
-			default:
-				$('#algorithmSelectPara').html(`
-					The default algorithm simply visits webpages, but does not perform any 
-					actions on them.
-				`);
-				break;
 		}
 	});
 }

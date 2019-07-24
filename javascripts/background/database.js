@@ -50,11 +50,11 @@ function storeInDatabase(objectStore, key, val, append = true, callback) {
 	var req = store.get(key);
 
 	req.onsuccess = event => {
-		var terms = (req.result != undefined && append) ? req.result.terms.concat([val]) : [val];
+		var value = (req.result != undefined && append) ? req.result.value.concat([val]) : [val];
 		
 		var update = store.put({
 			url: key,
-			terms: terms
+			value: value
 		});
 
 		// Call callback, if it is defined

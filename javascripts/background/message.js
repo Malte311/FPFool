@@ -40,13 +40,13 @@ function answerSearchTerm(request, sender, sendResponse) {
 	asyncCall = true;
 	getFromDatabase('searchTerms', getKeyFromUrl(request.url), req => {
 		response.searchTerm = req != undefined ?
-			req.terms[Math.floor(Math.random() * req.terms.length)][0] :
+			req.value[Math.floor(Math.random() * req.value.length)][0] :
 			' ';
 
 		if (response.searchTerm != ' ') {
 			getFromDatabase('searchParams', getKeyFromUrl(request.url), r => {
 
-				response.searchParam = r != undefined ? r.terms[0] : ' ';
+				response.searchParam = r != undefined ? r.value[0] : ' ';
 
 				sendResponse(response);
 

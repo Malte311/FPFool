@@ -25,27 +25,8 @@
 	</nav>
 	<div class="tab-content" id="pills-tabContent" style="margin-top: 25px;">
 		<div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-			<div class="container-fluid" id="settingsContainer" style="text-align: center;">
-				<h1 class="text-primary">Selected algorithm</h1>
-				<div class="card bg-light border-primary mb-3 text-center" style="width: 28rem; display: inline-block;">
-					<div class="card-body text-primary">
-						<div class="btn-group">
-							<button type="button" class="btn btn-outline-primary dropdown-toggle" id="activeAlgorithm"
-								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<!-- Gets appended via JavaScript -->
-							</button>
-							<div class="dropdown-menu" id="algorithmDropdown">
-								<!-- Gets appended via JavaScript -->
-							</div>
-						</div>
-					</div>
-					<p id="algorithmSelectPara" style="text-align: justify; margin-left: 10px; margin-right: 10px;">
-						<!-- Gets appended via JavaScript -->
-					</p>
-				</div>
-			</div>
 			<div class="container-fluid" style="text-align: center; margin-top: 25px;">
-				<h1 class="text-primary">Constraints</h1>
+				<h1 class="text-primary">Settings</h1>
 				<div class="card bg-light border-primary mb-3 text-center"
 					style="width: 28rem; display: inline-block; margin-right: 30px;">
 					<div class="card-body text-primary">
@@ -65,29 +46,12 @@
 				<div class="card bg-light border-primary mb-3 text-center"
 					style="width: 28rem; display: inline-block; margin-right: 30px;">
 					<div class="card-body text-primary">
-						<h3 class="card-text"><em>Website limit</em></h3>
-						<div class="alert alert-primary" role="alert">
-							5
-							<input type="range" min="5" max="20" step="1" class="slider" id="maxHistoryCountSlider">
-							20
-							<div id="maxHistoryCountSliderVal"></div>
-						</div>
-					</div>
-					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
-						Sometimes, there may be a lot of browser history entries even in a short period of time.
-						This option allows you to limit the number of <b>different</b> websites that should get
-						visited by this tool.
-					</p>
-				</div>
-				<div class="card bg-light border-primary mb-3 text-center"
-					style="width: 28rem; display: inline-block; margin-right: 30px;">
-					<div class="card-body text-primary">
 						<h3 class="card-text"><em>Tab limit</em></h3>
 						<div class="alert alert-primary" role="alert">
 							3
-							<input type="range" min="3" max="10" step="1" class="slider" id="maxTabsCountSlider">
+							<input type="range" min="3" max="10" step="1" class="slider" id="tabLimitSlider">
 							10
-							<div id="maxTabsCountSliderVal"></div>
+							<div id="tabLimitSliderVal"></div>
 						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">
@@ -100,9 +64,9 @@
 						<h3 class="card-text"><em>Connection limit factor</em></h3>
 						<div class="alert alert-primary" role="alert">
 							1
-							<input type="range" min="1" max="5" step="1" class="slider" id="maxConnectCountSlider">
+							<input type="range" min="1" max="5" step="1" class="slider" id="connectionLimitFactorSlider">
 							5
-							<div id="maxConnectCountSliderVal"></div>
+							<div id="connectionLimitFactorSliderVal"></div>
 						</div>
 					</div>
 					<p style="text-align: justify; margin-left: 10px; margin-right: 10px;">

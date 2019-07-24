@@ -2,11 +2,21 @@
 
 /**
  * Turns an url into a key for our database. The key is simply the hostname of that url.
+ * 
  * @param {string} url The url of which we want to get a key.
  */
 function getKeyFromUrl(url) {
 	var key = url.startsWith('http') ? new URL(url).hostname : new URL('http://' + url).hostname;
 	return key.startsWith('www.') ? key : 'www.' + key;
+}
+
+/**
+ * Removes parameter from a given url such that we only have the url without parameter left.
+ * 
+ * @param {string} url The url from which we want to remove the parameter.
+ */
+function removeParamsFromUrl(url) {
+	return url.indexOf('?') > 0 ? url.substring(0, url.indexOf('?')) : url;
 }
 
 /**
@@ -29,4 +39,13 @@ function shuffleArray(array) {
 	}
 
 	return array;
-};
+}
+
+/**
+ * Converts a number in days to a number in milliseconds.
+ * 
+ * @param {number} days The number of days which should get converted to milliseconds.
+ */
+function daysToMilliSeconds(days) {
+	return days * 24 * 60 * 60 * 1000;
+}

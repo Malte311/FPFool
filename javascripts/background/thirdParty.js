@@ -1,5 +1,10 @@
 'use strict';
 
+/*
+ * Keeps track of third party websites which might be interesting to visit.
+ */
+var thirdParties = new Map();
+
 /**
  * Keeps track of third party requests, so we can visit suspicious sites if we want to.
  */
@@ -28,7 +33,7 @@ function monitorThirdPartyRequests() {
 						queue.push(key);
 						// Restart loop if queue was empty before and maximum number of
 						// connections is not reached yet.
-						if (!(queue.length > 1) && todayConnectionCount < connectionLimit) {
+						if (!(queue.length > 1) && todayCount < connectionLimit) {
 							restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
 						}
 					}

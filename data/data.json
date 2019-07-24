@@ -6,23 +6,14 @@
 		"SEARCH": "SEARCH",
 		"SEARCHFAIL": "SEARCHFAIL"
 	},
-	"availableAlgorithms": {
-		"DEFAULT": "Default algorithm",
-		"NAVIGATE": "Navigation algorithm",
-		"SEARCH": "Search algorithm"
-	},
-	"availableTabs": {
-		"SETTINGS": "pills-settings-tab",
-		"STATISTICS": "pills-statistics-tab"
-	},
-	"availableSettings": {
-		"activeAlgorithm": "activeAlgorithm",
-		"interval": "interval",
-		"maxConnectCount": "maxConnectCount",
-		"maxHistoryCount": "maxHistoryCount",
-		"maxTabsCount": "maxTabsCount",
-		"todayConnectionCount": "todayConnectionCount"
-	},
+	"availableTabs": [
+		"pills-settings-tab"
+	],
+	"availableSettings": [
+		"interval",
+		"tabLimit",
+		"connectionLimitFactor"
+	],
 	"tables": [
 		"searchParams",
 		"searchTerms",

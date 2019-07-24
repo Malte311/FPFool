@@ -19,7 +19,6 @@ $(document).ready(() => {
 		// Save json content in variable to make it accessible elsewhere
 		data = json;
 
-		setDynamicTitle();
 		addClickEventToTable('logTable'); // Necessary to make the table sortable
 
 		// Waits for messages from content scripts. The content scripts will inform this script
@@ -30,9 +29,6 @@ $(document).ready(() => {
 				switch (request.type) {
 					case data.availableActionTypes.OPEN:
 						action = `Opened a new tab.`;
-						break;
-					case data.availableActionTypes.NAVIGATE:
-						action = `Navigated to new url.`;
 						break;
 					case data.availableActionTypes.REMOVE:
 						action = `Closed this tab.`;
@@ -84,17 +80,14 @@ function appendTable(tabId, urlFrom, urlTo, action, type) {
 		case data.availableActionTypes.OPEN:
 			color = '<tr class=\"table-success\">'; // Green
 			break;
-		case data.availableActionTypes.NAVIGATE:
-			color = '<tr class=\"table-info\">'; // Light blue
-			break;
 		case data.availableActionTypes.REMOVE:
-			color = '<tr class=\"table-danger\">'; // Red
+			color = '<tr class=\"table-dark\">'; // Dark grey
 			break;
 		case data.availableActionTypes.SEARCH:
 			color = '<tr class=\"table-warning\">'; // Yellow
 			break;
 		case data.availableActionTypes.SEARCHFAIL:
-			color = '<tr class=\"table-dark\">'; // Dark grey
+			color = '<tr class=\"table-danger\">'; // Red
 			break;
 		default:
 			color = '<tr class=\"table-active\">'; // Grey
@@ -128,20 +121,6 @@ function formatDate(date) {
 }
 
 /**
- * Changes the title dynamically, indicating that the page is doing work.
- */
-function setDynamicTitle() {
-	const dots = ['.', '..', '...'];
-	var currentTitle = document.title;
-	var index = 0;
-
-	setInterval(() => {
-		document.title = currentTitle + dots[index];
-		index = (index + 1) % dots.length;
-	}, 500);
-}
-
-/**
  * Sorts a table by a specified column.
  * Source: https://www.w3schools.com/howto/howto_js_sort_table.asp
  * 
@@ -149,7 +128,6 @@ function setDynamicTitle() {
  * @param {string} tableId The id of the table we want to sort.
  */
 function sortTable(n, tableId) {
-	console.log(n);
 	var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
 	table = document.getElementById(tableId);
 	switching = true;

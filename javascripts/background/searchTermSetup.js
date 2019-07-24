@@ -1,5 +1,9 @@
 'use strict';
 
+function loadSearchTerms(callback) {
+	
+}
+
 /*
  * Searches for possible search terms in the user's browser history. Saves the results
  * to the 'searchTerms' objectStore in our database.

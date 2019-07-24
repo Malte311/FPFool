@@ -23,7 +23,11 @@ function addMessageListener() {
 }
 
 /**
- *Sends the requested information to a content script.
+ * Sends the requested information to a content script.
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
  */
 function handleGetInfo(request, sender, sendResponse) {
 	switch (request.infoType) {
@@ -36,28 +40,34 @@ function handleGetInfo(request, sender, sendResponse) {
 	}
 }
 
+/**
+ * Sends a search term to the requesting content script.
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
 function answerSearchTerm(request, sender, sendResponse) {
-	asyncCall = true;
-	getFromDatabase('searchTerms', getKeyFromUrl(request.url), req => {
-		response.searchTerm = req != undefined ?
-			req.value[Math.floor(Math.random() * req.value.length)][0] :
-			' ';
-
-		if (response.searchTerm != ' ') {
-			getFromDatabase('searchParams', getKeyFromUrl(request.url), r => {
-
-				response.searchParam = r != undefined ? r.value[0] : ' ';
-
-				sendResponse(response);
-
-			});
-		} else {
-			sendResponse(response);
+	getFromDataBase('searchTerms', getKeyFromUrl(request.url), (result) => {
+		var term = '';
+		if (result != undefined) {
+			term = result.value[Math.floor(Math.random() * result.value.length)];
+			term = getSuggestion(term);
 		}
 
+		sendResponse({
+			searchTerm: term
+		});
 	});
 }
 
+/**
+ * Tells the requesting content script which type of action it should perform.
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
 function answerType(request, sender, sendResponse) {
 	var response = {};
 
@@ -91,6 +101,13 @@ function answerType(request, sender, sendResponse) {
 	sendResponse(response);
 }
 
+/**
+ * Receives the information sent by a content script and acts on it.
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
 function handleSendInfo(request, sender, sendResponse) {
 	switch (request.infoType) {
 		case 'disconnect':
@@ -103,10 +120,15 @@ function handleSendInfo(request, sender, sendResponse) {
 			answerUrlParams(request, sender, sendResponse);
 			break;
 	}
-
-	
 }
 
+/**
+ * Removes the tab which requests a disconnect.
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
 function answerDisconnect(request, sender, sendResponse) {
 	chrome.tabs.remove(sender.tab.id, () => {
 		var tabArray = currentTabs;
@@ -119,13 +141,29 @@ function answerDisconnect(request, sender, sendResponse) {
 			id: -1
 		};
 	});
+
+	sendResponse({}); // Just to close message channel
 }
 
+/**
+ * Saves the window state when a content script signals that the window has been resized.
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
 function answerResize(request, sender, sendResponse) {
 	setWindowState();
 	sendResponse({}); // Just to close message channel
 }
 
+/**
+ * 
+ * 
+ * @param {object} request The message which was received.
+ * @param {MessageSender} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
 function answerUrlParams(request, sender, sendResponse) {
 	var senderTab = specialTabs.find(tab => tab.id == sender.tab.id);
 	senderTab.dummySearchTerm = request.dummySearchTerm;

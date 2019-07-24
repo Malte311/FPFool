@@ -10,9 +10,6 @@ const dataPath = chrome.runtime.getURL('data/data.json');
  */
 var data;
 
-/**
- * Executes this script on page load.
- */
 $(document).ready(() => {
 	fetch(dataPath).then(response => response.json()).then(json => {
 		// Save json content in variable to make it accessible elsewhere
@@ -28,33 +25,8 @@ $(document).ready(() => {
 		}, response => {
 			determineAction(response);
 		});
-
-
-		// For finding out url parameter.
-		chrome.runtime.sendMessage({
-			type: 'isSpecial',
-			url: location.href
-		}, response => {
-			if (response.isSpecial && response.disconnect != undefined) {
-				disconnect(true);
-			} else if (response.isSpecial && response.disconnect == undefined) {
-				getUrlParams();
-			}
-		});
-
 	});
 });
-
-/**
- * Tells the background script whenever the window is resized.
- */
-function addResizeEventListener() {
-	window.addEventListener('resize', event => {
-		chrome.runtime.sendMessage({
-			type: 'resize'
-		}, response => {});
-	});
-}
 
 /**
  * Determines which action should be performed on the current site.
@@ -141,6 +113,12 @@ function searchPage(delay) {
  * Gets the url parameters from the current url.
  */
 function getUrlParams() {
+	if (response.isSpecial && response.disconnect != undefined) {
+		disconnect(true);
+	} else if (response.isSpecial && response.disconnect == undefined) {
+		getUrlParams();
+	}
+
 	var dummySearchTerm = randomString(16);
 	var inputField = getSearchInputField();
 
@@ -180,4 +158,15 @@ function getSearchInputField() {
 	}
 
 	return null;
+}
+
+/**
+ * Tells the background script whenever the window is resized.
+ */
+function addResizeEventListener() {
+	window.addEventListener('resize', event => {
+		chrome.runtime.sendMessage({
+			type: 'resize'
+		}, response => {});
+	});
 }

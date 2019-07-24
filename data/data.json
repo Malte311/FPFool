@@ -1,7 +1,6 @@
 {
 	"availableActionTypes": {
 		"OPEN": "OPEN",
-		"NAVIGATE": "NAVIGATE",
 		"REMOVE": "REMOVE",
 		"SEARCH": "SEARCH",
 		"SEARCHFAIL": "SEARCHFAIL"

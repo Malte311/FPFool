@@ -10,31 +10,17 @@ var queue = [];
  * when finished. The selected algorithm defines what exactly these fake connections do.
  */
 function runApplication() {
-
-	if (lastUse == undefined || lastUse <= (new Date).getTime() - 1000 * 60 * 60) {
-		getSearchTerms(() => {
-			chrome.storage.sync.set({
-				lastSearchTermsInit: (new Date).getTime()
-			});
-			runApplication();
-		});
-	}
-	else {
-		runApplication();
-	}
-
-
+	// 1. Load browser history; 2. Load search terms; 3. Start connection loop
 	loadBrowserHistory(() => {
 		loadSearchTerms(startConnectLoop);
 	});
 }
 
-function loadSearchTerms(callback) {
-
-}
-
 function startConnectLoop() {
-
+	// First call instant, then interval
+	connectToUrl(queue.shift());
+	todayCount++;
+	connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
 }
 
 /**

@@ -80,7 +80,7 @@ function getFromDatabase(objectStore, key, callback) {
 }
 
 /**
- * Returns the value for a given key from our indexedDB database.
+ * Returns all entries from a table in our database.
  * 
  * @param {Object} objectStore The table we want to update.
  * @param {function} callback Mandatory callback function with result from database as parameter.

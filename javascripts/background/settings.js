@@ -32,7 +32,7 @@ var lastUse = undefined;
  * @param {function} callback Optional callback function.
  */
 function loadSettings(callback) {
-	chrome.storage.sync.get(data.availableSettings, result => {
+	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse']), result => {
 		interval = result.interval != undefined ? parseInt(result.interval) : interval;
 		interval = daysToMilliSeconds(interval);
 
@@ -47,13 +47,36 @@ function loadSettings(callback) {
 		});
 
 		if (result.connectionLimitFactor != undefined) {
-			
+			getAllDatabaseEntries('visits', result => {
+				var sum = 0;
+				for (const entry of result) {
+					sum += entry.value[0];
+				}
+				connectionLimit = result.connectionLimitFactor * sum;
+			});
 		}
 
 		todayCount =  result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
 
-		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : (new Date).getTime();
+		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
+
+		if (debug)
+			logSettings();
 
 		typeof callback === 'function' && callback(); // Call callback, if it is defined
 	});
+}
+
+/**
+ * Logs current settings.
+ */
+function logSettings() {
+	console.log(
+		`Current settings are: \r\n
+		interval = ${interval}, \r\n
+		tabLimit = ${tabLimit}, \r\n
+		connectionLimit = ${connectionLimit}, \r\n
+		lastUse = ${lastUse}
+		`
+	);
 }

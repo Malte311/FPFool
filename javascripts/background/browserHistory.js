@@ -1,36 +1,48 @@
 'use strict';
 
 /**
+ * Holds the number of visits from the most visited site.
+ */
+var maxVisits = 10;
+
+/**
  * Gets the browser history to establish connections to sites which have already been visited.
  * 
- * @param {function} callback Mandatory callback function.
+ * @param {function} callback Optional callback function.
  */
 function loadBrowserHistory(callback) {
+	var intervalStart = (new Date).getTime() - interval;
+	var startTime = lastUse != undefined ? 
+					(intervalStart > lastUse ? intervalStart : lastUse) : 
+					intervalStart;
+
 	chrome.history.search({
 		'text': '', // All entries
-		'startTime': (new Date).getTime() - interval,
+		'startTime': startTime,
 		'maxResults': connectionLimit <= 100 ? connectionLimit : 100
 	}, historyItems => {
+		// Update the time for last browser history update
+		chrome.storage.sync.set({
+			lastUse: (new Date).getTime(),
+		});
+
 		// Get the number of visits for each page during the specified time interval.
+		var done = new Array(historyItems.length).fill(false); // To wait for all async calls
 		for (var i = 0; i < historyItems.length; i++) {
 			chrome.history.getVisits({
 				url: historyItems[i].url
 			}, results => {
-				var c = results.filter(e => e.visitTime >= (new Date).getTime() - interval).length;
-				storeInDatabase('visits', historyItems[i].url, c, false);
 				queue.push(removeParamsFromUrl(historyItems[i].url)); // Add to processing queue
 
-				// After the last iteration we want to continue by visiting the urls.
-				// Necessary to check in here because of asynchronous calls.
-				if (i == historyItems.length - 1) {
-					// Get the max value (because we want to visit all sites equally often
-					maxVisits = Math.max(...browserHistory.values());
+				// Update number of max. visits (because we want to visit all sites equally often)
+				var count = results.filter(e => e.visitTime >= intervalStart).length;
+				if (maxVisits < count)
+					maxVisits = count;
 
-					// First call instant, then interval
-					connectToUrl(queue.shift());
-					todayConnectionCount++;
-					connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
-				}
+				storeInDatabase('visits', historyItems[i].url, count, false, () => {
+					done[i] = true;
+					!done.includes(false) && typeof callback === 'function' && callback();
+				});
 			});
 		}
 	});

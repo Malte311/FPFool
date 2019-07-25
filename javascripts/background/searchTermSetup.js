@@ -8,7 +8,7 @@ function loadSearchTerms(callback) {
  * Searches for possible search terms in the user's browser history. Saves the results
  * to the 'searchTerms' objectStore in our database.
  * 
- * @param {function} callback Mandatory callback function.
+ * @param {function} callback Optional callback function.
  */
 function getSearchTerms(callback) {
 	var time = 1000 * 60 * 60 * 24 * 7;
@@ -19,7 +19,9 @@ function getSearchTerms(callback) {
 	}, historyItems => {
 		// Remove duplicates
 		historyItems = historyItems.filter((val, ind, self) => self.indexOf(val) == ind);
-		getTermForEachItem(historyItems, time).then(() => callback());
+		getTermForEachItem(historyItems, time).then(() => {
+			typeof callback === 'function' && callback(); // Call callback, if it is defined
+		});
 	});
 }
 
@@ -28,7 +30,7 @@ function getSearchTerms(callback) {
  * 
  * @param {array} historyItems The array of visited urls.
  * @param {number} time Timestamp of the start time for the visits.
- * @param {function} callback Mandatory callback function.
+ * @param {function} callback Optional callback function.
  */
 function getTermForEachItem(historyItems, time, callback) {
 	for (const historyItem of historyItems) {
@@ -67,10 +69,10 @@ function getTermForEachItem(historyItems, time, callback) {
 
 				if (visitTimesToAdd.length > 0) {
 					getSearchTerm(historyItem.url, visitTimesToAdd).then(() => {
-						callback();
+						typeof callback === 'function' && callback(); // Call callback, if it is defined
 					});
 				} else {
-					callback();
+					typeof callback === 'function' && callback(); // Call callback, if it is defined
 				}
 
 			});
@@ -86,7 +88,7 @@ function getTermForEachItem(historyItems, time, callback) {
  * 
  * @param {string} url The visited website.
  * @param {array} visitTimes Timestamps of the visit times for this url.
- * @param {function} callback Mandatory callback function.
+ * @param {function} callback Optional callback function.
  */
 function getSearchTerm(url, visitTimes, callback) {
 	// Only consider urls with parameters
@@ -118,9 +120,9 @@ function getSearchTerm(url, visitTimes, callback) {
 						]);
 					}
 				}
-				callback();
+				typeof callback === 'function' && callback(); // Call callback, if it is defined
 			} else {
-				callback();
+				typeof callback === 'function' && callback(); // Call callback, if it is defined
 			}
 
 		});

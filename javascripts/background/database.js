@@ -70,12 +70,25 @@ function storeInDatabase(objectStore, key, val, append = true, callback) {
  * @param {Object} objectStore The table we want to update.
  * @param {string} key The key of the item we want to update/add.
  * @param {function} callback Mandatory callback function with result from database as parameter.
- * @return {Promise} The corresponding value to the given key.
  */
 function getFromDatabase(objectStore, key, callback) {
 	var req = database.transaction(objectStore, 'readonly').objectStore(objectStore).get(key);
 
 	req.onsuccess = event => {
 		callback(req.result);
-	}
+	};
+}
+
+/**
+ * Returns the value for a given key from our indexedDB database.
+ * 
+ * @param {Object} objectStore The table we want to update.
+ * @param {function} callback Mandatory callback function with result from database as parameter.
+ */
+function getAllDatabaseEntries(objectStore, callback) {
+	var req = database.transaction(objectStore, 'readonly').objectStore(objectStore).getAll();
+
+	req.onsuccess = event => {
+		callback(req.result);
+	};
 }

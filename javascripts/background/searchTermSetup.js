@@ -126,3 +126,30 @@ function getSearchTerm(url, visitTimes, callback) {
 		});
 	}
 }
+
+/**
+ * Sets the url parmaeter for a given url.
+ * 
+ * @param {string} url The url for which we want to set the parameter.
+ * @param {string} dummyTerm The search term used to find out the parameter.
+ * @param {function} callback Optional callback function.
+ */
+function saveSearchParam(url, dummyTerm, callback) {
+	if (dummyTerm == '') {
+		storeInDatabase('searchParams', getKeyFromUrl(url), '', false, callback);
+		return;
+	}
+
+	var params = new URLSearchParams(url.split('?')[1]);
+	for (const [key, val] of params.entries()) {
+		if (val.toLowerCase() == dummyTerm.toLowerCase()) { // Some sites capitalize queries
+			storeInDatabase('searchParams', getKeyFromUrl(url), key, false, () => {
+				chrome.history.deleteUrl({
+					url: url
+				}, callback);
+			});
+			
+			break;
+		}
+	}
+}

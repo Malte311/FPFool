@@ -77,25 +77,10 @@ function answerType(request, sender, sendResponse) {
 	if (senderTab != undefined) {
 		response.disconnect = !senderTab.isNew; // Disconnect after action
 		response.type = senderTab.type;
-		response.execAction = senderTab.isNew;
 		senderTab.isNew = false;
-	}
 
-
-	if (senderTab != undefined && senderTab.getUrlParam && senderTab.dummySearchTerm != undefined) {
-		response.disconnect = true;
-		// resolve() is called in getUrlParams() if condition is true
-		if (senderTab.dummySearchTerm != '') {
-			setUrlParams(
-				request.url,
-				senderTab.dummySearchTerm,
-				senderTab.visitTimes,
-				senderTab.originUrl,
-				senderTab.resolve
-			);
-		} else {
-			senderTab.resolve();
-		}
+		if (senderTab.dummySearchTerm != undefined)
+			saveSearchParam(senderTab.url, senderTab.dummySearchTerm);
 	}
 
 	sendResponse(response);
@@ -158,7 +143,7 @@ function answerResize(request, sender, sendResponse) {
 }
 
 /**
- * 
+ * Saves information about url search parameter for the requesting url.
  * 
  * @param {object} request The message which was received.
  * @param {MessageSender} sender The sender of the received message.
@@ -166,11 +151,11 @@ function answerResize(request, sender, sendResponse) {
  */
 function answerUrlParams(request, sender, sendResponse) {
 	var senderTab = specialTabs.find(tab => tab.id == sender.tab.id);
-	senderTab.dummySearchTerm = request.dummySearchTerm;
-	if (request.dummySearchTerm == '') { // Not searchable
-		// This url is done, so resolve it. Mark it as non-searchable as well.
-		storeInDatabase('searchParams', getKeyFromUrl(senderTab.originUrl), '', false, () => {
-			senderTab.resolve();
-		});
+
+	if (senderTab != undefined) {
+		senderTab.url = request.url;
+		senderTab.dummySearchTerm = request.dummySearchTerm;
 	}
+	
+	sendResponse({}); // Just to close message channel
 }

@@ -29,7 +29,7 @@ var lastUse = undefined;
 /**
  * Loads the settings (which can be changed by the user).
  * 
- * @param {function} callback Mandatory callback function.
+ * @param {function} callback Optional callback function.
  */
 function loadSettings(callback) {
 	chrome.storage.sync.get(data.availableSettings, result => {
@@ -38,13 +38,11 @@ function loadSettings(callback) {
 
 		tabLimit = result.tabLimit != undefined ? parseInt(result.tabLimit) : tabLimit;
 
-		currentTabs = new Array(tabLimit);
-		currentTabs.fill({
+		currentTabs = new Array(tabLimit).fill({
 			id: -1
 		});
 
-		specialTabs = new Array(tabLimit);
-		specialTabs.fill({
+		specialTabs = new Array(tabLimit).fill({
 			id: -1
 		});
 
@@ -56,6 +54,6 @@ function loadSettings(callback) {
 
 		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : (new Date).getTime();
 
-		callback();
+		typeof callback === 'function' && callback(); // Call callback, if it is defined
 	});
 }

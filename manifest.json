@@ -28,8 +28,10 @@
 		"matches": ["http://*/*", "https://*/*"],
 		"js": [
 			"./lib/jquery.min.js", 
-			"./javascripts/content/util.js", 
-			"./javascripts/content/content.js"
+			"./javascripts/content/util.js",
+			"./javascripts/content/tab.js",
+			"./javascripts/content/search.js",
+			"./javascripts/content/setup.js"
 		]
 	}],
 	"browser_action": {

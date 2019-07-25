@@ -16,6 +16,9 @@ function runApplication() {
 	});
 }
 
+/**
+ * Starts the connection loop for the first time.
+ */
 function startConnectLoop() {
 	// First call instant, then interval
 	connectToUrl(queue.shift());
@@ -31,10 +34,11 @@ function startConnectLoop() {
 function connectLoop(restartTime) {
 	restartTime = Math.trunc(restartTime);
 	var startTime = (new Date).getTime();
+
 	var running = setInterval(() => {
 		connectToUrl(queue.shift());
 
-		if ((++todayCount > connectionLimit) || !(queue.length > 0)) {
+		if ((++todayCount > connectionLimit) || queue.length < 1) {
 			clearInterval(running);
 		}
 
@@ -69,35 +73,34 @@ function restartLoop(restartTime) {
  * @param {string} url The url we want to connect to.
  */
 function connectToUrl(url) {
-	// Do not visit a page too many times and do not visit the extension page
-	// (does not start with http)
-	if ((browserHistory.has(url) && browserHistory.get(url) >= maxVisits) ||
-		!url.startsWith('http')) {
-		return;
-	}
-
-	// If the tab limit is reached, wait until we can open a new tab again
-	var waiting = setInterval(() => {
-		if (maxTabsCount > currentTabs.reduce((n, val) => n + (val.id != -1), 0)) {
-			// If we can open a new tab, stop waiting and do not repeat anything
-			clearInterval(waiting);
-
-			// Visit urls from the history again until we visited all of them equally often.
-			if (browserHistory.has(url)) {
-				browserHistory.set(url, browserHistory.get(url) + 1);
-				queue.push(url);
-			}
-
-			chrome.tabs.create({
-				windowId: windowId,
-				index: currentTabs.length,
-				url: url,
-				active: false
-			}, tab => {
-				tab.isNew = true; // We need this to execute content scripts only once
-				tab.type = 'execAlgo';
-				currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;
-			});
+	getFromDatabase('visits', getKeyFromUrl(url), result => {
+		// Do not visit a page too many times and do not visit the extension page
+		// (does not start with http)
+		if (!url.startsWith('http') || result == undefined || result.value[0] >= maxVisits) {
+			return;
 		}
-	}, 3000); // Check all 3 seconds if a new tab can be opened
+
+		// If the tab limit is reached, wait until we can open a new tab again
+		var waiting = setInterval(() => {
+			if (tabLimit > currentTabs.reduce((n, val) => n + (val.id != -1), 0)) {
+				// If we can open a new tab, stop waiting and do not repeat anything
+				clearInterval(waiting);
+
+				// Visit urls from the history again until we visited all of them equally often.
+				storeInDatabase('visits', getKeyFromUrl(url), result.value[0] + 1, false);
+				queue.push(url);
+
+				chrome.tabs.create({
+					windowId: windowId,
+					index: currentTabs.length,
+					url: url,
+					active: false
+				}, tab => {
+					tab.isNew = true; // We need this to execute content scripts only once
+					tab.type = 'execAlgo';
+					currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;
+				});
+			}
+		}, 3000); // Check all 3 seconds if a new tab can be opened
+	});
 }

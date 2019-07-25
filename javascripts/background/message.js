@@ -80,7 +80,7 @@ function answerType(request, sender, sendResponse) {
 		senderTab.isNew = false;
 
 		if (senderTab.dummySearchTerm != undefined)
-			saveSearchParam(senderTab.url, senderTab.dummySearchTerm);
+			saveSearchParam(senderTab.url, senderTab.dummySearchTerm, senderTab.callback);
 	}
 
 	sendResponse(response);

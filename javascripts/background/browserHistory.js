@@ -6,13 +6,18 @@
 var maxVisits = 10;
 
 /**
+ * Holds the start time for requests to the browser history.
+ */
+var startTime;
+
+/**
  * Gets the browser history to establish connections to sites which have already been visited.
  * 
  * @param {function} callback Optional callback function.
  */
 function loadBrowserHistory(callback) {
 	var intervalStart = (new Date).getTime() - interval;
-	var startTime = lastUse != undefined ? 
+	startTime = lastUse != undefined ? 
 					(intervalStart > lastUse ? intervalStart : lastUse) : 
 					intervalStart;
 

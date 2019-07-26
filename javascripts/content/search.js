@@ -26,7 +26,8 @@ function getUrlParams() {
  * Searches for an input field on the current page such that we can search the page.
  */
 function getSearchInputField() {
-	var inputField = $(':input[type=search]').first() || $(':input[type=text]').first();
+	var searchFields = $(':input[type=search]');
+	var inputField = searchFields.length > 0 ? searchFields.first() : $(':input[type=text]').first();
 	var form = $(inputField).closest('form');
 
 	// Make sure that we don't fill our a login form or something similar.

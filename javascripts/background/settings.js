@@ -79,6 +79,7 @@ function logSettings() {
 		`Current settings are: \r\n
 		interval = ${interval / 1000 / 60 / 60 / 24} days, \r\n
 		tabLimit = ${tabLimit}, \r\n
+		todayCount = ${todayCount}, \r\n
 		connectionLimit = ${connectionLimit}, \r\n
 		lastUse = ${new Date(lastUse)}, \r\n
 		queue = ${queue}`

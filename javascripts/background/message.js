@@ -52,12 +52,16 @@ function answerSearchTerm(request, sender, sendResponse) {
 		var term = '';
 		if (result != undefined) {
 			term = result.value[Math.floor(Math.random() * result.value.length)];
-			term = getSuggestion(term);
+			getSuggestion(term, response => {
+				sendResponse({
+					searchTerm: response
+				});
+			});
+		} else {
+			sendResponse({
+				searchTerm: ''
+			});
 		}
-
-		sendResponse({
-			searchTerm: term
-		});
 	});
 }
 

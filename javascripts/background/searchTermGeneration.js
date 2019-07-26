@@ -16,9 +16,10 @@ const maxRuns = 200;
  * Tries to find a Google search completion suggestion for a given term.
  * 
  * @param {string} term The search term for which we want to find a suggestion.
+ * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
-function getSuggestion(term) {
-	return getSuggestionRecursive(term, term, 0, []);
+function getSuggestion(term, callback) {
+	return getSuggestionRecursive(term, term, 0, [], callback);
 }
 
 /**
@@ -28,37 +29,39 @@ function getSuggestion(term) {
  * @param {string} current The currently derived term.
  * @param {number} runs The number of iterations done so far.
  * @param {array} alreadyDone Terms which have already been looked at.
+ * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
-function getSuggestionRecursive(original, current, runs, alreadyDone) {
+function getSuggestionRecursive(original, current, runs, alreadyDone, callback) {
 	var words = getAllWords(current);
 	words.filter(w => w.split(' ').length < original.split(' ').length);
 	words.filter(w => !alreadyDone.includes(w));
 	alreadyDone.concat(words);
 
-	var found = null;
 	if (runs < maxRuns) {
-		for (var w of words) {
-			requestAPI(suggestionAPI, w, result => {
-				if (result == '') // Nothing found
+		asyncArrLoop(words, (item, inCallback) => {
+			requestAPI(suggestionAPI, item, result => {
+				if (result == '') { // Nothing found
+					inCallback();
 					return;
-
+				}
+				
 				var suggestion = chooseTerm(result, alreadyDone);
 
 				var suggestionWords = suggestion.split(' ');
 				var termWords = original.split(' ');
 				if (suggestionWords.length == termWords.length &&
 					!suggestionWords.some(w => termWords.includes(w))) {
-					found = suggestion;
+					callback(suggestion); // No inCallback() call: break from loop
 				} else {
-					getSuggestion(original, suggestion, ++runs, alreadyDone.concat([suggestion]));
+					inCallback(); // Process next item from words array
 				}
 			});
-			if (found != null)
-				return;
-		}
+		}, () => { // Callback after loop is done
+			getSuggestionRecursive(original, suggestion, ++runs, alreadyDone);
+		}, 0);
+	} else {
+		callback('');
 	}
-
-	return found != null ? found : '';
 }
 
 /**

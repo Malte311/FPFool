@@ -34,7 +34,7 @@ function loadBrowserHistory(callback) {
 		// Get the number of visits for each page during the specified time interval.
 		asyncArrLoop(historyItems, (item, inCallback) => {
 			// Ignore extension page
-			if (item.url.includes(chrome.runtime.getURL('./html'))) {
+			if (item.url.includes(chrome.runtime.getURL(''))) {
 				inCallback();
 				return;
 			}

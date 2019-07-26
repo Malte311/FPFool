@@ -27,6 +27,9 @@ $(document).ready(() => {
 			if (data.availableActionTypes.hasOwnProperty(request.type)) {
 				var action;
 				switch (request.type) {
+					case data.availableActionTypes.GETPARAM:
+						action = `Finding out search parameter.`;
+						break;
 					case data.availableActionTypes.OPEN:
 						action = `Opened a new tab.`;
 						break;
@@ -77,6 +80,9 @@ function addClickEventToTable(tableId) {
 function appendTable(tabId, urlFrom, urlTo, action, type) {
 	var color;
 	switch (type) {
+		case data.availableActionTypes.GETPARAM:
+			color = '<tr class=\"table-info\">'; // Light blue
+			break;
 		case data.availableActionTypes.OPEN:
 			color = '<tr class=\"table-success\">'; // Green
 			break;

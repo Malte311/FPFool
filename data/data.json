@@ -1,5 +1,6 @@
 {
 	"availableActionTypes": {
+		"GETPARAM": "GETPARAM",
 		"OPEN": "OPEN",
 		"REMOVE": "REMOVE",
 		"SEARCH": "SEARCH",

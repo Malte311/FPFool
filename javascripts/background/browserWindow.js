@@ -41,6 +41,9 @@ function createWindow() {
 
 			addListenerOnClose();
 
+			if (debug)
+				addDebugListener();
+
 			// Initialize and run the application
 			loadSettings(runApplication);
 		});
@@ -74,5 +77,20 @@ function addListenerOnClose() {
 				});
 			}
 		});
+	});
+}
+
+/**
+ * Listener for debug mode: Saves variables to storage when the extension window is
+ * closed (this means the browser can be left open).
+ */
+function addDebugListener() {
+	chrome.windows.onRemoved.addListener(winId => {
+		if (winId == windowId) {
+			chrome.storage.sync.set({
+				queue: queue,
+				todayCount: todayCount
+			});
+		}
 	});
 }

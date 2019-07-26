@@ -10,14 +10,14 @@ function getUrlParams() {
 	chrome.runtime.sendMessage({
 		type: 'sendInfo',
 		infoType: 'urlParams',
-		url: new URL(location.href).hostname,
+		url: location.href,
 		dummySearchTerm: inputField != null ? dummySearchTerm : ''
 	}, response => {
 		if (inputField != null) {
 			$(inputField).val(dummySearchTerm);
 			$(inputField).closest('form').submit();
 		} else {
-			disconnect(true);
+			location.reload();
 		}
 	});
 }

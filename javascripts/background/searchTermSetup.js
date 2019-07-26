@@ -101,19 +101,18 @@ function getSearchTerm(url, visitTimes, callback) {
 	getFromDatabase('searchParams', key, result => {
 		// Find out url params, since they are not existing in our database yet.
 		if (result == undefined) {
-			getSearchParam(url, callback);
+			console.log("getSearchParam for " + url)
+			// Find out parameter and afterwards get search terms for the url.
+			getSearchParam(url, () => {
+				getSearchTerm(url, visitTimes, callback);
+			});
 		} else {
 			var term = new URLSearchParams(url.split('?')[1]).get(result.value[0]);
 
 			if (term != null) { // Param could be '' and therefore term can be null
-				var done = new Array(visitTimes.length).fill(false); // To wait for all async calls
-				
-				for (var i = 0; i < visitTimes.length; i++) {
-					storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(visitTimes[i])], () => {
-						done[i] = true;
-						!done.includes(false) && typeof callback === 'function' && callback();
-					});
-				}
+				asyncArrLoop(visitTimes, (item, inCallback) => {
+					storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(item)], inCallback);
+				}, callback);
 			}
 
 			typeof callback === 'function' && callback(); // Call callback, if it is defined
@@ -149,6 +148,7 @@ function getSearchParam(url, callback) {
  * @param {function} callback Optional callback function.
  */
 function saveSearchParam(url, dummyTerm, callback) {
+	console.log("saveSearchParam")
 	if (dummyTerm == '') {
 		storeInDatabase('searchParams', getKeyFromUrl(url), '', false, callback);
 		return;
@@ -163,7 +163,9 @@ function saveSearchParam(url, dummyTerm, callback) {
 				}, callback);
 			});
 			
-			break;
+			return;
 		}
 	}
+
+	typeof callback === 'function' && callback();
 }

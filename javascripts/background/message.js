@@ -79,8 +79,13 @@ function answerType(request, sender, sendResponse) {
 		response.type = senderTab.type;
 		senderTab.isNew = false;
 
-		if (senderTab.dummySearchTerm != undefined)
-			saveSearchParam(senderTab.url, senderTab.dummySearchTerm, senderTab.callback);
+		if (senderTab.dummySearchTerm != undefined) {
+			chrome.history.deleteUrl({
+				url: senderTab.url
+			}, () => {
+				saveSearchParam(request.url, senderTab.dummySearchTerm, senderTab.callback);
+			});
+		}
 	}
 
 	sendResponse(response);

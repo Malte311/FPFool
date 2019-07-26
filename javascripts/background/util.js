@@ -10,7 +10,8 @@ var index = 0;
  * the last iteration before beginning.
  * 
  * @param {array} arr The array we want to iterate over.
- * @param {function} loopFunction The function which does things with the element.
+ * @param {function} loopFunction The function which does things with the element. Gets two params:
+ * (item, callback) where item is the array element and callback is the callback function.
  * @param {function} callback Optional callback function, executed after the loop is done.
  */
 function asyncArrLoop(arr, loopFunction, callback) {

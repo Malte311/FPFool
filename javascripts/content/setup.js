@@ -21,7 +21,7 @@ $(document).ready(() => {
 		chrome.runtime.sendMessage({
 			type: 'getInfo',
 			infoType: 'type',
-			url: new URL(location.href).hostname
+			url: location.href
 		}, response => {
 			determineAction(response);
 		});
@@ -45,6 +45,7 @@ function determineAction(response) {
 			execAlgorithm();
 			break;
 		case 'getUrlParam':
+			updateStatus(location.href, 'GETPARAM', '&ndash;', '&ndash;');
 			getUrlParams();
 			break;
 		default:

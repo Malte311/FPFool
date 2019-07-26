@@ -14,16 +14,12 @@ function addResizeEventListener() {
 
 /**
  * Closes the current tab.
- * 
- * @param {bool} isSpecial Describes if this tab is a fake connection or has another purpose.
  */
-function disconnect(isSpecial = false) {
+function disconnect() {
 	chrome.runtime.sendMessage({
 		type: 'sendInfo',
 		infoType: 'disconnect'
 	}, response => {
-		if (!isSpecial) {
-			updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
-		}
+		updateStatus(location.href, 'REMOVE', '&ndash;', '&ndash;');
 	});
 }

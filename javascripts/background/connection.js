@@ -21,9 +21,11 @@ function runApplication() {
  */
 function startConnectLoop() {
 	// First call instant, then interval
-	connectToUrl(queue.shift());
-	todayCount++;
-	connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
+	if (queue.length > 1) {
+		connectToUrl(queue.shift());
+		todayCount++;
+		connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
+	}
 }
 
 /**
@@ -76,7 +78,7 @@ function connectToUrl(url) {
 	getFromDatabase('visits', getKeyFromUrl(url), result => {
 		// Do not visit a page too many times and do not visit the extension page
 		// (does not start with http)
-		if (!url.startsWith('http') || result == undefined || result.value[0] >= maxVisits) {
+		if (result == undefined || !url.startsWith('http') || result.value[0] >= maxVisits) {
 			return;
 		}
 

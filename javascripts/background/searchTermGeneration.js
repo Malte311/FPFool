@@ -26,7 +26,8 @@ function chooseTerm(suggestions, alreadyChosen) {
  * @param {string} term The search term for which we want to find a suggestion.
  */
 function getSuggestion(term) {
-	return getSuggestionRecursive(term, term, 0, []);
+	return 'test';
+	// return getSuggestionRecursive(term, term, 0, []);
 }
 
 function getSuggestionRecursive(original, current, runs, alreadyDone) {

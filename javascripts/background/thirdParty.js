@@ -11,15 +11,12 @@ function monitorThirdPartyRequests() {
 
 	chrome.webRequest.onBeforeRequest.addListener(det => {
 		if (det.type == 'script' && det.initiator != undefined) {
-			// Ignore extension page
-			var startInd = det.initiator.indexOf('.') + 1;
-			var urlExtension = det.initiator.match(/\.[a-z]{2,3}($|\/)/);
-			var endInd = urlExtension != null ? det.initiator.indexOf(urlExtension[0]) : -1;
+			var key = getKeyFromUrl(det.initiator);
+			var res = getKeyFromUrl(det.url);
 
-			// We are only interested in third party sites, so we ignore first party requests.
-			if (endInd > 0 && !det.url.includes(det.initiator.substring(startInd, endInd))) {
-				var key = getKeyFromUrl(det.initiator);
-
+			// We are only interested in third party sites, so we ignore first party requests
+			// (initiator has to be different than requested resource).
+			if (!res.includes(key)) {
 				getFromDatabase('thirdParties', key, result => {
 					// Request already existing, do not save it again
 					if (result != undefined && result.value.includes(det.url))
@@ -44,7 +41,7 @@ function processRequest(det) {
 	getAllDatabaseEntries('thirdParties', result => {
 		// Find other websites that use the same third party and are not added to the queue yet
 		for (const entry of result) {
-			if (!entry.url.includes(det.initiator.substring(startInd, endInd)) &&
+			if (!entry.url.includes(getKeyFromUrl(det.initiator)) &&
 				entry.value.includes(det.url) && !queue.includes(entry.url)) {
 				
 				queue.push(entry.url);

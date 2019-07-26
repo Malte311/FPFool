@@ -67,6 +67,7 @@ function addListenerOnClose() {
 			// Close the extension if it is the only window left and save statistics
 			if (windows.length == 1 && windowId == windows[0].id) {
 				chrome.storage.sync.set({
+					queue: queue,
 					todayCount: todayCount
 				}, res => {
 					chrome.windows.remove(windowId);

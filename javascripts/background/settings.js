@@ -9,7 +9,7 @@ var interval = 1;
 /*
  * Holds the maximum number of active tabs at the same time.
  */
-var tabLimit = 5; 
+var tabLimit = 3; 
 
 /*
  * Defines the maximum amount of connections being made.
@@ -32,11 +32,17 @@ var lastUse = undefined;
  * @param {function} callback Optional callback function.
  */
 function loadSettings(callback) {
-	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse']), result => {
+	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse', 'queue']), result => {
 		interval = result.interval != undefined ? parseInt(result.interval) : interval;
 		interval = daysToMilliSeconds(interval);
 
 		tabLimit = result.tabLimit != undefined ? parseInt(result.tabLimit) : tabLimit;
+
+		todayCount = result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
+
+		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
+
+		queue = result.queue != undefined ? result.queue : queue;
 
 		currentTabs = new Array(tabLimit).fill({
 			id: -1
@@ -46,24 +52,22 @@ function loadSettings(callback) {
 			id: -1
 		});
 
-		if (result.connectionLimitFactor != undefined) {
-			getAllDatabaseEntries('visits', result => {
-				var sum = 0;
-				for (const entry of result) {
-					sum += entry.value[0];
-				}
-				connectionLimit = result.connectionLimitFactor * sum;
-			});
-		}
+		getAllDatabaseEntries('visits', result => {
+			var sum = 0;
+			for (const entry of result) {
+				sum += entry.value[0];
+			}
+			connectionLimit = result.connectionLimitFactor != undefined ? 
+							  result.connectionLimitFactor * sum : sum;
+			
+			if (connectionLimit == 0) // In case sum is zero
+				connectionLimit = 50;
 
-		todayCount =  result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
+			if (debug)
+				logSettings();
 
-		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
-
-		if (debug)
-			logSettings();
-
-		typeof callback === 'function' && callback(); // Call callback, if it is defined
+			typeof callback === 'function' && callback(); // Call callback, if it is defined
+		});
 	});
 }
 
@@ -73,10 +77,10 @@ function loadSettings(callback) {
 function logSettings() {
 	console.log(
 		`Current settings are: \r\n
-		interval = ${interval}, \r\n
+		interval = ${interval / 1000 / 60 / 60 / 24} days, \r\n
 		tabLimit = ${tabLimit}, \r\n
 		connectionLimit = ${connectionLimit}, \r\n
-		lastUse = ${lastUse}
-		`
+		lastUse = ${new Date(lastUse)}, \r\n
+		queue = ${queue}`
 	);
 }

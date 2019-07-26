@@ -1,11 +1,6 @@
 'use strict';
 
 /**
- * Index for iterating in asynchronous array loop.
- */
-var index = 0;
-
-/**
  * Searches for possible search terms in the user's browser history. Saves the results
  * to the 'searchTerms' objectStore in our database.
  * 
@@ -17,38 +12,15 @@ function loadSearchTerms(callback) {
 		'startTime': startTime,
 		maxResults: connectionLimit <= 100 ? connectionLimit : 100
 	}, historyItems => {
-		asyncArrLoop(historyItems, index, loopFunction);
+		asyncArrLoop(historyItems, (item, inCallback) => {
+			if (item.url.indexOf('?') < 0) { // Only consider urls with parameter
+				inCallback();
+				return;
+			}
+		
+			findVisitsForUrl(item.url, startTime, inCallback);
+		}, callback);
 	});
-}
-
-/**
- * Creates an asynchronous array loop, i.e., each iteration waits for the asynchronous call of
- * the last iteration before beginning.
- * 
- * @param {array} arr The array we want to iterate over.
- * @param {function} loopFunction The function which does things with the element.
- */
-function asyncArrLoop(arr, loopFunction) {
-	loopFunction(arr[index], () => {
-		if (++index < arr.length)
-			asyncArrLoop(arr, index);
-		else
-			index = 0;
-	});
-}
-
-/**
- * Gets the visits for an historyItem in an asynchronous array loop.
- * 
- * @param {object} item The current element.
- * @param {function} callback Mandatory callback function
- */
-function loopFunction(item, callback) {
-	if (item.url.indexOf('?') < 0) { // Only consider urls with parameter
-		continue;
-	}
-
-	findVisitsForUrl(item.url, startTime, callback);
 }
 
 /**

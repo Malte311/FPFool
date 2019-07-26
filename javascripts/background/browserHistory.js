@@ -32,23 +32,27 @@ function loadBrowserHistory(callback) {
 		});
 
 		// Get the number of visits for each page during the specified time interval.
-		var done = new Array(historyItems.length).fill(false); // To wait for all async calls
-		for (var i = 0; i < historyItems.length; i++) {
+		asyncArrLoop(historyItems, (item, inCallback) => {
+			// Ignore extension page
+			if (item.url.includes(chrome.runtime.getURL('./html'))) {
+				inCallback();
+				return;
+			}
+
 			chrome.history.getVisits({
-				url: historyItems[i].url
+				url: item.url
 			}, results => {
-				queue.push(removeParamsFromUrl(historyItems[i].url)); // Add to processing queue
+				queue.push(removeParamsFromUrl(item.url)); // Add to processing queue
 
 				// Update number of max. visits (because we want to visit all sites equally often)
 				var count = results.filter(e => e.visitTime >= intervalStart).length;
 				if (maxVisits < count)
 					maxVisits = count;
 
-				storeInDatabase('visits', historyItems[i].url, count, false, () => {
-					done[i] = true;
-					!done.includes(false) && typeof callback === 'function' && callback();
+				storeInDatabase('visits', getKeyFromUrl(item.url), count, false, () => {
+					inCallback();
 				});
 			});
-		}
+		}, callback);
 	});
 }

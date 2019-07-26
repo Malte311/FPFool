@@ -3,7 +3,7 @@
 /*
  * Specifies if the application should be run in debug mode.
  */
-const debug = false;
+const debug = true;
 
 /*
  * Holds the path to the data.json file.
@@ -21,7 +21,8 @@ fetch(dataPath).then(response => response.json()).then(json => {
 	data = json;
 
 	// For usability: Makes sure that the window state does not get changed by this extension.
-	handleWindowState();
+	if (!debug)
+		handleWindowState();
 
 	// Initializes the database and calls createWindow() when done.
 	initDatabase(createWindow);

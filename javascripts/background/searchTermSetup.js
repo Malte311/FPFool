@@ -19,7 +19,7 @@ function loadSearchTerms(callback) {
 			}
 		
 			findVisitsForUrl(item.url, startTime, inCallback);
-		}, callback);
+		}, callback, 0);
 	});
 }
 
@@ -101,7 +101,6 @@ function getSearchTerm(url, visitTimes, callback) {
 	getFromDatabase('searchParams', key, result => {
 		// Find out url params, since they are not existing in our database yet.
 		if (result == undefined) {
-			console.log("getSearchParam for " + url)
 			// Find out parameter and afterwards get search terms for the url.
 			getSearchParam(url, () => {
 				getSearchTerm(url, visitTimes, callback);
@@ -112,7 +111,7 @@ function getSearchTerm(url, visitTimes, callback) {
 			if (term != null) { // Param could be '' and therefore term can be null
 				asyncArrLoop(visitTimes, (item, inCallback) => {
 					storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(item)], inCallback);
-				}, callback);
+				}, callback, 0);
 			}
 
 			typeof callback === 'function' && callback(); // Call callback, if it is defined
@@ -144,11 +143,11 @@ function getSearchParam(url, callback) {
  * Sets the url parmaeter for a given url.
  * 
  * @param {string} url The url for which we want to set the parameter.
+ * @param {string} originUrl The origin url (some pages redirect on search).
  * @param {string} dummyTerm The search term used to find out the parameter.
  * @param {function} callback Optional callback function.
  */
-function saveSearchParam(url, dummyTerm, callback) {
-	console.log("saveSearchParam")
+function saveSearchParam(url, originUrl, dummyTerm, callback) {
 	if (dummyTerm == '') {
 		storeInDatabase('searchParams', getKeyFromUrl(url), '', false, callback);
 		return;
@@ -157,10 +156,17 @@ function saveSearchParam(url, dummyTerm, callback) {
 	var params = new URLSearchParams(url.split('?')[1]);
 	for (const [key, val] of params.entries()) {
 		if (val.toLowerCase() == dummyTerm.toLowerCase()) { // Some sites capitalize queries
-			storeInDatabase('searchParams', getKeyFromUrl(url), key, false, () => {
-				chrome.history.deleteUrl({
-					url: url
-				}, callback);
+			// Some sites redirect on search, so we make sure that we add url as well as originUrl.
+			storeInDatabase('searchParams', getKeyFromUrl(originUrl), key, false, () => {
+				storeInDatabase('searchParams', getKeyFromUrl(url), key, false, () => {
+					chrome.history.deleteUrl({
+						url: url
+					}, () => {
+						chrome.history.deleteUrl({
+							url: originUrl
+						}, callback);
+					});
+				});
 			});
 			
 			return;

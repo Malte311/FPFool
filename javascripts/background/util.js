@@ -1,11 +1,6 @@
 'use strict';
 
 /**
- * Index for iterating in asynchronous array loop.
- */
-var index = 0;
-
-/**
  * Creates an asynchronous array loop, i.e., each iteration waits for the asynchronous call of
  * the last iteration before beginning.
  * 
@@ -13,19 +8,19 @@ var index = 0;
  * @param {function} loopFunction The function which does things with the element. Gets two params:
  * (item, callback) where item is the array element and callback is the callback function.
  * @param {function} callback Optional callback function, executed after the loop is done.
+ * @param {number} ind Index for next element to process.
  */
-function asyncArrLoop(arr, loopFunction, callback) {
+function asyncArrLoop(arr, loopFunction, callback, ind) {
 	if (!(arr.length > 0)) {
 		typeof callback === 'function' && callback();
 		return;
 	}
 
 	var inCallback = loopFunction; // To avoid name conflict
-	loopFunction(arr[index], () => { // Index is a global variable only used for this function
-		if (++index < arr.length)
-			asyncArrLoop(arr, inCallback, callback);
+	loopFunction(arr[ind], () => {
+		if (++ind < arr.length)
+			asyncArrLoop(arr, inCallback, callback, ind);
 		else {
-			index = 0;
 			typeof callback === 'function' && callback();
 		}
 	});

@@ -80,11 +80,7 @@ function answerType(request, sender, sendResponse) {
 		senderTab.isNew = false;
 
 		if (senderTab.dummySearchTerm != undefined) {
-			chrome.history.deleteUrl({
-				url: senderTab.url
-			}, () => {
-				saveSearchParam(request.url, senderTab.dummySearchTerm, senderTab.callback);
-			});
+			saveSearchParam(request.url, senderTab.url, senderTab.dummySearchTerm, senderTab.callback);
 		}
 	}
 

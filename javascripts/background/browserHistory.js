@@ -53,6 +53,6 @@ function loadBrowserHistory(callback) {
 					inCallback();
 				});
 			});
-		}, callback);
+		}, callback, 0);
 	});
 }

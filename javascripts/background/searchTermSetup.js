@@ -108,7 +108,7 @@ function getSearchTerm(url, visitTimes, callback) {
 		} else {
 			var term = new URLSearchParams(url.split('?')[1]).get(result.value[0]);
 
-			if (term != null) { // Param could be '' and therefore term can be null
+			if (term != null && term.trim().length > 0) {
 				asyncArrLoop(visitTimes, (item, inCallback) => {
 					storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(item)], inCallback);
 				}, callback, 0);

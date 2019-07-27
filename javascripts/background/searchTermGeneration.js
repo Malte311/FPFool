@@ -10,7 +10,7 @@ const suggestionAPI = 'http://suggestqueries.google.com/complete/search?client=f
  * (hopefully) not get reached, but we use it to make 100% sure that we can never land in an
  * endless loop.
  */
-const maxRuns = 200;
+const maxRuns = 20;
 
 /**
  * Tries to find a Google search completion suggestion for a given term.
@@ -19,7 +19,8 @@ const maxRuns = 200;
  * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
 function getSuggestion(term, callback) {
-	return getSuggestionRecursive(term, term, 0, [], callback);
+	console.log("Get term for " + term);
+	getSuggestionRecursive(term, term, 0, [], callback);
 }
 
 /**
@@ -33,31 +34,46 @@ function getSuggestion(term, callback) {
  */
 function getSuggestionRecursive(original, current, runs, alreadyDone, callback) {
 	var words = getAllWords(current);
-	words.filter(w => w.split(' ').length < original.split(' ').length);
-	words.filter(w => !alreadyDone.includes(w));
-	alreadyDone.concat(words);
+	words = words.filter(w => w.split(' ').length < original.split(' ').length);
+	words = words.filter(w => !alreadyDone.includes(w));
+	words = words.filter(w => w.trim().length > 0);
+	words = words.filter((item, pos, self) => self.indexOf(item) == pos);
+	alreadyDone = alreadyDone.concat(words);
 
-	if (runs < maxRuns) {
+	if (runs < maxRuns && words.length > 0) {
+		var suggestion = '';
+
+		console.log("loop on array " + words + " with length " + words.length)
 		asyncArrLoop(words, (item, inCallback) => {
-			requestAPI(suggestionAPI, item, result => {
-				if (result == '') { // Nothing found
-					inCallback();
-					return;
-				}
-				
-				var suggestion = chooseTerm(result, alreadyDone);
+			setTimeout(() => { // Make sure Google does not block us
+				requestAPI(suggestionAPI, item, result => {
+					if (result == '') { // Nothing found
+						inCallback();
+						return;
+					}
+					
+					suggestion = chooseTerm(result, alreadyDone);
+					if (!suggestion.trim().length > 0) {
+						inCallback();
+						return;
+					}
 
-				var suggestionWords = suggestion.split(' ');
-				var termWords = original.split(' ');
-				if (suggestionWords.length == termWords.length &&
-					!suggestionWords.some(w => termWords.includes(w))) {
-					callback(suggestion); // No inCallback() call: break from loop
-				} else {
-					inCallback(); // Process next item from words array
-				}
-			});
+					alreadyDone.push(suggestion);
+					console.log("Looking at suggestion " + suggestion)
+	
+					var suggestionWords = suggestion.split(' ');
+					var termWords = original.split(' ');
+					if (suggestionWords.length == termWords.length &&
+						!suggestionWords.some(w => termWords.includes(w))) {
+						console.log("FOUND " + suggestion)
+						callback(suggestion); // No inCallback() call: break from loop
+					} else {
+						inCallback(); // Process next item from words array
+					}
+				});
+			}, 500);
 		}, () => { // Callback after loop is done
-			getSuggestionRecursive(original, suggestion, ++runs, alreadyDone);
+			getSuggestionRecursive(original, suggestion, ++runs, alreadyDone, callback);
 		}, 0);
 	} else {
 		callback('');
@@ -97,16 +113,16 @@ function getAllWords(term) {
  */
 function requestAPI(api, term, callback) {
 	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open('GET', `${api}&q=${term}`, true);
 
 	xmlHttp.onreadystatechange = () => {
-		if (this.readyState == 4 && this.status == 200) {
-			callback(processResponse(this.responseText));
+		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+			callback(processResponse(xmlHttp.responseText));
 		} else {
 			callback('');
 		}
 	};
 
-	xmlHttp.open('GET', `${api}&q=${term}`, true);
 	xmlHttp.send();
 }
 
@@ -126,10 +142,10 @@ function processResponse(text) {
 
 	var quoteCount = 0, currentWord = '', suggestions = [];
 	for (var i = 0; i < text.length; i++) {
-		if (quoteCount % 2 == 1) { // Quotation mark open, word begins here
+		if (quoteCount % 2 == 1 && text.charAt(i) != '"') { // Quotation mark open, word begins here
 			currentWord += text.charAt(i);
 		} else if (currentWord != '') { // Quotation mark close, word ended here
-			suggestions.push(currentWord);
+			suggestions.push(currentWord.trim());
 			currentWord = '';
 		}
 
@@ -137,7 +153,7 @@ function processResponse(text) {
 			quoteCount = (quoteCount + 1) % 2;
 	}
 
-	return text;
+	return suggestions;
 }
 
 /**

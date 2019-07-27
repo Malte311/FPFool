@@ -16,6 +16,8 @@ function asyncArrLoop(arr, loopFunction, callback, ind) {
 		return;
 	}
 
+	console.log("loop of index " + ind + " for array "+ arr)
+
 	var inCallback = loopFunction; // To avoid name conflict
 	loopFunction(arr[ind], () => {
 		if (++ind < arr.length)

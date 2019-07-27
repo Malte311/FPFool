@@ -51,7 +51,7 @@ function answerSearchTerm(request, sender, sendResponse) {
 	getFromDatabase('searchTerms', getKeyFromUrl(request.url), (result) => {
 		var term = '';
 		if (result != undefined) {
-			term = result.value[Math.floor(Math.random() * result.value.length)];
+			term = result.value[Math.floor(Math.random() * result.value.length)][0];
 			getSuggestion(term, response => {
 				sendResponse({
 					searchTerm: response

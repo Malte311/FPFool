@@ -19,7 +19,6 @@ const maxRuns = 20;
  * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
 function getSuggestion(term, callback) {
-	console.log("Get term for " + term);
 	getSuggestionRecursive(term, term, 0, [], callback);
 }
 
@@ -34,7 +33,7 @@ function getSuggestion(term, callback) {
  */
 function getSuggestionRecursive(original, current, runs, alreadyDone, callback) {
 	var words = getAllWords(current);
-	words = words.filter(w => w.split(' ').length < original.split(' ').length);
+	words = words.filter(w => w.split(' ').length <= original.split(' ').length);
 	words = words.filter(w => !alreadyDone.includes(w));
 	words = words.filter(w => w.trim().length > 0);
 	words = words.filter((item, pos, self) => self.indexOf(item) == pos);
@@ -43,7 +42,6 @@ function getSuggestionRecursive(original, current, runs, alreadyDone, callback) 
 	if (runs < maxRuns && words.length > 0) {
 		var suggestion = '';
 
-		console.log("loop on array " + words + " with length " + words.length)
 		asyncArrLoop(words, (item, inCallback) => {
 			setTimeout(() => { // Make sure Google does not block us
 				requestAPI(suggestionAPI, item, result => {
@@ -59,16 +57,16 @@ function getSuggestionRecursive(original, current, runs, alreadyDone, callback) 
 					}
 
 					alreadyDone.push(suggestion);
-					console.log("Looking at suggestion " + suggestion)
 	
 					var suggestionWords = suggestion.split(' ');
 					var termWords = original.split(' ');
 					if (suggestionWords.length == termWords.length &&
 						!suggestionWords.some(w => termWords.includes(w))) {
-						console.log("FOUND " + suggestion)
 						callback(suggestion); // No inCallback() call: break from loop
+						return;
 					} else {
 						inCallback(); // Process next item from words array
+						return;
 					}
 				});
 			}, 500);
@@ -117,9 +115,11 @@ function requestAPI(api, term, callback) {
 
 	xmlHttp.onreadystatechange = () => {
 		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-			callback(processResponse(xmlHttp.responseText));
-		} else {
-			callback('');
+			try {
+				callback(processResponse(xmlHttp.responseText));
+			} catch (err) {
+				callback('');
+			}
 		}
 	};
 
@@ -163,6 +163,9 @@ function processResponse(text) {
  * @param {Array} alreadyChosen Array of words we already looked at.
  */
 function chooseTerm(suggestions, alreadyChosen) {
+	suggestions = suggestions.map(e => e.toLowerCase());
+	alreadyChosen = alreadyChosen.map(e => e.toLowerCase());
+
 	// Simply pick the first suggestion which was not already chosen.
 	for (var i = 0; i < suggestions.length; i++) {
 		if (!alreadyChosen.includes(suggestions[i]))

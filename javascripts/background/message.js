@@ -48,7 +48,7 @@ function handleGetInfo(request, sender, sendResponse) {
  * @param {function} sendResponse Callback function to send a response.
  */
 function answerSearchTerm(request, sender, sendResponse) {
-	getFromDatabase('searchTerms', getKeyFromUrl(request.url), (result) => {
+	getFromDatabase('searchTerms', getKeyFromUrl(request.url), result => {
 		var term = '';
 		if (result != undefined) {
 			term = result.value[Math.floor(Math.random() * result.value.length)][0];

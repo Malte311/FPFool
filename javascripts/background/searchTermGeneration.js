@@ -32,6 +32,11 @@ function getSuggestion(term, callback) {
  * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
 function getSuggestionRecursive(original, current, runs, alreadyDone, callback) {
+	if (isValid(original, current)) {
+		callback(current);
+		return;
+	}
+
 	var words = getAllWords(current);
 	words = words.filter(w => w.split(' ').length <= original.split(' ').length);
 	words = words.filter(w => !alreadyDone.includes(w));
@@ -57,11 +62,8 @@ function getSuggestionRecursive(original, current, runs, alreadyDone, callback) 
 					}
 
 					alreadyDone.push(suggestion);
-	
-					var suggestionWords = suggestion.split(' ');
-					var termWords = original.split(' ');
-					if (suggestionWords.length == termWords.length &&
-						!suggestionWords.some(w => termWords.includes(w))) {
+
+					if (isValid(original, suggestion)) {
 						callback(suggestion); // No inCallback() call: break from loop
 						return;
 					} else {
@@ -173,4 +175,19 @@ function chooseTerm(suggestions, alreadyChosen) {
 	}
 
 	return '';
+}
+
+/**
+ * Checks if a suggestion is valid, i.e., it contains the same number of words as the original
+ * term and it contains not a single word of the original term.
+ * 
+ * @param {string} originalTerm The original term.
+ * @param {string} suggestionTerm The suggestion to be checked.
+ */
+function isValid(originalTerm, suggestionTerm) {
+	var suggestionWords = suggestionTerm.split(' ');
+	var originalWords = originalTerm.split(' ');
+
+	return suggestionWords.length == originalWords.length && 
+		   !suggestionWords.some(w => originalWords.includes(w));
 }

@@ -21,6 +21,7 @@ function loadBrowserHistory(callback) {
 					(intervalStart > lastUse ? intervalStart : lastUse) : 
 					intervalStart;
 
+	var tmpQueue = [];
 	chrome.history.search({
 		'text': '', // All entries
 		'startTime': startTime,
@@ -42,17 +43,26 @@ function loadBrowserHistory(callback) {
 			chrome.history.getVisits({
 				url: item.url
 			}, results => {
-				queue.push(removeParamsFromUrl(item.url)); // Add to processing queue
-
 				// Update number of max. visits (because we want to visit all sites equally often)
 				var count = results.filter(e => e.visitTime >= intervalStart).length;
 				if (maxVisits < count)
 					maxVisits = count;
 
+				tmpQueue.push([removeParamsFromUrl(item.url), count]); // Add to processing queue
+
 				storeInDatabase('visits', getKeyFromUrl(item.url), count, false, () => {
 					inCallback();
 				});
 			});
-		}, callback, 0);
+		}, () => {
+			// Sort by visit count
+			tmpQueue.sort((a, b) => a[1] - b[1]);
+
+			// Insert urls into the real queue in sorted order
+			for (const entry of tmpQueue)
+				queue.push(entry[0]);
+
+			typeof callback === 'function' && callback();
+		}, 0);
 	});
 }

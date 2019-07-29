@@ -3,7 +3,7 @@
 /**
  * Holds the number of visits from the most visited site.
  */
-var maxVisits = 10;
+var maxVisits = 5;
 
 /**
  * Holds the start time for requests to the browser history.

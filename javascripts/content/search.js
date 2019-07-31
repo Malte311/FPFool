@@ -1,3 +1,6 @@
+/**
+ * @module content script - search
+ */
 'use strict';
 
 /**

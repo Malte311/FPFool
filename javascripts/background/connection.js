@@ -1,6 +1,9 @@
+/**
+ * @module background script - connection
+ */
 'use strict';
 
-/*
+/**
  * Keeps track of the websites we want to visit next.
  */
 var queue = [];

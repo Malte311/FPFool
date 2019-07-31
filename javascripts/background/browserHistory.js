@@ -1,3 +1,6 @@
+/**
+ * @module background script - browserHistory
+ */
 'use strict';
 
 /**
@@ -13,7 +16,7 @@ var startTime;
 /**
  * Gets the browser history to establish connections to sites which have already been visited.
  * 
- * @param {function} callback Optional callback function.
+ * @param {function} [callback] Optional callback function.
  */
 function loadBrowserHistory(callback) {
 	var intervalStart = (new Date).getTime() - interval;

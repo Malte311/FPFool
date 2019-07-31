@@ -1,16 +1,19 @@
+/**
+ * @module background script - setup
+ */
 'use strict';
 
-/*
+/**
  * Specifies if the application should be run in debug mode.
  */
 const debug = true;
 
-/*
+/**
  * Holds the path to the data.json file.
  */
 const dataPath = '../data/data.json';
 
-/*
+/**
  * Saves the content of the data.json file.
  */
 var data;

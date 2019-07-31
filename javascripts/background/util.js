@@ -1,13 +1,16 @@
+/**
+ * @module background script - util
+ */
 'use strict';
 
 /**
  * Creates an asynchronous array loop, i.e., each iteration waits for the asynchronous call of
  * the last iteration before beginning.
  * 
- * @param {array} arr The array we want to iterate over.
+ * @param {Object[]} arr The array we want to iterate over.
  * @param {function} loopFunction The function which does things with the element. Gets two params:
  * (item, callback) where item is the array element and callback is the callback function.
- * @param {function} callback Optional callback function, executed after the loop is done.
+ * @param {function} [callback] Optional callback function, executed after the loop is done.
  * @param {number} ind Index for next element to process.
  */
 function asyncArrLoop(arr, loopFunction, callback, ind) {
@@ -48,8 +51,8 @@ function removeParamsFromUrl(url) {
 /**
  * Shuffles a given array.
  * 
- * @param {Array} array The array we want to shuffle.
- * @return {Array} The shuffled array.
+ * @param {Object[]} array The array we want to shuffle.
+ * @return {Object[]} The shuffled array.
  */
 function shuffleArray(array) {
 	var currentIndex = array.length;

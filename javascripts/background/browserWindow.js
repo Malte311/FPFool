@@ -1,17 +1,20 @@
+/**
+ * @module background script - browserWindow
+ */
 'use strict';
 
-/*
+/**
  * Saves the id of a minimized extra window in which the extension creates fake connections. This
  * extra window is minimized in order to not distract the user at his work.
  */
 var windowId;
 
-/*
+/**
  * Keeps track of the tabs which are currently open to create fake connections.
  */
 var currentTabs = [];
 
-/*
+/**
  * Keeps track of the tabs which are used to find out search parameters.
  */
 var specialTabs = [];

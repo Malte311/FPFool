@@ -1,27 +1,30 @@
+/**
+ * @module background script - settings
+ */
 'use strict';
 
-/*
+/**
  * Defines the interval (in days) for browser history entries to be relevant. After initialization,
  * the interval has the unit milliseconds.
  */
 var interval = 1;
 
-/*
+/**
  * Holds the maximum number of active tabs at the same time.
  */
 var tabLimit = 3; 
 
-/*
+/**
  * Defines the maximum amount of connections being made.
  */
 var connectionLimit = 50;
 
-/*
+/**
  * Defines how many connections have been made today so far.
  */
 var todayCount = 0;
 
-/*
+/**
  * Holds the timestamp of the last usage of this application.
  */
 var lastUse = undefined;
@@ -29,7 +32,7 @@ var lastUse = undefined;
 /**
  * Loads the settings (which can be changed by the user).
  * 
- * @param {function} callback Optional callback function.
+ * @param {function} [callback] Optional callback function.
  */
 function loadSettings(callback) {
 	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse', 'queue']), result => {

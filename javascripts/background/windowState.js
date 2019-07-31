@@ -1,3 +1,6 @@
+/**
+ * @module background script - windowState
+ */
 'use strict';
 
 /**

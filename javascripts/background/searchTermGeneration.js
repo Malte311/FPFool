@@ -1,11 +1,14 @@
+/**
+ * @module background script - searchTermGeneration
+ */
 'use strict';
 
-/*
- * Holds the Google suggestion API for completing search terms.
+/**
+ * Holds the link to the Google suggestion API for completing search terms.
  */
 const suggestionAPI = 'http://suggestqueries.google.com/complete/search?client=firefox';
 
-/*
+/**
  * Defines the maximum number of iterations when searching for a suggestion. This number should
  * (hopefully) not get reached, but we use it to make 100% sure that we can never land in an
  * endless loop.
@@ -28,7 +31,7 @@ function getSuggestion(term, callback) {
  * @param {string} original The original term for which we want to find a suggestion.
  * @param {string} current The currently derived term.
  * @param {number} runs The number of iterations done so far.
- * @param {array} alreadyDone Terms which have already been looked at.
+ * @param {string[]} alreadyDone Terms which have already been looked at.
  * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
 function getSuggestionRecursive(original, current, runs, alreadyDone, callback) {
@@ -161,8 +164,8 @@ function processResponse(text) {
 /**
  * Returns a suggestion from a list of suggestions which was not considered before.
  * 
- * @param {Array} suggestions Array of suggestions.
- * @param {Array} alreadyChosen Array of words we already looked at.
+ * @param {string[]} suggestions Array of suggestions.
+ * @param {string[]} alreadyChosen Array of words we already looked at.
  */
 function chooseTerm(suggestions, alreadyChosen) {
 	suggestions = suggestions.map(e => e.toLowerCase());

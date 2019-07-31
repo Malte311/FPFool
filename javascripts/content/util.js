@@ -1,3 +1,6 @@
+/**
+ * @module content script - util
+ */
 'use strict';
 
 /**
@@ -39,7 +42,7 @@ function randomString(length) {
  * Return a weighted random number. The number can have a minimum value, if wanted.
  * 
  * @param {number} weight The number to multiply our random generated number with.
- * @param {number} minVal The minimum number to return, defaults to zero.
+ * @param {number} [minVal=0] The minimum number to return, defaults to zero.
  */
 function weightedRandom(weight, minVal = 0) {
 	var retVal = Math.floor(Math.random() * weight);

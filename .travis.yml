@@ -11,7 +11,7 @@ branches:
 
 sudo: required
 
-before_deploy: jsdoc -r javascripts
+before_deploy: jsdoc -R readme.md -r ./javascripts/
 
 deploy:
   - provider: pages

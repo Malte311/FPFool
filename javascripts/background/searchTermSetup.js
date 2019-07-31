@@ -1,10 +1,13 @@
+/**
+ * @module background script - searchTermSetup
+ */
 'use strict';
 
 /**
  * Searches for possible search terms in the user's browser history. Saves the results
  * to the 'searchTerms' objectStore in our database.
  * 
- * @param {function} callback Optional callback function. 
+ * @param {function} [callback] Optional callback function. 
  */
 function loadSearchTerms(callback) {
 	chrome.history.search({
@@ -28,7 +31,7 @@ function loadSearchTerms(callback) {
  * 
  * @param {string} url The url for which we want to get the new visits.
  * @param {number} timeInterval Timestamp of the start time for visits.
- * @param {function} callback Optional callback function.
+ * @param {function} [callback] Optional callback function.
  */
 function findVisitsForUrl(url, timeInterval, callback) {
 	chrome.history.getVisits({
@@ -49,9 +52,9 @@ function findVisitsForUrl(url, timeInterval, callback) {
 /**
  * Checks for a given array of visit times if these visits are already present in the database.
  * 
- * @param {array} visits Visits to check if they are already included in the database.
- * @param {object} dbVisits Visits already present in the database.
- * @param {function} callback Mandatory callback function.
+ * @param {Object[]} visits Visits to check if they are already included in the database.
+ * @param {Object} dbVisits Visits already present in the database.
+ * @param {function} callback Mandatory callback function containing new visits as parameter.
  */
 function findNewVisits(visits, dbVisits, callback) {
 	var newVisits = [];
@@ -86,8 +89,8 @@ function findNewVisits(visits, dbVisits, callback) {
  * same search term (although it was not searched that many times).
  * 
  * @param {string} url The visited website.
- * @param {array} visitTimes Timestamps of the visit times for this url.
- * @param {function} callback Optional callback function.
+ * @param {Object[]} visitTimes Timestamps of the visit times for this url.
+ * @param {function} [callback] Optional callback function.
  */
 function getSearchTerm(url, visitTimes, callback) {
 	// Only consider new visits with parameters
@@ -123,7 +126,7 @@ function getSearchTerm(url, visitTimes, callback) {
  * Finds out the search parameter for a given url.
  * 
  * @param {string} url The url for which we want to determine the search parameter.
- * @param {function} callback Optional callback function, executed when done.
+ * @param {function} [callback] Optional callback function, executed when done.
  */
 function getSearchParam(url, callback) {
 	chrome.tabs.create({
@@ -145,7 +148,7 @@ function getSearchParam(url, callback) {
  * @param {string} url The url for which we want to set the parameter.
  * @param {string} originUrl The origin url (some pages redirect on search).
  * @param {string} dummyTerm The search term used to find out the parameter.
- * @param {function} callback Optional callback function.
+ * @param {function} [callback] Optional callback function.
  */
 function saveSearchParam(url, originUrl, dummyTerm, callback) {
 	if (dummyTerm == '') {

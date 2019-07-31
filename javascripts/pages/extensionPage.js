@@ -1,11 +1,14 @@
+/**
+ * @module html script - extensionPage
+ */
 'use strict';
 
-/*
+/**
  * Holds the path to the data.json file.
  */
 const dataPath = '../data/data.json';
 
-/*
+/**
  * Saves the content of the data.json file.
  */
 var data;

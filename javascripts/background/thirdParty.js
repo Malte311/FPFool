@@ -1,3 +1,6 @@
+/**
+ * @module background script - thirdParty
+ */
 'use strict';
 
 /**
@@ -35,7 +38,7 @@ function monitorThirdPartyRequests() {
  * Checks if a given third party request matches a request from another site and adds this other
  * site to the queue (if the site is not already contained in the queue).
  * 
- * @param {object} det The third party request we want to process.
+ * @param {Object} det The third party request we want to process.
  */
 function processRequest(det) {
 	getAllDatabaseEntries('thirdParties', result => {

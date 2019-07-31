@@ -1,6 +1,9 @@
+/**
+ * @module background script - database
+ */
 'use strict';
 
-/*
+/**
  * Holds the indexedDB database.
  */
 var database;
@@ -11,7 +14,7 @@ var database;
  * searchTerms:      searchParams:    thirdParties:               visits:
  * url | keywords    url | params     url | thirdPartyRequests    url | visitCount
  * 
- * @param {function} callback Optional callback function.
+ * @param {function} [callback] Optional callback function.
  */
 function initDatabase(callback) {
 	if ('indexedDB' in window) {
@@ -42,8 +45,8 @@ function initDatabase(callback) {
  * @param {Object} objectStore The table we want to update.
  * @param {string} key The key of the item we want to update/add.
  * @param {Object} val The new value for the given key.
- * @param {bool} append Specifies if a value should be appended or overwritten.
- * @param {function} callback Optional callback function, executed after updating the database.
+ * @param {bool} [append=true] Specifies if a value should be appended or overwritten.
+ * @param {function} [callback] Optional callback function, executed after updating the database.
  */
 function storeInDatabase(objectStore, key, val, append = true, callback) {
 	var store = database.transaction(objectStore, 'readwrite').objectStore(objectStore);

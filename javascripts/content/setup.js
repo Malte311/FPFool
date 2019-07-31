@@ -1,11 +1,14 @@
+/**
+ * @module content script - setup
+ */
 'use strict';
 
-/*
+/**
  * Holds the path to the data.json file.
  */
 const dataPath = chrome.runtime.getURL('data/data.json');
 
-/*
+/**
  * Saves the content of the data.json file.
  */
 var data;
@@ -31,7 +34,7 @@ $(document).ready(() => {
 /**
  * Determines which action should be performed on the current site.
  * 
- * @param {object} response Response from background script which contains the type of this tab.
+ * @param {Object} response Response from background script which contains the type of this tab.
  */
 function determineAction(response) {
 	if (response.disconnect) {

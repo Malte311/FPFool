@@ -1,3 +1,6 @@
+/**
+ * @module background script - message
+ */
 'use strict';
 
 /**
@@ -25,8 +28,8 @@ function addMessageListener() {
 /**
  * Sends the requested information to a content script.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function handleGetInfo(request, sender, sendResponse) {
@@ -43,8 +46,8 @@ function handleGetInfo(request, sender, sendResponse) {
 /**
  * Sends a search term to the requesting content script.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function answerSearchTerm(request, sender, sendResponse) {
@@ -68,8 +71,8 @@ function answerSearchTerm(request, sender, sendResponse) {
 /**
  * Tells the requesting content script which type of action it should perform.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function answerType(request, sender, sendResponse) {
@@ -94,8 +97,8 @@ function answerType(request, sender, sendResponse) {
 /**
  * Receives the information sent by a content script and acts on it.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function handleSendInfo(request, sender, sendResponse) {
@@ -115,8 +118,8 @@ function handleSendInfo(request, sender, sendResponse) {
 /**
  * Removes the tab which requests a disconnect.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function answerDisconnect(request, sender, sendResponse) {
@@ -138,8 +141,8 @@ function answerDisconnect(request, sender, sendResponse) {
 /**
  * Saves the window state when a content script signals that the window has been resized.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function answerResize(request, sender, sendResponse) {
@@ -150,8 +153,8 @@ function answerResize(request, sender, sendResponse) {
 /**
  * Saves information about url search parameter for the requesting url.
  * 
- * @param {object} request The message which was received.
- * @param {MessageSender} sender The sender of the received message.
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
  * @param {function} sendResponse Callback function to send a response.
  */
 function answerUrlParams(request, sender, sendResponse) {

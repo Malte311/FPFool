@@ -10,6 +10,11 @@
 var interval = 1;
 
 /**
+ * Holds the start time for requests to the browser history.
+ */
+var startTime;
+
+/**
  * Holds the maximum number of active tabs at the same time.
  */
 var tabLimit = 3; 
@@ -37,7 +42,9 @@ var lastUse = undefined;
 function loadSettings(callback) {
 	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse', 'queue']), result => {
 		interval = result.interval != undefined ? parseInt(result.interval) : interval;
-		interval = daysToMilliSeconds(interval);
+		interval = daysToMilliseconds(interval);
+
+		startTime = (new Date).getTime() - interval;
 
 		tabLimit = result.tabLimit != undefined ? parseInt(result.tabLimit) : tabLimit;
 

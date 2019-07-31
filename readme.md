@@ -9,7 +9,7 @@ interest profile of the user by performing fake actions on websites which were o
 visited by the user.
 
 # How to use FPFool
-:warning: *Important:* Before using FPFool, please note that this software is part of a bachelor
+**Important:** Before using FPFool, please note that this software is part of a bachelor
 thesis and therefore in pre-alpha state. It cannot be ruled out that there are no bugs and that
 everything works perfectly.
 
@@ -25,14 +25,15 @@ you use your Google Chrome browser.
 An auto-generated JSDoc documentation can be found [here](https://malte311.github.io/FPFool/).
 
 ## Lines of code
+
 |Language                     |files          |blank        |comment           |code|
 |-----------------------------|---------------|-------------|------------------|----|
-|JavaScript                   |   21          |  221        |    620           |1076|
+|JavaScript                   |   21          |  220        |    625           |1071|
 |HTML                         |    2          |   10        |      1           | 116|
 |JSON                         |    2          |    0        |      0           |  84|
-|Bourne Shell                 |    1          |   13        |      8           |  38|
+|Bourne Shell                 |    2          |   14        |      8           |  40|
 |CSS                          |    2          |    4        |      6           |  34|
+|Markdown                     |    1          |    6        |      0           |  32|
 |YAML                         |    1          |    6        |      0           |  16|
-|Markdown                     |    1          |    3        |      0           |  16|
 |-                            |-              |-            |-                 |-   |
-|SUM:                         |   30          |  257        |    635           |1380|
+|SUM:                         |   31          |  260        |    640           |1393|

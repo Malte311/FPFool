@@ -95,3 +95,17 @@ function getAllDatabaseEntries(objectStore, callback) {
 		callback(req.result);
 	};
 }
+
+/**
+ * Clears a given table in the database.
+ * 
+ * @param {Object} objectStore The objectStore which should get cleared.
+ * @param {function} [callback] Optional callback function.
+ */
+function clearDatabase(objectStore, callback) {
+	var req = database.transaction(objectStore, 'readwrite').objectStore(objectStore).clear();
+
+	req.onsuccess = event => {
+		typeof callback === 'function' && callback();
+	};
+}

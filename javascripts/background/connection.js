@@ -67,7 +67,6 @@ function connectLoop(restartTime) {
  * @param {number} restartTime Number of milliseconds until a new connection should be made.
  */
 function restartLoop(restartTime) {
-	queue = shuffleArray(queue);
 	connectLoop(restartTime);
 }
 

@@ -11,7 +11,10 @@ branches:
 
 sudo: required
 
-script: jsdoc -R readme.md -r ./javascripts/
+script:
+  - echo 'skipping tests'
+
+before_deploy: jsdoc -R readme.md -r ./javascripts/
 
 deploy:
   - provider: pages

@@ -66,6 +66,9 @@ function saveVisitsFromBrowserHistory(callback) {
 			for (const entry of tmpQueue)
 				queue.push(entry[0]);
 
+			if (debug)
+				console.log(`Initial queue = ${queue}`);
+
 			typeof callback === 'function' && callback();
 		}, 0);
 	});

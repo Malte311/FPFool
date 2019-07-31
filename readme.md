@@ -10,8 +10,8 @@ visited by the user.
 
 # How to use FPFool
 **Important:** Before using FPFool, please note that this software is part of a bachelor
-thesis and therefore in pre-alpha state. It cannot be ruled out that there are no bugs and that
-everything works perfectly.
+thesis and therefore in pre-alpha state. It cannot be ruled out that there are no bugs, so
+do not expect everything to work perfectly.
 
 ## Installation
 :exclamation: Todo :exclamation:
@@ -28,7 +28,7 @@ An auto-generated JSDoc documentation can be found [here](https://malte311.githu
 
 |Language                     |files          |blank        |comment           |code|
 |-----------------------------|---------------|-------------|------------------|----|
-|JavaScript                   |   21          |  219        |    625           |1069|
+|JavaScript                   |   21          |  213        |    607           |1037|
 |HTML                         |    2          |   10        |      1           | 116|
 |JSON                         |    2          |    0        |      0           |  84|
 |Bourne Shell                 |    2          |   14        |      8           |  40|
@@ -36,4 +36,4 @@ An auto-generated JSDoc documentation can be found [here](https://malte311.githu
 |Markdown                     |    1          |    7        |      0           |  32|
 |YAML                         |    1          |    6        |      0           |  16|
 |-                            |-              |-            |-                 |-   |
-|SUM:                         |   31          |  260        |    640           |1391|
+|SUM:                         |   31          |  254        |    622           |1359|

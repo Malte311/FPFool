@@ -12,7 +12,7 @@ var interval = 1;
 /**
  * Holds the start time for requests to the browser history.
  */
-var startTime;
+var startTime = (new Date).getTime() - daysToMilliseconds(1);
 
 /**
  * Holds the maximum number of active tabs at the same time.

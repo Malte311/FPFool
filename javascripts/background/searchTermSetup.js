@@ -10,91 +10,33 @@
  * @param {function} [callback] Optional callback function. 
  */
 function loadSearchTerms(callback) {
-	chrome.history.search({
-		text: '',
-		'startTime': startTime,
-		maxResults: connectionLimit <= 100 ? connectionLimit : 100
-	}, historyItems => {
-		asyncArrLoop(historyItems, (item, inCallback) => {
-			if (item.url.indexOf('?') < 0) { // Only consider urls with parameter
-				inCallback();
-				return;
-			}
-		
-			findVisitsForUrl(item.url, startTime, inCallback);
-		}, callback, 0);
-	});
-}
-
-/**
- * Gets new visits for a given url and saves search terms for these visits in the database.
- * 
- * @param {string} url The url for which we want to get the new visits.
- * @param {number} timeInterval Timestamp of the start time for visits.
- * @param {function} [callback] Optional callback function.
- */
-function findVisitsForUrl(url, timeInterval, callback) {
-	chrome.history.getVisits({
-		url: url
-	}, result => {
-		var visits = result.filter(v => v.visitTime >= timeInterval);
-
-		getFromDatabase('searchTerms', getKeyFromUrl(url), result => {
-			findNewVisits(visits, result, newVisits => {
-				getSearchTerm(url, newVisits, () => {
-					typeof callback === 'function' && callback();
-				});
-			});
+	clearDatabase('searchTerms', () => {
+		chrome.history.search({
+			text: '',
+			'startTime': startTime,
+			maxResults: connectionLimit <= 100 ? connectionLimit : 100
+		}, historyItems => {
+			asyncArrLoop(historyItems, (item, inCallback) => {
+				if (item.url.indexOf('?') < 0) { // Only consider urls with parameter
+					inCallback();
+					return;
+				}
+			
+				getSearchTerm(item.url, inCallback);
+			}, callback, 0);
 		});
 	});
 }
 
 /**
- * Checks for a given array of visit times if these visits are already present in the database.
- * 
- * @param {Object[]} visits Visits to check if they are already included in the database.
- * @param {Object} dbVisits Visits already present in the database.
- * @param {function} callback Mandatory callback function containing new visits as parameter.
- */
-function findNewVisits(visits, dbVisits, callback) {
-	var newVisits = [];
-
-	// Check for every visit if it already exists. If not, add it.
-	for (var visit of visits) {
-		if (!(dbVisits == undefined)) {
-			var isDuplicate = false;
-
-			for (var term of dbVisits.value) {
-				// term[1] holds the visit time of that search term
-				if (term[1] == Math.trunc(visit.visitTime)) {
-					isDuplicate = true;
-					break;
-				}
-			}
-
-			if (!isDuplicate) {
-				newVisits.push(visit.visitTime);
-			}
-		} else {
-			newVisits = newVisits.concat(visits.map(v => Math.trunc(v.visitTime)));
-			break;
-		}
-	}
-
-	callback(newVisits);
-}
-
-/**
- * Grabs search terms for a given url. The timestamps are needed to avoid multiple saves of the
- * same search term (although it was not searched that many times).
+ * Grabs the search term for a given url.
  * 
  * @param {string} url The visited website.
- * @param {Object[]} visitTimes Timestamps of the visit times for this url.
  * @param {function} [callback] Optional callback function.
  */
-function getSearchTerm(url, visitTimes, callback) {
-	// Only consider new visits with parameters
-	if (visitTimes.length < 1 || url.indexOf('?') < 0) {
+function getSearchTerm(url, callback) {
+	// Only consider urls with parameters
+	if (url.indexOf('?') < 0) {
 		typeof callback === 'function' && callback();
 		return;
 	}
@@ -106,15 +48,14 @@ function getSearchTerm(url, visitTimes, callback) {
 		if (result == undefined) {
 			// Find out parameter and afterwards get search terms for the url.
 			getSearchParam(url, () => {
-				getSearchTerm(url, visitTimes, callback);
+				getSearchTerm(url, callback);
 			});
 		} else {
 			var term = new URLSearchParams(url.split('?')[1]).get(result.value[0]);
 
 			if (term != null && term.trim().length > 0) {
-				asyncArrLoop(visitTimes, (item, inCallback) => {
-					storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(item)], inCallback);
-				}, callback, 0);
+				storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(item)], callback);
+				return; // Avoid double callback call
 			}
 
 			typeof callback === 'function' && callback(); // Call callback, if it is defined

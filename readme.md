@@ -1,8 +1,28 @@
 # What is FPFool?
+_FPFool_ is a Google Chrome browser extension which performs camouflage strategies to protect
+users against browser fingerprinting. Browser fingerprinting is a web tracking technique
+performed by websites to collect personal data from their visitors.
+
+Different from other fingerprinting protection tools, FPFool does not try to detain websites
+from generating a fingerprint of their visitors. Instead, FPFool tries to disguise the
+interest profile of the user by performing fake actions on websites which were originally
+visited by the user.
 
 # How to use FPFool
+:warning: *Important:* Before using FPFool, please note that this software is part of a bachelor
+thesis and therefore in pre-alpha state. It cannot be ruled out that there are no bugs and that
+everything works perfectly.
 
-# Statistics
+## Installation
+:exclamation: Todo :exclamation:
+
+## Usage
+After the installation was successful, FPFool works automatically in the background every time
+you use your Google Chrome browser.
+
+# More
+## Documentation
+An auto-generated JSDoc documentation can be found [here](https://malte311.github.io/FPFool/).
 
 ## Lines of code
 |Language                     |files          |blank        |comment           |code|

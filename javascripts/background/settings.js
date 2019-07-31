@@ -40,7 +40,7 @@ var lastUse = undefined;
  * @param {function} [callback] Optional callback function.
  */
 function loadSettings(callback) {
-	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse', 'queue']), result => {
+	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse']), result => {
 		interval = result.interval != undefined ? parseInt(result.interval) : interval;
 		interval = daysToMilliseconds(interval);
 
@@ -51,8 +51,6 @@ function loadSettings(callback) {
 		todayCount = result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
 
 		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
-
-		queue = result.queue != undefined ? result.queue : queue;
 
 		currentTabs = new Array(tabLimit).fill({
 			id: -1
@@ -91,7 +89,6 @@ function logSettings() {
 		tabLimit = ${tabLimit}, \r\n
 		todayCount = ${todayCount}, \r\n
 		connectionLimit = ${connectionLimit}, \r\n
-		lastUse = ${new Date(lastUse)}, \r\n
-		queue = ${queue}`
+		lastUse = ${new Date(lastUse)}`
 	);
 }

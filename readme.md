@@ -28,12 +28,12 @@ An auto-generated JSDoc documentation can be found [here](https://malte311.githu
 
 |Language                     |files          |blank        |comment           |code|
 |-----------------------------|---------------|-------------|------------------|----|
-|JavaScript                   |   21          |  220        |    625           |1071|
+|JavaScript                   |   21          |  219        |    625           |1069|
 |HTML                         |    2          |   10        |      1           | 116|
 |JSON                         |    2          |    0        |      0           |  84|
 |Bourne Shell                 |    2          |   14        |      8           |  40|
 |CSS                          |    2          |    4        |      6           |  34|
-|Markdown                     |    1          |    6        |      0           |  32|
+|Markdown                     |    1          |    7        |      0           |  32|
 |YAML                         |    1          |    6        |      0           |  16|
 |-                            |-              |-            |-                 |-   |
-|SUM:                         |   31          |  260        |    640           |1393|
+|SUM:                         |   31          |  260        |    640           |1391|

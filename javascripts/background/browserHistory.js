@@ -62,8 +62,10 @@ function saveVisitsFromBrowserHistory(callback) {
 			tmpQueue.sort((a, b) => a[1] - b[1]);
 
 			// Insert urls into the real queue in sorted order
-			for (const entry of tmpQueue)
-				queue.push(entry[0]);
+			for (const entry of tmpQueue) {
+				if (entry[1] < maxVisits)
+					queue.push(entry[0]);
+			}
 			
 			// Remove duplicates
 			queue = queue.filter((item, pos, self) => self.indexOf(item) == pos);

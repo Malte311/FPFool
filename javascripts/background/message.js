@@ -106,6 +106,9 @@ function handleSendInfo(request, sender, sendResponse) {
 		case 'disconnect':
 			answerDisconnect(request, sender, sendResponse);
 			break;
+		case 'incTodayCount':
+			answerIncTodayCount(request, sender, sendResponse);
+			break;
 		case 'resize':
 			answerResize(request, sender, sendResponse);
 			break;
@@ -135,6 +138,18 @@ function answerDisconnect(request, sender, sendResponse) {
 		};
 	});
 
+	sendResponse({}); // Just to close message channel
+}
+
+/**
+ * Increments the todayCount variable because a website got redirected.
+ * 
+ * @param {Object} request The message which was received.
+ * @param {Object} sender The sender of the received message.
+ * @param {function} sendResponse Callback function to send a response.
+ */
+function answerIncTodayCount(request, sender, sendResponse) {
+	todayCount++;
 	sendResponse({}); // Just to close message channel
 }
 

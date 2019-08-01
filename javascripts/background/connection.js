@@ -24,9 +24,8 @@ function runApplication() {
  */
 function startConnectLoop() {
 	// First call instant, then interval
-	if (queue.length > 1) {
+	if (queue.length > 1 && todayCount < connectionLimit) {
 		connectToUrl(queue.shift());
-		todayCount++;
 		connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
 	}
 }
@@ -41,7 +40,7 @@ function connectLoop(restartTime) {
 	var loopStartTime = (new Date).getTime();
 
 	var running = setInterval(() => {
-		if ((++todayCount >= connectionLimit) || queue.length < 1) {
+		if ((todayCount >= connectionLimit) || queue.length < 1) {
 			clearInterval(running);
 		}
 
@@ -92,7 +91,9 @@ function connectToUrl(url) {
 
 				// Visit urls from the history again until we visited all of them equally often.
 				storeInDatabase('visits', getKeyFromUrl(url), result.value[0] + 1, false);
-				queue.push(url);
+
+				if (result.value[0] + 1 < maxVisits)
+					queue.push(url);
 
 				chrome.tabs.create({
 					windowId: windowId,
@@ -100,6 +101,7 @@ function connectToUrl(url) {
 					url: url,
 					active: false
 				}, tab => {
+					todayCount++;
 					tab.isNew = true; // We need this to execute content scripts only once
 					tab.type = 'execAlgo';
 					currentTabs[currentTabs.findIndex(elem => elem.id == -1)] = tab;

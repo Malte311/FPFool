@@ -75,7 +75,13 @@ function searchPage(delay) {
 					`${url}${response.searchParam}=${encodeURIComponent(response.searchTerm)}`
 				);
 
-				$(inputField).closest('form').submit();
+				chrome.runtime.sendMessage({
+					type: 'sendInfo',
+					infoType: 'incTodayCount',
+					url: new URL(location.href).hostname
+				}, response => {
+					$(inputField).closest('form').submit();
+				});
 			}, delay);
 		} else {
 			updateStatus(location.href, 'SEARCHFAIL', response.searchTerm, '&ndash;');

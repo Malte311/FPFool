@@ -70,9 +70,6 @@ function loadSettings(callback) {
 			connectionLimit = result.connectionLimitFactor != undefined ? 
 							  result.connectionLimitFactor * (sum - tmpCount) : (sum - tmpCount);
 			
-			if (connectionLimit <= 0) // In case sum is zero
-				connectionLimit = 50;
-
 			if (debug)
 				logSettings();
 

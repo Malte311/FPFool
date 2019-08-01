@@ -51,6 +51,7 @@ function loadSettings(callback) {
 		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
 
 		todayCount = result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
+		var tmpCount = todayCount; // For calculating the connection limit correctly
 		todayCount = isToday(new Date(lastUse)) ? todayCount : 0; // Reset every day
 
 		currentTabs = new Array(tabLimit).fill({
@@ -61,15 +62,15 @@ function loadSettings(callback) {
 			id: -1
 		});
 
-		getAllDatabaseEntries('visits', result => {
+		getAllDatabaseEntries('visits', dbResult => {
 			var sum = 0;
-			for (const entry of result) {
+			for (const entry of dbResult) {
 				sum += entry.value[0];
 			}
 			connectionLimit = result.connectionLimitFactor != undefined ? 
-							  result.connectionLimitFactor * sum : sum;
+							  result.connectionLimitFactor * (sum - tmpCount) : (sum - tmpCount);
 			
-			if (connectionLimit == 0) // In case sum is zero
+			if (connectionLimit <= 0) // In case sum is zero
 				connectionLimit = 50;
 
 			if (debug)

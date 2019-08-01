@@ -28,8 +28,7 @@ function saveVisitsFromBrowserHistory(callback) {
 	var tmpQueue = [];
 	chrome.history.search({
 		'text': '', // All entries
-		'startTime': startTime,
-		'maxResults': connectionLimit <= 100 ? connectionLimit : 100
+		'startTime': startTime
 	}, historyItems => {
 		// Update the time for last browser history update
 		chrome.storage.sync.set({

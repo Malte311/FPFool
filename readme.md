@@ -28,7 +28,7 @@ An auto-generated JSDoc documentation can be found [here](https://malte311.githu
 
 |Language                     |files          |blank        |comment           |code|
 |-----------------------------|---------------|-------------|------------------|----|
-|JavaScript                   |   21          |  216        |    613           |1043|
+|JavaScript                   |   21          |  216        |    613           |1042|
 |HTML                         |    2          |   10        |      1           | 116|
 |JSON                         |    2          |    0        |      0           |  84|
 |Bourne Shell                 |    2          |   14        |      8           |  40|
@@ -36,4 +36,4 @@ An auto-generated JSDoc documentation can be found [here](https://malte311.githu
 |Markdown                     |    1          |    7        |      0           |  32|
 |YAML                         |    1          |    6        |      0           |  16|
 |-                            |-              |-            |-                 |-   |
-|SUM:                         |   31          |  257        |    628           |1365|
+|SUM:                         |   31          |  257        |    628           |1364|

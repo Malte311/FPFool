@@ -13,8 +13,7 @@ function loadSearchTerms(callback) {
 	clearDatabase('searchTerms', () => {
 		chrome.history.search({
 			text: '',
-			'startTime': startTime,
-			maxResults: connectionLimit <= 100 ? connectionLimit : 100
+			'startTime': startTime
 		}, historyItems => {
 			asyncArrLoop(historyItems, (item, inCallback) => {
 				if (item.url.indexOf('?') < 0) { // Only consider urls with parameter

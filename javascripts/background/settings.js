@@ -35,12 +35,17 @@ var lastUse = undefined;
 var todayCount = 0;
 
 /**
+ * Holds the daily counts for the last days (todayCount for every day in the interval).
+ */
+var dailyCounts = [];
+
+/**
  * Loads the settings (which can be changed by the user).
  * 
  * @param {function} [callback] Optional callback function.
  */
 function loadSettings(callback) {
-	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse']), result => {
+	chrome.storage.sync.get(data.availableSettings.concat(['todayCount', 'lastUse', 'dailyCounts']), result => {
 		interval = result.interval != undefined ? parseInt(result.interval) : interval;
 		interval = daysToMilliseconds(interval);
 
@@ -50,9 +55,18 @@ function loadSettings(callback) {
 
 		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
 
+		dailyCounts = result.dailyCounts != undefined ? result.dailyCounts : dailyCounts;
+
 		todayCount = result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
-		var tmpCount = todayCount; // For calculating the connection limit correctly
-		todayCount = isToday(new Date(lastUse)) ? todayCount : 0; // Reset every day
+
+		if (!isToday(new Date(lastUse))) { // Reset every day
+			dailyCounts.push([todayCount, lastUse]);
+			for (var i = dailyCounts.length - 1; i >= 0; i--) {
+				if (dailyCounts[i][1] < startTime)
+					dailyCounts.splice(i, 1);
+			}
+			todayCount = 0;
+		}
 
 		currentTabs = new Array(tabLimit).fill({
 			id: -1
@@ -63,13 +77,21 @@ function loadSettings(callback) {
 		});
 
 		getAllDatabaseEntries('visits', dbResult => {
-			var sum = 0;
+			var sum = 0, fakeSum = 0;
 			for (const entry of dbResult) {
 				sum += entry.value[0];
 			}
-			connectionLimit = result.connectionLimitFactor != undefined ? 
-							  result.connectionLimitFactor * (sum - tmpCount) : (sum - tmpCount);
+			for (const dC of dailyCounts) {
+				fakeSum += dC[0];
+			}
 			
+			var factor = result.connectionLimitFactor != undefined ? result.connectionLimitFactor : 1;
+			connectionLimit = factor * (sum - (dailyCounts.length > 0 ? fakeSum : todayCount));
+			
+			// In case sum is zero (can happen at first usage due to empty database)
+			if (connectionLimit <= 0)
+				connectionLimit = 50;
+
 			if (debug)
 				logSettings();
 

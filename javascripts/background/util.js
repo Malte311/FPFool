@@ -56,3 +56,16 @@ function removeParamsFromUrl(url) {
 function daysToMilliseconds(days) {
 	return days * 24 * 60 * 60 * 1000;
 }
+
+/**
+ * Checks if a given date object is today.
+ * 
+ * @param {Date} date The date object to check.
+ */
+function isToday(date) {
+	var today = new Date();
+
+	return date.getDate() == today.getDate()
+		&& date.getMonth() == today.getMonth()
+		&& date.getFullYear() == today.getFullYear();
+}

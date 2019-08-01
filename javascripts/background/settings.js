@@ -25,14 +25,14 @@ var tabLimit = 3;
 var connectionLimit = 50;
 
 /**
- * Defines how many connections have been made today so far.
- */
-var todayCount = 0;
-
-/**
  * Holds the timestamp of the last usage of this application.
  */
 var lastUse = undefined;
+
+/**
+ * Defines how many connections have been made today so far.
+ */
+var todayCount = 0;
 
 /**
  * Loads the settings (which can be changed by the user).
@@ -48,9 +48,10 @@ function loadSettings(callback) {
 
 		tabLimit = result.tabLimit != undefined ? parseInt(result.tabLimit) : tabLimit;
 
-		todayCount = result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
-
 		lastUse = result.lastUse != undefined ? parseInt(result.lastUse) : lastUse;
+
+		todayCount = result.todayCount != undefined ? parseInt(result.todayCount) : todayCount;
+		todayCount = isToday(new Date(lastUse)) ? todayCount : 0; // Reset every day
 
 		currentTabs = new Array(tabLimit).fill({
 			id: -1

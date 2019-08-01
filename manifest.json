@@ -10,8 +10,8 @@
 		"scripts": [
 			"./lib/jquery.min.js",
 			"./javascripts/background/browserHistory.js",
-			"./javascripts/background/settings.js",
 			"./javascripts/background/util.js",
+			"./javascripts/background/settings.js",
 			"./javascripts/background/thirdParty.js",
 			"./javascripts/background/message.js",
 			"./javascripts/background/browserWindow.js",

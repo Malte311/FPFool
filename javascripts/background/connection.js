@@ -38,7 +38,7 @@ function startConnectLoop() {
  */
 function connectLoop(restartTime) {
 	restartTime = Math.trunc(restartTime);
-	var startTime = (new Date).getTime();
+	var loopStartTime = (new Date).getTime();
 
 	var running = setInterval(() => {
 		if ((++todayCount >= connectionLimit) || queue.length < 1) {
@@ -48,7 +48,7 @@ function connectLoop(restartTime) {
 		connectToUrl(queue.shift());
 
 		// Pause after 30 seconds; restart after 1-3 mintues with new interval duration
-		if ((new Date).getTime() > startTime + 30000) {
+		if ((new Date).getTime() > loopStartTime + 30000) {
 			clearInterval(running);
 			setTimeout(() => {
 				if (queue.length > 15) {

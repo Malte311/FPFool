@@ -6,7 +6,7 @@
 /**
  * Holds the number of visits from the most visited site.
  */
-var maxVisits = 5;
+var maxVisits = 1;
 
 /**
  * Gets the browser history to establish connections to sites which have already been visited.
@@ -65,6 +65,9 @@ function saveVisitsFromBrowserHistory(callback) {
 			// Insert urls into the real queue in sorted order
 			for (const entry of tmpQueue)
 				queue.push(entry[0]);
+			
+			// Remove duplicates
+			queue = queue.filter((item, pos, self) => self.indexOf(item) == pos);
 
 			if (debug)
 				console.log(`Initial queue = ${queue}`);

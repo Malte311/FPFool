@@ -54,7 +54,7 @@ function getSearchTerm(url, callback) {
 			var term = new URLSearchParams(url.split('?')[1]).get(result.value[0]);
 
 			if (term != null && term.trim().length > 0) {
-				storeInDatabase('searchTerms', key, [decodeURIComponent(term), Math.trunc(item)], callback);
+				storeInDatabase('searchTerms', key, decodeURIComponent(term), true, callback);
 				return; // Avoid double callback call
 			}
 

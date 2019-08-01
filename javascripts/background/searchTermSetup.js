@@ -47,7 +47,15 @@ function getSearchTerm(url, callback) {
 		if (result == undefined) {
 			// Find out parameter and afterwards get search terms for the url.
 			getSearchParam(url, () => {
-				getSearchTerm(url, callback);
+				// Make sure we found a parameter to avoid endless loops
+				getFromDatabase('searchParams', key, newResult => {
+					if (newResult != undefined) {
+						getSearchTerm(url, callback);
+					} else {
+						// Can not find parameter, so mark as not searchable
+						storeInDatabase('searchParams', key, '', true, callback);
+					}
+				});
 			});
 		} else {
 			var term = new URLSearchParams(url.split('?')[1]).get(result.value[0]);

@@ -22,33 +22,34 @@ const maxRuns = 20;
  * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
 function getSuggestion(term, callback) {
-	getSuggestionRecursive(term, term, 0, [], callback);
+	getSuggestionRecursive(term, [term], 0, [], callback);
 }
 
 /**
  * Tries to find a Google search completion suggestion for a given term.
  * 
  * @param {string} original The original term for which we want to find a suggestion.
- * @param {string} current The currently derived term.
+ * @param {string[]} wordQueue The terms to look at next.
  * @param {number} runs The number of iterations done so far.
  * @param {string[]} alreadyDone Terms which have already been looked at.
  * @param {function} callback Mandatory callback function with suggestion as parameter. 
  */
-function getSuggestionRecursive(original, current, runs, alreadyDone, callback) {
-	if (isValid(original, current)) {
-		callback(current);
+function getSuggestionRecursive(original, wordQueue, runs, alreadyDone, callback) {
+	if (!wordQueue.length > 0) {
+		callback('');
 		return;
 	}
+
+	var current = wordQueue.shift();
 
 	var words = getAllWords(current);
 	words = words.filter(w => w.split(' ').length <= original.split(' ').length);
 	words = words.filter(w => !alreadyDone.includes(w));
 	words = words.filter(w => w.trim().length > 0);
 	words = words.filter((item, pos, self) => self.indexOf(item) == pos);
-	alreadyDone = alreadyDone.concat(words);
-
+	
 	if (runs < maxRuns && words.length > 0) {
-		var suggestion = '';
+		alreadyDone = alreadyDone.concat(words);
 
 		asyncArrLoop(words, (item, inCallback) => {
 			setTimeout(() => { // Make sure Google does not block us
@@ -58,25 +59,17 @@ function getSuggestionRecursive(original, current, runs, alreadyDone, callback) 
 						return;
 					}
 					
-					suggestion = chooseTerm(result, alreadyDone);
-					if (!suggestion.trim().length > 0) {
-						inCallback();
-						return;
-					}
-
-					alreadyDone.push(suggestion);
-
+					var suggestion = chooseTerm(result, alreadyDone);
 					if (isValid(original, suggestion)) {
 						callback(suggestion); // No inCallback() call: break from loop
-						return;
 					} else {
+						wordQueue.push(suggestion);
 						inCallback(); // Process next item from words array
-						return;
 					}
 				});
 			}, 500);
-		}, () => { // Callback after loop is done
-			getSuggestionRecursive(original, suggestion, ++runs, alreadyDone, callback);
+		}, () => { // Callback after loop is done (only if last iteration passed)
+			getSuggestionRecursive(original, wordQueue, ++runs, alreadyDone, callback);
 		}, 0);
 	} else {
 		callback('');
@@ -193,6 +186,9 @@ function chooseTerm(suggestions, alreadyChosen) {
  * @param {string} suggestionTerm The suggestion to be checked.
  */
 function isValid(originalTerm, suggestionTerm) {
+	if (!suggestionTerm.trim().length > 0)
+		return false;
+	
 	var suggestionWords = suggestionTerm.split(' ');
 	var originalWords = originalTerm.split(' ');
 

@@ -15,58 +15,28 @@ var queue = [];
 function runApplication() {
 	// 1. Load browser history; 2. Load search terms; 3. Start connection loop
 	loadBrowserHistory(() => {
-		loadSearchTerms(startConnectLoop);
+		loadSearchTerms(() => {
+			if (queue.length > 0) {
+				// First call instant, then interval
+				connectToUrl(queue.shift());
+				startConnectLoop();
+			}
+		});
 	});
 }
 
 /**
- * Starts the connection loop for the first time.
+ * Repeats connecting to webpages.
  */
 function startConnectLoop() {
-	// First call instant, then interval
-	if (queue.length > 1 && todayCount < connectionLimit) {
-		connectToUrl(queue.shift());
-		connectLoop(5000 * Math.random() + 5000); // 5 to 10 seconds
-	}
-}
-
-/**
- * Repeats connecting to webpages.
- * 
- * @param {number} restartTime Number of milliseconds until a new connection should be made.
- */
-function connectLoop(restartTime) {
-	restartTime = Math.trunc(restartTime);
-	var loopStartTime = (new Date).getTime();
-
-	var running = setInterval(() => {
-		if ((todayCount >= connectionLimit) || queue.length < 1) {
-			clearInterval(running);
-		}
-
+	setTimeout(() => {
 		connectToUrl(queue.shift());
 
-		// Pause after 30 seconds; restart after 1-3 mintues with new interval duration
-		if ((new Date).getTime() > loopStartTime + 30000) {
-			clearInterval(running);
-			setTimeout(() => {
-				if (queue.length > 15) {
-					restartLoop(restartTime * 0.7);
-				} else {
-					restartLoop(restartTime * 1.2);
-				}
-			}, 1000 * (queue.length > 15 ? 60 : (queue.length > 5 ? 120 : 180)));
+		// Continue while limit not reached and queue not empty.
+		if ((todayCount < connectionLimit) && queue.length > 0) {
+			startConnectLoop();
 		}
-	}, restartTime);
-}
-
-/**
- * Restarts the connection loop. The queue gets shuffled as well.
- * 
- * @param {number} restartTime Number of milliseconds until a new connection should be made.
- */
-function restartLoop(restartTime) {
-	connectLoop(restartTime);
+	}, Math.floor(10000 * Math.random() + 10000)); // 10-20 seconds
 }
 
 /**

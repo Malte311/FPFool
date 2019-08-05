@@ -85,7 +85,7 @@ function searchPage(delay) {
 			}, delay);
 		} else {
 			updateStatus(location.href, 'SEARCHFAIL', response.searchTerm, '&ndash;');
-			setTimeout(disconnect, delay);
+			setTimeout(disconnect, Math.floor(10000 * Math.random() + 10000)); // 10-20 seconds
 		}
 	});
 }

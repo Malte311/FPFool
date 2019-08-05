@@ -38,7 +38,11 @@ $(document).ready(() => {
  */
 function determineAction(response) {
 	if (response.disconnect) {
-		setTimeout(disconnect, weightedRandom(5000, weightedRandom(1000)));
+		if (response.type == 'getUrlParam') { // Searched for URL params, no real visit
+			setTimeout(disconnect, Math.floor(1000 * Math.random() + 300)); // Exit fast (~ 1sec)
+		} else {
+			setTimeout(disconnect, Math.floor(10000 * Math.random() + 10000)); // 10-20 seconds
+		}
 		return;
 	}
 
@@ -61,5 +65,5 @@ function determineAction(response) {
  */
 function execAlgorithm() {
 	// If there will be more than one algorithms one day, we can determine the correct one in here
-	searchPage(weightedRandom(8000, 1000));
+	searchPage(Math.floor(1000 * Math.random() + 2000)); // 1-3 seconds to type in a search term
 }

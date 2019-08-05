@@ -51,7 +51,7 @@ function processRequest(det) {
 
 				// Restart loop if queue was empty before and connection limit is not reached yet.
 				if (!(queue.length > 1) && todayCount < connectionLimit) {
-					restartLoop(5000 * Math.random() + 10000); // 10 to 15 seconds
+					startConnectLoop();
 				}
 			}
 		}

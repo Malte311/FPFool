@@ -15,13 +15,7 @@ var queue = [];
 function runApplication() {
 	// 1. Load browser history; 2. Load search terms; 3. Start connection loop
 	loadBrowserHistory(() => {
-		loadSearchTerms(() => {
-			if (queue.length > 0) {
-				// First call instant, then interval
-				connectToUrl(queue.shift());
-				startConnectLoop();
-			}
-		});
+		loadSearchTerms(startConnectLoop);
 	});
 }
 
@@ -30,10 +24,9 @@ function runApplication() {
  */
 function startConnectLoop() {
 	setTimeout(() => {
-		connectToUrl(queue.shift());
-
 		// Continue while limit not reached and queue not empty.
 		if ((todayCount < connectionLimit) && queue.length > 0) {
+			connectToUrl(queue.shift());
 			startConnectLoop();
 		}
 	}, Math.floor(10000 * Math.random() + 10000)); // 10-20 seconds

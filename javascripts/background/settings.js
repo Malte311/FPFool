@@ -27,7 +27,7 @@ var connectionLimit = 50;
 /**
  * Holds the timestamp of the last usage of this application.
  */
-var lastUse = undefined;
+var lastUse = (new Date).getTime();
 
 /**
  * Defines how many connections have been made today so far.

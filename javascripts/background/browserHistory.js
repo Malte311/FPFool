@@ -30,11 +30,6 @@ function saveVisitsFromBrowserHistory(callback) {
 		'text': '', // All entries
 		'startTime': startTime
 	}, historyItems => {
-		// Update the time for last browser history update
-		chrome.storage.sync.set({
-			lastUse: (new Date).getTime(),
-		});
-
 		// Get the number of visits for each page during the specified time interval.
 		asyncArrLoop(historyItems, (item, inCallback) => {
 			// Ignore extension page

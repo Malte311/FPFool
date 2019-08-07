@@ -74,6 +74,7 @@ function addListenerOnClose() {
 			if (windows.length == 1 && windowId == windows[0].id) {
 				chrome.storage.sync.set({
 					dailyCounts: dailyCounts,
+					lastUse: lastUse,
 					todayCount: todayCount
 				}, res => {
 					chrome.windows.remove(windowId);
@@ -92,6 +93,7 @@ function addDebugListener() {
 		if (winId == windowId) {
 			chrome.storage.sync.set({
 				dailyCounts: dailyCounts,
+				lastUse: lastUse,
 				todayCount: todayCount
 			});
 		}

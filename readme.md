@@ -43,7 +43,7 @@ This project is licensed under the [MIT License](https://github.com/Malte311/FPF
 
 |Language                     |files          |blank        |comment           |code|
 |-----------------------------|---------------|-------------|------------------|----|
-|JavaScript                   |   21          |  216        |    609           |1052|
+|JavaScript                   |   21          |  215        |    608           |1051|
 |HTML                         |    2          |   10        |      1           | 116|
 |JSON                         |    2          |    0        |      0           |  84|
 |Markdown                     |    1          |    9        |      0           |  45|
@@ -51,4 +51,4 @@ This project is licensed under the [MIT License](https://github.com/Malte311/FPF
 |CSS                          |    2          |    4        |      6           |  34|
 |YAML                         |    1          |    6        |      0           |  16|
 |-                            |-              |-            |-                 |-   |
-|SUM:                         |   31          |  259        |    624           |1387|
+|SUM:                         |   31          |  258        |    623           |1386|

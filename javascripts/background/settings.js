@@ -86,7 +86,7 @@ function loadSettings(callback) {
 			}
 			
 			var factor = result.connectionLimitFactor != undefined ? result.connectionLimitFactor : 1;
-			connectionLimit = factor * (sum - (dailyCounts.length > 0 ? fakeSum : todayCount));
+			connectionLimit = factor * (sum - (fakeSum + todayCount));
 			
 			// In case sum is zero (can happen at first usage due to empty database)
 			if (connectionLimit <= 0)

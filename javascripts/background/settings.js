@@ -68,6 +68,8 @@ function loadSettings(callback) {
 			todayCount = 0;
 		}
 
+		lastUse = (new Date).getTime();
+
 		currentTabs = new Array(tabLimit).fill({
 			id: -1
 		});

@@ -150,6 +150,9 @@ function answerDisconnect(request, sender, sendResponse) {
  */
 function answerIncTodayCount(request, sender, sendResponse) {
 	todayCount++;
+	getFromDatabase('visits', getKeyFromUrl(request.url), result => {
+		storeInDatabase('visits', getKeyFromUrl(request.url), result.value[0] + 1, false);
+	});
 	sendResponse({}); // Just to close message channel
 }
 

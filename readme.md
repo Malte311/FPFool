@@ -10,8 +10,8 @@ visited by the user.
 
 # How to use FPFool
 **Important:** Before using FPFool, please note that this software is part of a bachelor
-thesis and therefore in pre-alpha state. It cannot be ruled out that there are no bugs, so
-do not expect everything to work perfectly.
+thesis and therefore in pre-alpha state. This software experiments with some ideas. Currently,
+the software does not really protect the privacy of its users.
 
 ## Installation
 To manually install this application, download the `.zip` file of this repository and unzip it.

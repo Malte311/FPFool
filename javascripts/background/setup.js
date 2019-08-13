@@ -6,7 +6,7 @@
 /**
  * Specifies if the application should be run in debug mode.
  */
-const debug = true;
+const debug = false;
 
 /**
  * Holds the path to the data.json file.

@@ -164,15 +164,13 @@ function chooseTerm(suggestions, alreadyChosen) {
 	suggestions = suggestions.map(e => e.toLowerCase());
 	alreadyChosen = alreadyChosen.map(e => e.toLowerCase());
 
-	// First pick random, then sequential
-	var randomIndex = Math.floor(Math.random() * suggestions.length);
-	if (!alreadyChosen.includes(suggestions[randomIndex]))
-		return suggestions[randomIndex];
-
-	// Simply pick the first suggestion which was not already chosen.
-	for (var i = 0; i < suggestions.length; i++) {
-		if (!alreadyChosen.includes(suggestions[i]))
-			return suggestions[i];
+	// Random choice
+	while (suggestions.length > 0) {
+		var randomIndex = Math.floor(Math.random() * suggestions.length);
+		if (!alreadyChosen.includes(suggestions[randomIndex]))
+			return suggestions[randomIndex];
+		else
+			suggestions.splice(randomIndex, 1);
 	}
 
 	return '';

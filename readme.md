@@ -1,3 +1,6 @@
+![Build Status](https://travis-ci.com/Malte311/FPFool.svg?branch=master)
+[![GitHub license](https://img.shields.io/github/license/Malte311/FPFool)](https://github.com/Malte311/FPFool/blob/master/LICENSE)
+
 # What is FPFool?
 _FPFool_ is a Google Chrome browser extension which performs camouflage strategies to protect
 users against browser fingerprinting. Browser fingerprinting is a web tracking technique

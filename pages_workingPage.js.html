@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: pages/workingPage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: pages/workingPage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module html script - workingPage
+ */
+'use strict';
+
+/**
+ * Holds the path to the data.json file.
+ */
+const dataPath = '../data/data.json';
+
+/**
+ * Saves the content of the data.json file.
+ */
+var data;
+
+/*
+ * Executes the script when the page has loaded. This script logs the acitivities performed
+ * by the extension.
+ */
+$(document).ready(() => {
+	fetch(dataPath).then(response => response.json()).then(json => {
+		// Save json content in variable to make it accessible elsewhere
+		data = json;
+
+		addClickEventToTable('logTable'); // Necessary to make the table sortable
+
+		// Waits for messages from content scripts. The content scripts will inform this script
+		// whenever they perform an action, so we can update the status information.
+		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+			if (data.availableActionTypes.hasOwnProperty(request.type)) {
+				var action;
+				switch (request.type) {
+					case data.availableActionTypes.GETPARAM:
+						action = `Finding out search parameter.`;
+						break;
+					case data.availableActionTypes.OPEN:
+						action = `Opened a new tab.`;
+						break;
+					case data.availableActionTypes.REMOVE:
+						action = `Closed this tab.`;
+						break;
+					case data.availableActionTypes.SEARCH:
+						action = `Searched for \"${request.searchTerm}\".`;
+						break;
+					case data.availableActionTypes.SEARCHFAIL:
+						action = 'Tried to search, but did not work.'
+						break;
+					default:
+						action = 'Unknown action.';
+						break;
+				}
+
+				appendTable(sender.tab.id, request.url, request.toUrl, action, request.type);
+			}
+		});
+	});
+});
+
+/**
+ * Adds the onclick event to a given table, so the table is sortable. We can not execute
+ * inline script code, so we are not able to set the onclick event directly in the html
+ * file.
+ * 
+ * @param {string} tableId The id of the table we want to make sortable.
+ */
+function addClickEventToTable(tableId) {
+	$(`#${tableId} thead tr th`).each(() => {
+		$(this).click(() => {
+			sortTable($(this).attr('num'), tableId);
+		});
+	});
+}
+
+/**
+ * Appends a new row to the status table. This row contains the following entries:
+ * 
+ * @param {number} tabId The id of the tab in which the event occured.
+ * @param {string} urlFrom The url on which an event has happened.
+ * @param {string} urlTo The url to which we got directed (if we got directed at all).
+ * @param {string} action The description of the event.
+ * @param {string} type The type of the event.
+ */
+function appendTable(tabId, urlFrom, urlTo, action, type) {
+	var color;
+	switch (type) {
+		case data.availableActionTypes.GETPARAM:
+			color = '&lt;tr class=\"table-info\">'; // Light blue
+			break;
+		case data.availableActionTypes.OPEN:
+			color = '&lt;tr class=\"table-success\">'; // Green
+			break;
+		case data.availableActionTypes.REMOVE:
+			color = '&lt;tr class=\"table-dark\">'; // Dark grey
+			break;
+		case data.availableActionTypes.SEARCH:
+			color = '&lt;tr class=\"table-warning\">'; // Yellow
+			break;
+		case data.availableActionTypes.SEARCHFAIL:
+			color = '&lt;tr class=\"table-danger\">'; // Red
+			break;
+		default:
+			color = '&lt;tr class=\"table-active\">'; // Grey
+			break;
+	}
+
+	$('#statusTableBody').append(
+		`
+		${color}
+			&lt;td>${formatDate(new Date())}&lt;/td>
+			&lt;td>${tabId}&lt;/td>
+			&lt;td>&lt;a href=\"${urlFrom}\">${urlFrom}&lt;/a>&lt;/td>
+			&lt;td>&lt;a href=\"${urlTo}\">${urlTo}&lt;/a>&lt;/td>
+			&lt;td>${action}&lt;/td>
+		&lt;/tr>
+		`
+	);
+}
+
+/**
+ * Formats a given date for printing (we are interested in the time only).
+ * 
+ * @param {Date} date The date object we want to print. 
+ */
+function formatDate(date) {
+	var hours = date.getHours() &lt; 10 ? `0${date.getHours()}` : date.getHours();
+	var minutes = date.getMinutes() &lt; 10 ? `0${date.getMinutes()}` : date.getMinutes();
+	var seconds = date.getSeconds() &lt; 10 ? `0${date.getSeconds()}` : date.getSeconds();
+
+	return `${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Sorts a table by a specified column.
+ * Source: https://www.w3schools.com/howto/howto_js_sort_table.asp
+ * 
+ * @param {number} n The index of the column to sort by.
+ * @param {string} tableId The id of the table we want to sort.
+ */
+function sortTable(n, tableId) {
+	var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+	table = document.getElementById(tableId);
+	switching = true;
+	// Set the sorting direction to ascending:
+	dir = "asc";
+	/* Make a loop that will continue until
+	no switching has been done: */
+	while (switching) {
+		// Start by saying: no switching is done:
+		switching = false;
+		rows = table.rows;
+		/* Loop through all table rows (except the
+		first, which contains table headers): */
+		for (i = 1; i &lt; (rows.length - 1); i++) {
+			// Start by saying there should be no switching:
+			shouldSwitch = false;
+			/* Get the two elements you want to compare,
+			one from current row and one from the next: */
+			x = rows[i].getElementsByTagName("TD")[n];
+			y = rows[i + 1].getElementsByTagName("TD")[n];
+			/* Check if the two rows should switch place,
+			based on the direction, asc or desc: */
+			if (dir == "asc") {
+				if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+					// If so, mark as a switch and break the loop:
+					shouldSwitch = true;
+					break;
+				}
+			} else if (dir == "desc") {
+				if (x.innerHTML.toLowerCase() &lt; y.innerHTML.toLowerCase()) {
+					// If so, mark as a switch and break the loop:
+					shouldSwitch = true;
+					break;
+				}
+			}
+		}
+		if (shouldSwitch) {
+			/* If a switch has been marked, make the switch
+			and mark that a switch has been done: */
+			rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+			switching = true;
+			// Each time a switch is done, increase this count by 1:
+			switchcount++;
+		} else {
+			/* If no switching has been done AND the direction is "asc",
+			set the direction to "desc" and run the while loop again. */
+			if (switchcount == 0 &amp;&amp; dir == "asc") {
+				dir = "desc";
+				switching = true;
+			}
+		}
+	}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-background%2520script%2520-%2520browserHistory.html">background script - browserHistory</a></li><li><a href="module-background%2520script%2520-%2520browserWindow.html">background script - browserWindow</a></li><li><a href="module-background%2520script%2520-%2520connection.html">background script - connection</a></li><li><a href="module-background%2520script%2520-%2520database.html">background script - database</a></li><li><a href="module-background%2520script%2520-%2520message.html">background script - message</a></li><li><a href="module-background%2520script%2520-%2520searchTermGeneration.html">background script - searchTermGeneration</a></li><li><a href="module-background%2520script%2520-%2520searchTermSetup.html">background script - searchTermSetup</a></li><li><a href="module-background%2520script%2520-%2520settings.html">background script - settings</a></li><li><a href="module-background%2520script%2520-%2520setup.html">background script - setup</a></li><li><a href="module-background%2520script%2520-%2520thirdParty.html">background script - thirdParty</a></li><li><a href="module-background%2520script%2520-%2520util.html">background script - util</a></li><li><a href="module-background%2520script%2520-%2520windowState.html">background script - windowState</a></li><li><a href="module-content%2520script%2520-%2520search.html">content script - search</a></li><li><a href="module-content%2520script%2520-%2520setup.html">content script - setup</a></li><li><a href="module-content%2520script%2520-%2520tab.html">content script - tab</a></li><li><a href="module-content%2520script%2520-%2520util.html">content script - util</a></li><li><a href="module-html%2520script%2520-%2520extensionPage.html">html script - extensionPage</a></li><li><a href="module-html%2520script%2520-%2520workingPage.html">html script - workingPage</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Wed Sep 16 2020 06:29:09 GMT+0000 (Greenwich Mean Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
